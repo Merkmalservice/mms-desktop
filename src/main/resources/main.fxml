@@ -14,15 +14,15 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.control.TableColumn?>
-<VBox xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.researchstudio.sat.mmsdesktop.controller.MainController">
+<VBox xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.researchstudio.sat.mmsdesktop.controller.MainController">
     <MenuBar fx:id="menuBar" onKeyPressed="#handleKeyInput">
         <Menu text="App">
-            <MenuItem text="Settings" />
+            <MenuItem text="%label.settings" />
             <SeparatorMenuItem />
-            <MenuItem text="Exit" />
+            <MenuItem text="%label.exit" />
         </Menu>
         <Menu text="Info">
-            <MenuItem onAction="#handleAboutAction" text="About" />
+            <MenuItem onAction="#handleAboutAction" text="%label.about" />
         </Menu>
     </MenuBar>
     <BorderPane>

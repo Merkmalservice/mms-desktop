@@ -74,7 +74,7 @@ public class MainController implements Initializable {
     }
 
     @Override
-    public void initialize(java.net.URL arg0, ResourceBundle arg1) {
+    public void initialize(java.net.URL arg0, ResourceBundle resources) {
         try {
             VBox box = FXMLLoader.load(navDrawerResource.getURL());
             drawer.setSidePane(box);

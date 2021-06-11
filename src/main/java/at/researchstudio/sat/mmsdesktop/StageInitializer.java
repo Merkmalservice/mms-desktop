@@ -11,7 +11,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resources;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 @Component
 public class StageInitializer implements ApplicationListener<StageReadyEvent> {
@@ -29,6 +32,7 @@ public class StageInitializer implements ApplicationListener<StageReadyEvent> {
     public void onApplicationEvent(StageReadyEvent stageReadyEvent) {
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(mainResource.getURL());
+            fxmlLoader.setResources(ResourceBundle.getBundle("messages", Locale.getDefault())); //set Default Locale to System default
             fxmlLoader.setControllerFactory(aClass -> applicationContext.getBean(aClass));
             Parent parent = fxmlLoader.load();
 
