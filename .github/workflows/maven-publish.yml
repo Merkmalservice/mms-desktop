@@ -30,7 +30,7 @@ jobs:
         GITHUB_USER_REF: ${{ secrets.GH_PACKAGE_REPO_USERNAME }}
         GITHUB_TOKEN_REF: ${{ secrets.GH_PACKAGE_REPO_PASSWORD }}
     - name: 'Rename File'
-      run: mv target/MMS-Desktopn-spring-boot.jar target/MMS-Desktop.jar
+      run: mv target/MMS-Desktop-spring-boot.jar target/MMS-Desktop.jar
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
