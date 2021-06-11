@@ -1,0 +1,39 @@
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+        server-id: github # value of repository/id field of the pom.xml
+        server-username: GITHUB_USER_REF  # env variable name for username
+        server-password: GITHUB_TOKEN_REF # env variable name for GitHub Personal Access Token
+    
+    - name: Build with Maven
+      run: mvn -B -P github clean install spring-boot:repackage --file pom.xml
+      env:
+        GITHUB_USER_REF: ${{ secrets.GH_PACKAGE_REPO_USERNAME }}
+        GITHUB_TOKEN_REF: ${{ secrets.GH_PACKAGE_REPO_PASSWORD }}
+    - name: 'Rename File'
+      run: mv target/MMS-Desktopn-spring-boot.jar target/MMS-Desktop.jar
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v2
+      with:
+        name: MMS-Desktop
+        path: target/MMS-Desktop.jar
+        retention-days: 15
