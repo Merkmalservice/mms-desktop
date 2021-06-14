@@ -7,7 +7,7 @@
 - Spring Boot Application
 - JavaFX UI (Version 13)
 - Maven
-- (JFoenix (JFX Component Library))[http://www.jfoenix.com/] 
+- [JFoenix (JFX Component Library)](http://www.jfoenix.com/) 
 
 ## How to Start (for now)
 1. Checkout Project
