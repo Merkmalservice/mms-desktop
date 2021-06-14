@@ -3,12 +3,16 @@ package at.researchstudio.sat.mmsdesktop.controller;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import com.jfoenix.controls.JFXButton;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import org.slf4j.Logger;
@@ -28,13 +32,17 @@ public class ExtractController implements Initializable {
   private static final Logger logger =
           LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  @FXML private JFXButton clearList;
-  @FXML private JFXButton convertButton;
-  @FXML private JFXButton removeSelectedEntry;
+
+  @FXML private JFXButton bClearList;
+  @FXML private JFXButton bExtract;
+  //@FXML private JFXButton bRemoveSelectedEntry;
   @FXML private BorderPane borderPane;
-  @FXML private JFXButton pickFile;
-  @FXML private JFXButton pickDirectory;
+  @FXML private JFXButton bPickFile;
+  @FXML private JFXButton bPickDirectory;
   @FXML private TableView ifcFileTable;
+  @FXML private HBox hbFileActions;
+  @FXML private FlowPane fpProgress;
+  @FXML private ProgressBar pbExtraction;
 
   private FileChooser fileChooser;
   private DirectoryChooser directoryChooser;
@@ -59,8 +67,8 @@ public class ExtractController implements Initializable {
         selectedIfcFiles.addAll(
             selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
         ifcFileTable.setItems(FXCollections.observableArrayList(selectedIfcFiles));
-        clearList.setDisable(false);
-        convertButton.setDisable(false);
+        bClearList.setDisable(false);
+        bExtract.setDisable(false);
       }
     } catch (FileNotFoundException | NotDirectoryException e) {
       logger.warn("No Valid Directory selected");
@@ -75,8 +83,8 @@ public class ExtractController implements Initializable {
       selectedIfcFiles.addAll(
           selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
       ifcFileTable.setItems(FXCollections.observableArrayList(selectedIfcFiles));
-      clearList.setDisable(false);
-      convertButton.setDisable(false);
+      bClearList.setDisable(false);
+      bExtract.setDisable(false);
     }
   }
 
@@ -84,15 +92,23 @@ public class ExtractController implements Initializable {
   public void handleClearListAction(ActionEvent actionEvent) {
     selectedIfcFiles.clear();
     ifcFileTable.setItems(FXCollections.observableArrayList(selectedIfcFiles));
-    clearList.setDisable(true);
-    convertButton.setDisable(true);
+    bClearList.setDisable(true);
+    bExtract.setDisable(true);
   }
 
-  @FXML
+  /*@FXML
   public void handleRemoveSelectedEntryAction(ActionEvent actionEvent) {
-  }
+  }*/
 
   @FXML
   public void handleConvertAction(ActionEvent actionEvent) {
+    hbFileActions.setVisible(false);
+    hbFileActions.setManaged(false);
+    ifcFileTable.setVisible(false);
+
+    fpProgress.setVisible(true);
+    fpProgress.setManaged(true);
+
+    pbExtraction.setProgress(60.0);
   }
 }

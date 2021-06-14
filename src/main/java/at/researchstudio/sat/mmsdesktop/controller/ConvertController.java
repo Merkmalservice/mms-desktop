@@ -10,9 +10,9 @@ import java.util.ResourceBundle;
 
 @Component
 public class ConvertController implements Initializable {
-  @FXML private JFXButton pickFile;
+  @FXML private JFXButton bPickFile;
 
-  @FXML private JFXButton pickDirectory;
+  @FXML private JFXButton bPickDirectory;
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {}
