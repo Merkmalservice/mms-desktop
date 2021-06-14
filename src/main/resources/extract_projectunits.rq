@@ -1,0 +1,18 @@
+PREFIX express: <https://w3id.org/express#>
+PREFIX ifcowl: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ifc: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>
+
+PREFIX express: <https://w3id.org/express#>
+PREFIX ifcowl: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ifc: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>
+
+SELECT DISTINCT ?projectUri ?unitAssignmentUri ?unitUri ?unitType ?unitMeasure
+WHERE {
+          ?projectUri a ifcowl:IfcProject .
+          ?projectUri ifcowl:unitsInContext_IfcProject ?unitAssignmentUri .
+          ?unitAssignmentUri ifcowl:units_IfcUnitAssignment ?unitUri .
+          ?unitUri ifcowl:unitType_IfcNamedUnit ?unitType .
+          ?unitUri ifc:name_IfcSIUnit ?unitMeasure .
+      }

@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import com.jfoenix.controls.JFXButton;
@@ -109,6 +110,8 @@ public class ExtractController implements Initializable {
     fpProgress.setVisible(true);
     fpProgress.setManaged(true);
 
+    //TODO: Adapt Properties
+    PropertyExtractor.parseIfcFilesToJsonFeatures(false, "extracted-features.json", selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()));
     pbExtraction.setProgress(60.0);
   }
 }

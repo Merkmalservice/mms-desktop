@@ -86,7 +86,7 @@
                     </TableColumn>
                 </columns>
             </TableView>
-            <FlowPane fx:id="fpProgress" visible="false" managed="false">
+            <FlowPane fx:id="fpProgress" visible="false" managed="false" alignment="CENTER">
                 <ProgressBar fx:id="pbExtraction" prefHeight="51.0" prefWidth="326.0" progress="0.0"/>
             </FlowPane>
         </HBox>

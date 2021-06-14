@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Merkmalservice ifc2json Schema",
+  "description": "Schema for ImportFeatures",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/Feature"
+  },
+  "definitions": {
+    "Feature": {
+      "title": "Feature",
+      "description": "Feature with Name & FeatureType",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "featureType": {
+          "$ref": "#/definitions/FeatureType"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "featureType",
+        "name"
+      ]
+    },
+    "FeatureType": {
+      "title": "FeatureType",
+      "description": "FeatureType of Feature",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/Type"
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "description": "FeatureType Description"
+        },
+        "quantityKind": {
+          "$ref": "#/definitions/QuantityKind"
+        },
+        "unit": {
+          "$ref": "#/definitions/Unit"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Option"
+          }
+        },
+        "allowMultiple": {
+          "type": "boolean",
+          "title": "AllowMultiple",
+          "description": "Allow multiple options vor Enumeration"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "dependencies": {
+        "quantityKind": {
+          "required": [
+            "unit"
+          ]
+        },
+        "unit": {
+          "required": [
+            "quantityKind"
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "type": {
+            "const": "NUMERIC"
+          }
+        },
+        "then": {
+          "required": [
+            "quantityKind",
+            "unit"
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "type": {
+            "const": "ENUMERATION"
+          }
+        },
+        "then": {
+          "required": [
+            "options",
+            "allowMultiple"
+          ]
+        }
+      }
+    },
+    "Type": {
+      "title": "Type",
+      "description": "Type of the FeatureType e.g. BOOLEAN",
+      "type": "string",
+      "enum": [
+        "NUMERIC",
+        "STRING",
+        "BOOLEAN",
+        "REFERENCE",
+        "ENUMERATION"
+      ]
+    },
+    "QuantityKind": {
+      "title": "QuantityKind",
+      "description": "QuantityKind of the FeatureType e.g. length",
+      "type": "string",
+      "format": "uri",
+      "enum": [
+        "http://qudt.org/vocab/quantitykind/Area",
+        "http://qudt.org/vocab/quantitykind/Volume",
+        "http://qudt.org/vocab/quantitykind/Length",
+        "http://qudt.org/vocab/quantitykind/Width",
+        "http://qudt.org/vocab/quantitykind/Height",
+        "http://qudt.org/vocab/quantitykind/Radius",
+        "http://qudt.org/vocab/quantitykind/Diameter",
+        "http://qudt.org/vocab/quantitykind/Depth",
+        "http://qudt.org/vocab/quantitykind/Thickness",
+        "http://qudt.org/vocab/quantitykind/Dimensionless"
+      ]
+    },
+    "Unit": {
+      "title": "Unit",
+      "description": "Unit of the FeatureType and QuantityKind e.g. meters",
+      "type": "string",
+      "format": "uri",
+      "enum": [
+        "http://qudt.org/vocab/unit/M",
+        "http://qudt.org/vocab/unit/M2",
+        "http://qudt.org/vocab/unit/M3",
+        "http://qudt.org/vocab/unit/GM",
+        "http://qudt.org/vocab/unit/SEC",
+        "http://qudt.org/vocab/unit/HZ",
+        "http://qudt.org/vocab/unit/DEG_C",
+        "http://qudt.org/vocab/unit/A",
+        "http://qudt.org/vocab/unit/V",
+        "http://qudt.org/vocab/unit/W",
+        "http://qudt.org/vocab/unit/N",
+        "http://qudt.org/vocab/unit/LUX",
+        "http://qudt.org/vocab/unit/LM",
+        "http://qudt.org/vocab/unit/CD",
+        "http://qudt.org/vocab/unit/PA",
+        "http://qudt.org/vocab/unit/UNITLESS"
+      ]
+    },
+    "Option": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/Value"
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "description": "Description of Enumeration Options"
+        }
+      }
+    },
+    "Value": {
+      "title": "Value",
+      "description": "Value of Enumeration Option",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": [
+            "string",
+            "boolean",
+            "number"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "title": "Description",
+          "description": "Description of Enumeration Value"
+        }
+      }
+    }
+  }
+}
