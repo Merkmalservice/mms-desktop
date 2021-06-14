@@ -76,6 +76,7 @@ public class PropertyExtractor {
           throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
+    //TODO: FIGURE OUT HOW TO LOAD FROM CLASSPATH AGAIN
     String extractPropNamesQuery = "PREFIX express: <https://w3id.org/express#>\n" +
             "PREFIX ifcowl: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>\n" +
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
@@ -109,6 +110,7 @@ public class PropertyExtractor {
           HDT hdtData, Map<IfcUnitType, List<IfcUnit>> projectUnits) throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
+    //TODO: FIGURE OUT HOW TO LOAD FROM CLASSPATH AGAIN
     String extractPropNamesQuery =
         "PREFIX express: <https://w3id.org/express#>\n"
             + "PREFIX ifcowl: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>\n"
