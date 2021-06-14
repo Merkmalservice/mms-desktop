@@ -38,7 +38,7 @@ public class IfcProperty {
         try {
           tempMeasure = IfcUnitMeasure.fromResource(unitMeasure);
         } catch (IllegalArgumentException e) {
-          System.err.println(e.getMessage());
+          logger.error(e.getMessage());
         }
         this.measure = tempMeasure;
       } else if (Objects.nonNull(projectUnits)) {
@@ -51,7 +51,7 @@ public class IfcProperty {
             this.measure = ifcUnit.getMeasure();
           } else {
             logger.debug("More than one unit present, leaving it empty");
-            units.forEach(System.out::println);
+            units.forEach(unit -> logger.debug(unit.toString()));
           }
         }
       }
@@ -65,7 +65,7 @@ public class IfcProperty {
     try {
       tempType = IfcPropertyType.fromResource(type);
     } catch (IllegalArgumentException e) {
-      System.err.println(e.getMessage());
+      logger.error(e.getMessage());
     }
 
     this.type = tempType;

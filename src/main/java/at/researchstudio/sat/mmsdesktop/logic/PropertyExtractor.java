@@ -67,7 +67,7 @@ public class PropertyExtractor {
     }
     logger.debug("EXITING, converted " + hdtData.size() + "/" + ifcFiles.size());
     if (hdtData.size() != ifcFiles.size()) {
-      System.err.println(
+      logger.error(
               "Not all Files could be converted, look in the log above to find out why");
     }
   }
@@ -203,9 +203,9 @@ public class PropertyExtractor {
                           .collect(Collectors.toList()));
           break;
         default:
-          System.err.println(logString + ", will be ignored, no matching Feature-Type determined yet for:");
-          entry.getValue().forEach(System.err::println);
-          System.err.println("-------------------------------------------------------------------------");
+          logger.error(logString + ", will be ignored, no matching Feature-Type determined yet for:");
+          entry.getValue().forEach(property -> logger.error(property.toString()));
+          logger.error("-------------------------------------------------------------------------");
           break;
       }
     }

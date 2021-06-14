@@ -14,13 +14,13 @@ public class IfcUnit {
     try {
       tempType = IfcUnitType.fromResource(type);
     } catch (IllegalArgumentException e) {
-      System.err.println(e.getMessage());
+      logger.error(e.getMessage());
     }
 
     try {
       tempMeasure = IfcUnitMeasure.fromResource(measure);
     } catch (IllegalArgumentException e) {
-      System.err.println(e.getMessage());
+      logger.error(e.getMessage());
     }
 
     this.type = tempType;

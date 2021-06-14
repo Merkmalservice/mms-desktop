@@ -61,7 +61,8 @@ public class IFC2HDTConverter {
                         null);
 
         if (!keepTempFiles && !outputFile.delete()) {
-            System.err.println(
+
+            logger.error(
                     "Could not delete temp-file: "
                             + outputFile.getAbsolutePath()
                             + " try removing it manually later...");

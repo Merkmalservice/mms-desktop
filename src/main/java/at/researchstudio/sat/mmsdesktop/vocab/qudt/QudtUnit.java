@@ -53,7 +53,7 @@ public abstract class QudtUnit {
       case PASCAL:
         return PASCAL;
       default:
-        System.err.println(
+        logger.error(
             "Could not find QudtUnit for ifcMeasure: "
                 + measure
                 + ", returning UNITLESS("
