@@ -1,8 +1,15 @@
 package at.researchstudio.sat.mmsdesktop.vocab.qudt;
 
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
 
 public abstract class QudtUnit {
+  private static final Logger logger =
+          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   public static final String METRE = "http://qudt.org/vocab/unit/M";
   public static final String SQUARE_METRE = "http://qudt.org/vocab/unit/M2";
   public static final String CUBIC_METRE = "http://qudt.org/vocab/unit/M3";

@@ -4,7 +4,7 @@ import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import com.jfoenix.controls.JFXButton;
-import javafx.beans.value.ChangeListener;
+import javafx.concurrent.Task;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -110,8 +110,25 @@ public class ExtractController implements Initializable {
     fpProgress.setVisible(true);
     fpProgress.setManaged(true);
 
-    //TODO: Adapt Properties
-    PropertyExtractor.parseIfcFilesToJsonFeatures(false, "extracted-features.json", selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()));
-    pbExtraction.setProgress(60.0);
+    Task task = new Task<Void>() {
+      @Override public Void call() {
+        final int max = 1000000;
+        //TODO: Adapt Properties
+        PropertyExtractor.parseIfcFilesToJsonFeatures(false, "extracted-features.json", selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()));
+
+        //TODO: Replace this progress bar
+        for (int i=1; i<=max; i++) {
+          if (isCancelled()) {
+            break;
+          }
+          updateProgress(i, max);
+        }
+        return null;
+      }
+    };
+    pbExtraction.progressProperty().bind(task.progressProperty());
+    new Thread(task).start();
+
+
   }
 }
