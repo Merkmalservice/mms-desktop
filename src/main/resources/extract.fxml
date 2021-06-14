@@ -10,57 +10,96 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
-<AnchorPane fx:id="anchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16"
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.FlowPane?>
+<BorderPane fx:id="borderPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractController">
-
-    <Label layoutX="14.0" layoutY="14.0" style="-fx-font-weight: bold;" text="%label.extract">
-        <font>
-            <Font size="18.0"/>
-        </font>
-    </Label>
-    <JFXButton fx:id="pickFile" alignment="BASELINE_LEFT" focusTraversable="false" graphicTextGap="15.0" layoutX="37.0"
-               layoutY="53.0" onAction="#handlePickFileAction" prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
-               style="-fx-background-color: #5bbad5;" text="%label.select.file" textFill="#c1fff9">
-        <padding>
-            <Insets bottom="5.0" left="30.0" top="5.0"/>
-        </padding>
-    </JFXButton>
-    <JFXButton fx:id="pickDirectory" alignment="BASELINE_LEFT" focusTraversable="false" graphicTextGap="15.0"
-               layoutX="332.0" layoutY="53.0" onAction="#handlePickDirectoryAction" prefHeight="32.0" prefWidth="220.0"
-               ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.select.directory"
-               textFill="#c1fff9">
-        <padding>
-            <Insets bottom="5.0" left="30.0" top="5.0"/>
-        </padding>
-    </JFXButton>
-    <TableView fx:id="ifcFileTable" layoutX="80.0" layoutY="132.0" prefHeight="577.0"
-               prefWidth="1040.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0"
-               AnchorPane.topAnchor="152.0">
-        <columns>
-            <TableColumn editable="false" prefWidth="100.0"
-                         sortType="DESCENDING" text="%label.file.name">
-                <cellValueFactory>
-                    <PropertyValueFactory property="name" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn editable="false" prefWidth="200.0"
-                         sortType="DESCENDING" text="%label.file.fullpath">
-                <cellValueFactory>
-                    <PropertyValueFactory property="path" />
-                </cellValueFactory>
-            </TableColumn>
-            <TableColumn editable="false" prefWidth="50.0"
-                         sortType="DESCENDING" text="%label.action">
-            </TableColumn>
-        </columns>
-    </TableView>
-    <JFXButton fx:id="clearList" alignment="BASELINE_LEFT" focusTraversable="false" graphicTextGap="15.0"
-               layoutX="332.0" layoutY="853.0" onAction="#handleClearListAction" prefHeight="32.0" prefWidth="220.0"
-               ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.table.clear"
-               textFill="#c1fff9">
-        <padding>
-            <Insets bottom="5.0" left="30.0" top="5.0"/>
-        </padding>
-    </JFXButton>
-</AnchorPane>
+    <BorderPane.margin>
+        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0"/>
+    </BorderPane.margin>
+    <top>
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="10.0"/>
+            </padding>
+            <Label layoutX="14.0" layoutY="14.0" style="-fx-font-weight: bold;" text="%label.extract">
+                <font>
+                    <Font size="18.0"/>
+                </font>
+            </Label>
+            <HBox spacing="10">
+                <JFXButton fx:id="pickFile" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                           onAction="#handlePickFileAction" prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5;" text="%label.select.file" textFill="#c1fff9"
+                           HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+                <JFXButton fx:id="pickDirectory" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                           onAction="#handlePickDirectoryAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.select.directory"
+                           textFill="#c1fff9" HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+                <JFXButton fx:id="removeSelectedEntry" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                           onAction="#handleRemoveSelectedEntryAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.table.removeSelected"
+                           textFill="#c1fff9" HBox.hgrow="ALWAYS" disable="true">
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+                <JFXButton fx:id="clearList" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                           onAction="#handleClearListAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.table.clear"
+                           textFill="#c1fff9" HBox.hgrow="ALWAYS" disable="true">
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <TableView fx:id="ifcFileTable" layoutX="80.0" layoutY="132.0" prefHeight="577.0"
+                   prefWidth="1040.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0"
+                   AnchorPane.topAnchor="152.0">
+            <columns>
+                <TableColumn editable="false" prefWidth="100.0"
+                             sortType="DESCENDING" text="%label.file.name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="name"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn editable="false" prefWidth="200.0"
+                             sortType="DESCENDING" text="%label.file.fullpath">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="path"/>
+                    </cellValueFactory>
+                </TableColumn>
+            </columns>
+        </TableView>
+    </center>
+    <bottom>
+        <FlowPane>
+            <padding>
+                <Insets top="10.0"/>
+            </padding>
+            <JFXButton fx:id="convertButton" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                       onAction="#handleConvertAction" prefHeight="32.0" prefWidth="220.0"
+                       ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.table.extract"
+                       textFill="#c1fff9" HBox.hgrow="ALWAYS"
+                       disable="true">
+                <padding>
+                    <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                </padding>
+            </JFXButton>
+        </FlowPane>
+    </bottom>
+</BorderPane>
