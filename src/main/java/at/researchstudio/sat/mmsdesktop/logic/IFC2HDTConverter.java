@@ -21,31 +21,7 @@ public class IFC2HDTConverter {
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String BASE_URI = "https://researchstudio.at/";
 
-    public static List<HDT> readFromFiles(boolean keepTempFiles, List<File> ifcFiles) {
-        List<HDT> hdtData = new ArrayList<>();
-
-        int i = 0;
-        for (File ifcFile : ifcFiles) {
-            File tempOutputFile =
-                    new File(
-                            "temp_ttl_"
-                                    + FilenameUtils.removeExtension(ifcFile.getName())
-                                    + ".ttl");
-            try {
-                hdtData.add(readFromFile(keepTempFiles, ifcFile, tempOutputFile));
-                logger.debug("Converted " + (++i) + "/" + ifcFiles.size() + " Files to HDT");
-            } catch (Exception e) {
-                logger.error(
-                        "Can't convert file: "
-                                + ifcFile.getAbsolutePath()
-                                + " Reason: "
-                                + e.getMessage());
-            }
-        }
-
-        return hdtData;
-    }
-    private static HDT readFromFile(boolean keepTempFiles, File ifcFile, File outputFile)
+    public static HDT readFromFile(boolean keepTempFiles, File ifcFile, File outputFile)
             throws IOException, ParserException {
         IfcSpfReader r = new IfcSpfReader();
 

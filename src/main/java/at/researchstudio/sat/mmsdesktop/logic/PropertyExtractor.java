@@ -8,9 +8,10 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.IfcProperty;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
-import at.researchstudio.sat.mmsdesktop.util.Utils;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtUnit;
+import javafx.concurrent.Task;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
@@ -21,8 +22,6 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdtjena.HDTGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,43 +32,83 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static at.researchstudio.sat.merkmalservice.utils.Utils.writeToJson;
-
 public class PropertyExtractor {
   private static final Logger logger =
           LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  public static void parseIfcFilesToJsonFeatures(boolean keepTempFiles, String outputFileName, List<File> ifcFiles) {
-    List<HDT> hdtData = IFC2HDTConverter.readFromFiles(keepTempFiles, ifcFiles);
-    List<Feature> extractedFeatures = new ArrayList<>();
-    int extractedIfcProperties = 0;
-    for (HDT hdt : hdtData) {
-      try {
-        Map<IfcUnitType, List<IfcUnit>> extractedProjectUnitMap = extractProjectUnits(hdt);
-        Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap = extractPropertiesFromHdtData(
-                hdt, extractedProjectUnitMap);
-        extractedIfcProperties += extractedPropertyMap.values().stream()
-                .mapToInt(Collection::size)
-                .sum();
-        extractedFeatures.addAll(extractFeaturesFromProperties(extractedPropertyMap));
-      } catch (IOException ioException) {
-        ioException.printStackTrace();
+
+  public static Task generateIfcFileToJsonTask(boolean keepTempFiles, String outputFileName, List<File> ifcFiles) {
+    return new Task<List<Feature>>() {
+      @Override public List<Feature> call() {
+        final int max = ifcFiles.size() * 2;
+        //TODO: Adapt Properties
+        // EXTRACTED METHOD
+
+        List<HDT> hdtData = new ArrayList<>();
+
+        int i = 0;
+        updateProgress(i, max);
+        updateTitle("Starting Extraction");
+        for (File ifcFile : ifcFiles) {
+          File tempOutputFile =
+                  new File(
+                          "temp_ttl_"
+                                  + FilenameUtils.removeExtension(ifcFile.getName())
+                                  + ".ttl");
+          try {
+            hdtData.add(IFC2HDTConverter.readFromFile(keepTempFiles, ifcFile, tempOutputFile));
+            updateMessage("Converted " + (++i) + "/" + ifcFiles.size() + " Files to HDT");
+          } catch (Exception e) {
+            updateMessage(
+                    "Can't convert file: "
+                            + ifcFile.getAbsolutePath()
+                            + " Reason: "
+                            + e.getMessage());
+          }
+          if (isCancelled()) {
+            break;
+          }
+          updateProgress(i, max);
+          updateTitle("Converted IFC to HDT, Step "+ i + "/" + max);
+        }
+
+        List<Feature> extractedFeatures = new ArrayList<>();
+        int extractedIfcProperties = 0;
+
+        final int newMax = ifcFiles.size() + hdtData.size();
+        for (HDT hdt : hdtData) {
+          try {
+            Map<IfcUnitType, List<IfcUnit>> extractedProjectUnitMap = extractProjectUnits(hdt);
+            Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap = extractPropertiesFromHdtData(
+                    hdt, extractedProjectUnitMap);
+            extractedIfcProperties += extractedPropertyMap.values().stream()
+                    .mapToInt(Collection::size)
+                    .sum();
+            extractedFeatures.addAll(extractFeaturesFromProperties(extractedPropertyMap));
+          } catch (IOException ioException) {
+            ioException.printStackTrace();
+          }
+          if (isCancelled()) {
+            break;
+          }
+          updateProgress(++i, newMax);
+          updateTitle("Extracted Features out of File, Step "+ i + "/" + newMax);
+        }
+        updateMessage("-------------------------------------------------------------------------------");
+        updateMessage("Extracted " + extractedIfcProperties + " out of the " + ifcFiles.size() + " ifcFiles");
+        updateMessage("Parsed " + extractedFeatures.size() + " jsonFeatures");
+        updateMessage("into File: " + new File(outputFileName).getAbsolutePath());
+        updateMessage("-------------------------------------------------------------------------------");
+
+        updateMessage("EXITING, converted " + hdtData.size() + "/" + ifcFiles.size());
+        if (hdtData.size() != ifcFiles.size()) {
+          updateMessage(
+                  "Not all Files could be converted, look in the log above to find out why");
+        }
+
+        //EXTRACTED METHOD END
+        return extractedFeatures;
       }
-    }
-    logger.debug("-------------------------------------------------------------------------------");
-    logger.debug("Extracted " + extractedIfcProperties + " out of the " + ifcFiles.size() + " ifcFiles");
-    logger.debug("Parsed " + extractedFeatures.size() + " jsonFeatures");
-    logger.debug("into File: " + new File(outputFileName).getAbsolutePath());
-    logger.debug("-------------------------------------------------------------------------------");
-    try {
-      writeToJson(outputFileName, extractedFeatures);
-    } catch (IOException ioException) {
-      ioException.printStackTrace();
-    }
-    logger.debug("EXITING, converted " + hdtData.size() + "/" + ifcFiles.size());
-    if (hdtData.size() != ifcFiles.size()) {
-      logger.error(
-              "Not all Files could be converted, look in the log above to find out why");
-    }
+    };
   }
 
   private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(HDT hdtData)

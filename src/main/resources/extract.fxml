@@ -14,6 +14,9 @@
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TextArea?>
+<?import com.jfoenix.controls.JFXTextArea?>
+<?import com.jfoenix.controls.JFXProgressBar?>
 <BorderPane fx:id="borderPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractController">
@@ -87,7 +90,13 @@
                 </columns>
             </TableView>
             <FlowPane fx:id="fpProgress" visible="false" managed="false" alignment="CENTER">
-                <ProgressBar fx:id="pbExtraction" prefHeight="51.0" prefWidth="326.0" progress="0.0"/>
+                <JFXProgressBar fx:id="pbExtraction" prefHeight="51.0" prefWidth="326.0" progress="0.0"/>
+                <Label fx:id="lProgressInfo"/>
+                <JFXTextArea fx:id="taProgressLog"/>
+            </FlowPane>
+            <FlowPane fx:id="fpResult" visible="false" managed="false" alignment="CENTER">
+                <Label text="%label.extractedFeatures"/>
+                <JFXTextArea fx:id="taExtractedFeatures"/>
             </FlowPane>
         </HBox>
     </center>
@@ -101,6 +110,14 @@
                        ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.table.extract"
                        textFill="#c1fff9" HBox.hgrow="ALWAYS"
                        disable="true">
+                <padding>
+                    <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                </padding>
+            </JFXButton>
+            <JFXButton fx:id="bSaveFile" alignment="CENTER" visible="false" managed="false" focusTraversable="false" graphicTextGap="15.0"
+                       onAction="#handleSaveFileAction" prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
+                       style="-fx-background-color: #5bbad5;" text="%label.extract.save" textFill="#c1fff9"
+                       HBox.hgrow="ALWAYS">
                 <padding>
                     <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
                 </padding>
