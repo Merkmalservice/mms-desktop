@@ -8,10 +8,8 @@ import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXProgressBar;
-import com.jfoenix.controls.JFXTabPane;
-import com.jfoenix.controls.JFXTextArea;
+import com.jfoenix.controls.*;
+import javafx.application.Platform;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.concurrent.Task;
 import javafx.collections.FXCollections;
@@ -27,6 +25,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -39,11 +38,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
-import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static at.researchstudio.sat.merkmalservice.utils.Utils.writeToJson;
 
 @Component
 public class ExtractController implements Initializable {
@@ -75,10 +72,15 @@ public class ExtractController implements Initializable {
   private DirectoryChooser directoryChooser;
   private Set<FileWrapper> selectedIfcFiles;
 
+  private JFXSnackbar snackbar;
+
   private ExtractResult extractResult;
+
+  private ResourceBundle resourceBundle;
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
+    this.resourceBundle = resourceBundle;
     fileChooser = new FileChooser();
     fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("IFC Files", "*.ifc"));
 
@@ -93,6 +95,9 @@ public class ExtractController implements Initializable {
     directoryChooser = new DirectoryChooser();
     selectedIfcFiles = new HashSet<>();
     ifcFileTable.setItems(FXCollections.observableArrayList(selectedIfcFiles));
+
+    snackbar = new JFXSnackbar(borderPane);
+    snackbar.setStyle("-fx-text-fill: white; -fx-background-color: black"); //TODO: Update SnackBar Style
   }
 
   @FXML
@@ -133,6 +138,12 @@ public class ExtractController implements Initializable {
     if (Objects.nonNull(file)) {
       try {
         Utils.writeToJson(file.getAbsolutePath(), extractResult.getExtractedFeatures());
+        final String message = MessageFormat.format(resourceBundle.getString("label.extract.export.success"), file.getAbsolutePath());
+
+        Platform.runLater(() -> {
+          snackbar.fireEvent(new JFXSnackbar.SnackbarEvent(new JFXSnackbarLayout(message), Duration.seconds(5), null));
+        });
+
       } catch (IOException ioException) {
         ioException.printStackTrace();
       }
@@ -149,6 +160,12 @@ public class ExtractController implements Initializable {
     if (Objects.nonNull(file)) {
       try {
         Files.writeString(file.toPath(), extractResult.getLogOutput(), StandardCharsets.UTF_8);
+        final String message = MessageFormat.format(resourceBundle.getString("label.extract.exportLog.success"), file.getAbsolutePath());
+
+        Platform.runLater(() -> {
+          snackbar.fireEvent(new JFXSnackbar.SnackbarEvent(new JFXSnackbarLayout(message), Duration.seconds(5), null));
+        });
+
       } catch (IOException ioException) {
         ioException.printStackTrace();
       }
