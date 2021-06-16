@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.scene.text.Font?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="at.researchstudio.sat.mmsdesktop.controller.SettingsController"
+            prefHeight="400.0" prefWidth="600.0">
+    <children>
+        <Label text="%label.settings"/>
+        <JFXTextField fx:id="tf_search" focusColor="#ffc107" layoutX="80.0" layoutY="54.0"
+                      prefHeight="40.0" prefWidth="925.0" promptText="SEARCH HERE"
+                      unFocusColor="#c5c5c5" AnchorPane.leftAnchor="80.0"
+                      AnchorPane.rightAnchor="80.0" AnchorPane.topAnchor="54.0">
+            <font>
+                <Font name="Exo Regular" size="18.0"/>
+            </font>
+        </JFXTextField>
+        <TableView fx:id="personTable" layoutX="80.0" layoutY="132.0" prefHeight="577.0"
+                   prefWidth="1040.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0"
+                   AnchorPane.topAnchor="152.0">
+            <columns>
+                <TableColumn fx:id="T1Column" editable="false" prefWidth="195.0"
+                             sortType="DESCENDING" text="T1"/>
+                <TableColumn fx:id="T2Column" editable="false" minWidth="6.0" prefWidth="220.0"
+                             sortType="DESCENDING" text="T2"/>
+                <TableColumn fx:id="T3Column" editable="false" prefWidth="97.0"
+                             sortType="DESCENDING" text="T3"/>
+            </columns>
+        </TableView>
+    </children>
+</AnchorPane>

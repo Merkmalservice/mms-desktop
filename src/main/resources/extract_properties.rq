@@ -1,0 +1,15 @@
+PREFIX express: <https://w3id.org/express#>
+PREFIX ifcowl: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>
+
+# TODO units are not yet retrieved for the individual properties, only the project units are used (see extract_projectunits.rq for the query)
+# this is due to the fact that none of our available ifc files have set the (optional) unit in the properties and thus the project units will be used
+
+SELECT DISTINCT ?propName ?propType
+WHERE {
+          ?propUri ifcowl:name_IfcProperty ?propNameUri.
+          ?propUri ifcowl:nominalValue_IfcPropertySingleValue ?propTypeUri .
+          ?propTypeUri a ?propType .
+          ?propNameUri
+          a                       ifcowl:IfcIdentifier ;
+          express:hasString       ?propName ;
+      }

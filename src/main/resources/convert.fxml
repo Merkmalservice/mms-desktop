@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.geometry.Insets?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ConvertController"
+            prefHeight="400.0" prefWidth="600.0">
+    <Label text="%label.convert"/>
+    <JFXButton fx:id="bPickFile" disable="true" alignment="CENTER" focusTraversable="false"
+               graphicTextGap="15.0" layoutX="10.0" layoutY="10.0" prefHeight="32.0"
+               prefWidth="220.0" ripplerFill="WHITE" text="%label.select.file"
+               textFill="#c1fff9" style="-fx-background-color: #5bbad5;">
+        <padding>
+            <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+        </padding>
+    </JFXButton>
+    <JFXButton fx:id="bPickDirectory" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+               prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
+               text="%label.select.directory" textFill="#c1fff9" style="-fx-background-color: #5bbad5;">
+        <padding>
+            <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+        </padding>
+    </JFXButton>
+</AnchorPane>
