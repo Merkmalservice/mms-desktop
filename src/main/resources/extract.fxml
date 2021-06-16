@@ -12,16 +12,14 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.control.ProgressIndicator?>
-<?import javafx.scene.control.ProgressBar?>
-<?import javafx.scene.control.TextArea?>
 <?import com.jfoenix.controls.JFXTextArea?>
 <?import com.jfoenix.controls.JFXProgressBar?>
+<?import javafx.scene.layout.AnchorPane?>
 <BorderPane fx:id="borderPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractController">
     <BorderPane.margin>
-        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0"/>
+        <Insets bottom="10.0" left="25.0" right="25.0" top="10.0"/>
     </BorderPane.margin>
     <top>
         <VBox spacing="10">
@@ -36,7 +34,7 @@
             <HBox spacing="10" fx:id="hbFileActions">
                 <JFXButton fx:id="bPickFile" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
                            onAction="#handlePickFileAction" prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
-                           style="-fx-background-color: #5bbad5;" text="%label.select.file" textFill="#c1fff9"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;" text="%label.select.file" textFill="#c1fff9"
                            HBox.hgrow="ALWAYS">
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
@@ -44,7 +42,7 @@
                 </JFXButton>
                 <JFXButton fx:id="bPickDirectory" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
                            onAction="#handlePickDirectoryAction" prefHeight="32.0" prefWidth="220.0"
-                           ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.select.directory"
+                           ripplerFill="WHITE" style="-fx-background-color: #5bbad5; -fx-cursor: hand;" text="%label.select.directory"
                            textFill="#c1fff9" HBox.hgrow="ALWAYS">
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
@@ -53,7 +51,7 @@
                 <!--JFXButton fx:id="bRemoveSelectedEntry" alignment="CENTER" focusTraversable="false"
                            graphicTextGap="15.0"
                            onAction="#handleRemoveSelectedEntryAction" prefHeight="32.0" prefWidth="220.0"
-                           ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.table.removeSelected"
+                           ripplerFill="WHITE" style="-fx-background-color: #5bbad5; -fx-cursor: hand;" text="%label.table.removeSelected"
                            textFill="#c1fff9" HBox.hgrow="ALWAYS" disable="true">
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
@@ -61,7 +59,7 @@
                 </JFXButton-->
                 <JFXButton fx:id="bClearList" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
                            onAction="#handleClearListAction" prefHeight="32.0" prefWidth="220.0"
-                           ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.table.clear"
+                           ripplerFill="WHITE" style="-fx-background-color: #5bbad5; -fx-cursor: hand;" text="%label.table.clear"
                            textFill="#c1fff9" HBox.hgrow="ALWAYS" disable="true">
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
@@ -71,9 +69,9 @@
         </VBox>
     </top>
     <center>
-        <HBox>
-            <TableView fx:id="ifcFileTable" prefHeight="577.0"
-                       prefWidth="1040.0">
+        <AnchorPane>
+            <TableView fx:id="ifcFileTable" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                       AnchorPane.leftAnchor="0.0" >
                 <columns>
                     <TableColumn editable="false" prefWidth="100.0"
                                  sortType="DESCENDING" text="%label.file.name">
@@ -89,39 +87,53 @@
                     </TableColumn>
                 </columns>
             </TableView>
-            <FlowPane fx:id="fpProgress" visible="false" managed="false" alignment="CENTER">
+            <FlowPane fx:id="fpProgress" visible="false" managed="false" alignment="CENTER" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                      AnchorPane.leftAnchor="0.0">
                 <JFXProgressBar fx:id="pbExtraction" prefHeight="51.0" prefWidth="326.0" progress="0.0"/>
                 <Label fx:id="lProgressInfo"/>
-                <JFXTextArea fx:id="taProgressLog"/>
+                <JFXTextArea fx:id="taProgressLog" style="-fx-background-color: black; -fx-font-family: Consolas,monaco,monospace; -fx-text-fill: greenyellow; "/>
             </FlowPane>
-            <FlowPane fx:id="fpResult" visible="false" managed="false" alignment="CENTER">
+            <FlowPane fx:id="fpResult" visible="false" managed="false" alignment="CENTER" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                      AnchorPane.leftAnchor="0.0">
                 <Label text="%label.extractedFeatures"/>
-                <JFXTextArea fx:id="taExtractedFeatures"/>
+                <JFXTextArea fx:id="taExtractedFeatures" style="-fx-background-color: white; -fx-font-family: Consolas,monaco,monospace;" />
+                <Label text="%label.extractLogOutput"/>
+                <JFXTextArea fx:id="taExtractLogOutput" style="-fx-background-color: black; -fx-font-family: Consolas,monaco,monospace; -fx-text-fill: greenyellow;" />
             </FlowPane>
-        </HBox>
+        </AnchorPane>
     </center>
     <bottom>
-        <FlowPane>
+        <VBox spacing="10">
             <padding>
                 <Insets top="10.0"/>
             </padding>
             <JFXButton fx:id="bExtract" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
                        onAction="#handleConvertAction" prefHeight="32.0" prefWidth="220.0"
-                       ripplerFill="WHITE" style="-fx-background-color: #5bbad5;" text="%label.table.extract"
+                       ripplerFill="WHITE" style="-fx-background-color: #5bbad5; -fx-cursor: hand;" text="%label.table.extract"
                        textFill="#c1fff9" HBox.hgrow="ALWAYS"
                        disable="true">
                 <padding>
                     <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
                 </padding>
             </JFXButton>
-            <JFXButton fx:id="bSaveFile" alignment="CENTER" visible="false" managed="false" focusTraversable="false" graphicTextGap="15.0"
+            <JFXButton fx:id="bSaveFile" alignment="CENTER" visible="false" managed="false" focusTraversable="false"
+                       graphicTextGap="15.0"
                        onAction="#handleSaveFileAction" prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
-                       style="-fx-background-color: #5bbad5;" text="%label.extract.export" textFill="#c1fff9"
+                       style="-fx-background-color: #5bbad5; -fx-cursor: hand;" text="%label.extract.export" textFill="#c1fff9"
                        HBox.hgrow="ALWAYS">
                 <padding>
                     <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
                 </padding>
             </JFXButton>
-        </FlowPane>
+            <JFXButton fx:id="bSaveLog" alignment="CENTER" visible="false" managed="false" focusTraversable="false"
+                       graphicTextGap="15.0"
+                       onAction="#handleSaveLogAction" prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
+                       style="-fx-background-color: #5bbad5; -fx-cursor: hand;" text="%label.extract.exportLog" textFill="#c1fff9"
+                       HBox.hgrow="ALWAYS">
+                <padding>
+                    <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                </padding>
+            </JFXButton>
+        </VBox>
     </bottom>
 </BorderPane>

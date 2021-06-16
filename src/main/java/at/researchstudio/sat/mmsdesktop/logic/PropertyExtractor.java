@@ -8,10 +8,12 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.IfcProperty;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
+import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtUnit;
 import javafx.concurrent.Task;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
@@ -37,8 +39,10 @@ public class PropertyExtractor {
           LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   public static Task generateIfcFileToJsonTask(boolean keepTempFiles, String outputFileName, List<File> ifcFiles) {
-    return new Task<List<Feature>>() {
-      @Override public List<Feature> call() {
+    return new Task<ExtractResult>() {
+      @Override public ExtractResult call() {
+        String logOutput = "";
+
         final int max = ifcFiles.size() * 2;
         //TODO: Adapt Properties
         // EXTRACTED METHOD
@@ -56,15 +60,19 @@ public class PropertyExtractor {
                                   + ".ttl");
           try {
             hdtData.add(IFC2HDTConverter.readFromFile(keepTempFiles, ifcFile, tempOutputFile));
-            updateMessage("Converted " + (++i) + "/" + ifcFiles.size() + " Files to HDT");
+            logOutput += "Converted " + (++i) + "/" + ifcFiles.size() + " Files to HDT\n";
+            updateMessage(logOutput);
           } catch (Exception e) {
-            updateMessage(
-                    "Can't convert file: "
-                            + ifcFile.getAbsolutePath()
-                            + " Reason: "
-                            + e.getMessage());
+            logOutput += "Can't convert file: "
+                    + ifcFile.getAbsolutePath()
+                    + " Reason: "
+                    + e.getMessage()
+                    + "\n";
+            updateMessage(logOutput);
           }
           if (isCancelled()) {
+            logOutput += "Operation cancelled by User\n";
+            updateMessage(logOutput);
             break;
           }
           updateProgress(i, max);
@@ -85,28 +93,32 @@ public class PropertyExtractor {
                     .sum();
             extractedFeatures.addAll(extractFeaturesFromProperties(extractedPropertyMap));
           } catch (IOException ioException) {
-            ioException.printStackTrace();
+            logOutput += Throwables.getStackTraceAsString(ioException) + "\n";
+            updateMessage(logOutput);
           }
           if (isCancelled()) {
+            logOutput += "Operation cancelled by User\n";
+            updateMessage(logOutput);
             break;
           }
           updateProgress(++i, newMax);
           updateTitle("Extracted Features out of File, Step "+ i + "/" + newMax);
         }
-        updateMessage("-------------------------------------------------------------------------------");
-        updateMessage("Extracted " + extractedIfcProperties + " out of the " + ifcFiles.size() + " ifcFiles");
-        updateMessage("Parsed " + extractedFeatures.size() + " jsonFeatures");
-        updateMessage("into File: " + new File(outputFileName).getAbsolutePath());
-        updateMessage("-------------------------------------------------------------------------------");
-
-        updateMessage("EXITING, converted " + hdtData.size() + "/" + ifcFiles.size());
+        logOutput +=
+        "-------------------------------------------------------------------------------\n" +
+        "Extracted " + extractedIfcProperties + " out of the " + ifcFiles.size() + " ifcFiles\n" +
+        "Parsed " + extractedFeatures.size() + " jsonFeatures\n" +
+        "into File: " + new File(outputFileName).getAbsolutePath() + "\n" +
+        "-------------------------------------------------------------------------------\n\n"+"EXITING, converted " + hdtData.size() + "/" + ifcFiles.size()+"\n";
+        updateMessage(logOutput);
         if (hdtData.size() != ifcFiles.size()) {
-          updateMessage(
-                  "Not all Files could be converted, look in the log above to find out why");
+          logOutput +=
+                  "Not all Files could be converted, look in the log above to find out why\n";
+          updateMessage(logOutput);
         }
 
         //EXTRACTED METHOD END
-        return extractedFeatures;
+        return new ExtractResult(extractedFeatures, logOutput);
       }
     };
   }

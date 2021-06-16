@@ -3,6 +3,7 @@ package at.researchstudio.sat.mmsdesktop.controller;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
+import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import com.google.gson.Gson;
@@ -60,14 +61,16 @@ public class ExtractController implements Initializable {
   @FXML private Label lProgressInfo;
   @FXML private FlowPane fpResult;
   @FXML private JFXTextArea taExtractedFeatures;
+  @FXML private JFXTextArea taExtractLogOutput;
   @FXML private JFXButton bSaveFile;
+  @FXML private JFXButton bSaveLog;
 
   private FileChooser saveFileChooser;
   private FileChooser fileChooser;
   private DirectoryChooser directoryChooser;
   private Set<FileWrapper> selectedIfcFiles;
 
-  private List<Feature> extractedFeatures;
+  private ExtractResult extractResult;
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -120,12 +123,28 @@ public class ExtractController implements Initializable {
 
     if (Objects.nonNull(file)) {
       try {
-        Utils.writeToJson(file.getAbsolutePath(), extractedFeatures);
+        Utils.writeToJson(file.getAbsolutePath(), extractResult.getExtractedFeatures());
       } catch (IOException ioException) {
         ioException.printStackTrace();
       }
       //TODO: DISABLE/ENABLE BUTTONS ACCORDINGLY (Add Save Success Message incl. file path)
     }
+  }
+
+  @FXML
+  public void handleSaveLogAction(ActionEvent actionEvent) {
+    //TODO: IMPL FIRST
+    /*File file =
+            saveFileChooser.showSaveDialog(borderPane.getScene().getWindow());
+
+    if (Objects.nonNull(file)) {
+      try {
+        Utils.writeToJson(file.getAbsolutePath(), extractResult.getExtractedFeatures());
+      } catch (IOException ioException) {
+        ioException.printStackTrace();
+      }
+      //TODO: DISABLE/ENABLE BUTTONS ACCORDINGLY (Add Save Success Message incl. file path)
+    }*/
   }
 
   @FXML
@@ -158,17 +177,20 @@ public class ExtractController implements Initializable {
         new EventHandler<WorkerStateEvent>() {
           @Override
           public void handle(WorkerStateEvent t) {
-              extractedFeatures = (List<Feature>) task.getValue();
-              logger.debug("EXTRACTED: " + extractedFeatures.size() + " Features");
+              extractResult = (ExtractResult) task.getValue();
+              logger.debug("EXTRACTED: " + extractResult.getExtractedFeatures().size() + " Features");
               //TODO: DO SOMETHING WITH THE RESULTS
 
               fpProgress.setVisible(false);
               fpProgress.setManaged(false);
               Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-              taExtractedFeatures.setText(gson.toJson(extractedFeatures));
+              taExtractedFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
+              taExtractLogOutput.setText(extractResult.getLogOutput());
               fpResult.setVisible(true);
               fpResult.setManaged(true);
 
+              bSaveLog.setVisible(true);
+              bSaveLog.setManaged(true);
               bSaveFile.setVisible(true);
               bSaveFile.setManaged(true);
           }
