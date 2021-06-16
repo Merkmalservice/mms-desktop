@@ -9,6 +9,7 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.IfcUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
+import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtUnit;
 import javafx.concurrent.Task;
@@ -28,17 +29,14 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PropertyExtractor {
   private static final Logger logger =
           LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static Task generateIfcFileToJsonTask(boolean keepTempFiles, String outputFileName, List<File> ifcFiles) {
+  public static Task generateIfcFileToJsonTask(boolean keepTempFiles, String outputFileName, List<File> ifcFiles, final ResourceBundle resourceBundle) {
     return new Task<ExtractResult>() {
       @Override public ExtractResult call() {
         StringBuilder logOutput = new StringBuilder();
@@ -50,8 +48,7 @@ public class PropertyExtractor {
         List<HDT> hdtData = new ArrayList<>();
 
         int i = 0;
-        updateProgress(i, max);
-        updateTitle("Starting Extraction");
+        updateTitle(MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.process.start"));
         for (File ifcFile : ifcFiles) {
           File tempOutputFile =
                   new File(
@@ -76,7 +73,7 @@ public class PropertyExtractor {
             break;
           }
           updateProgress(i, max);
-          updateTitle("Converted IFC to HDT, Step "+ i + "/" + max);
+          updateTitle(MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.process.ifc2hdt", i, max));
         }
 
         List<Feature> extractedFeatures = new ArrayList<>();
@@ -104,7 +101,7 @@ public class PropertyExtractor {
             break;
           }
           updateProgress(++i, newMax);
-          updateTitle("Extracted Features out of File, Step "+ i + "/" + newMax);
+          updateTitle(MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.process.features", i, newMax));
         }
         logOutput.append(
         "-------------------------------------------------------------------------------\n" +

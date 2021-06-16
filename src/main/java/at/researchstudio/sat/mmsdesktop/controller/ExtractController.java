@@ -1,16 +1,15 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
-import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
+import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jfoenix.controls.*;
 import javafx.application.Platform;
-import javafx.beans.value.ObservableBooleanValue;
 import javafx.concurrent.Task;
 import javafx.collections.FXCollections;
 import javafx.concurrent.WorkerStateEvent;
@@ -21,7 +20,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -138,7 +136,7 @@ public class ExtractController implements Initializable {
     if (Objects.nonNull(file)) {
       try {
         Utils.writeToJson(file.getAbsolutePath(), extractResult.getExtractedFeatures());
-        final String message = MessageFormat.format(resourceBundle.getString("label.extract.export.success"), file.getAbsolutePath());
+        final String message = MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.export.success", file.getAbsolutePath());
 
         Platform.runLater(() -> {
           snackbar.fireEvent(new JFXSnackbar.SnackbarEvent(new JFXSnackbarLayout(message), Duration.seconds(5), null));
@@ -160,7 +158,7 @@ public class ExtractController implements Initializable {
     if (Objects.nonNull(file)) {
       try {
         Files.writeString(file.toPath(), extractResult.getLogOutput(), StandardCharsets.UTF_8);
-        final String message = MessageFormat.format(resourceBundle.getString("label.extract.exportLog.success"), file.getAbsolutePath());
+        final String message = MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.exportLog.success", file.getAbsolutePath());
 
         Platform.runLater(() -> {
           snackbar.fireEvent(new JFXSnackbar.SnackbarEvent(new JFXSnackbarLayout(message), Duration.seconds(5), null));
@@ -196,7 +194,7 @@ public class ExtractController implements Initializable {
     bpProgress.setVisible(true);
     bpProgress.setManaged(true);
 
-    Task task = PropertyExtractor.generateIfcFileToJsonTask(false, "extracted-features.json", selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()));
+    Task task = PropertyExtractor.generateIfcFileToJsonTask(false, "extracted-features.json", selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()), resourceBundle);
 
     task.addEventHandler(
         WorkerStateEvent.WORKER_STATE_SUCCEEDED,
