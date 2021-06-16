@@ -63,6 +63,7 @@ public class ExtractController implements Initializable {
   @FXML private JFXTextArea taExtractLogOutput;
   @FXML private JFXButton bSaveFile;
   @FXML private JFXButton bSaveLog;
+  @FXML private JFXButton bReset;
 
   private FileChooser saveFileChooser;
   private FileChooser saveLogFileChooser;
@@ -87,15 +88,14 @@ public class ExtractController implements Initializable {
     saveFileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
 
     saveLogFileChooser = new FileChooser();
-    saveFileChooser.setInitialFileName("extraction-log.txt");
-    saveFileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+    saveLogFileChooser.setInitialFileName("extraction-log.txt");
+    saveLogFileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
 
     directoryChooser = new DirectoryChooser();
     selectedIfcFiles = new HashSet<>();
     ifcFileTable.setItems(FXCollections.observableArrayList(selectedIfcFiles));
 
     snackbar = new JFXSnackbar(borderPane);
-    snackbar.setStyle("-fx-text-fill: white; -fx-background-color: black"); //TODO: Update SnackBar Style
   }
 
   @FXML
@@ -179,6 +179,36 @@ public class ExtractController implements Initializable {
     bExtract.setDisable(true);
   }
 
+  @FXML
+  public void handleResetAction(ActionEvent actionEvent) {
+    handleClearListAction(actionEvent);
+    extractResult = null;
+
+    bExtract.setVisible(true);
+    bExtract.setManaged(true);
+    hbFileActions.setVisible(true);
+    hbFileActions.setManaged(true);
+    ifcFileTable.setVisible(true);
+
+    bpProgress.setVisible(false);
+    bpProgress.setManaged(false);
+
+    taExtractedFeatures.setText("");
+    taExtractLogOutput.setText("");
+    tpResult.setVisible(false);
+    tpResult.setManaged(false);
+
+    bSaveLog.setVisible(false);
+    bSaveLog.setManaged(false);
+    bSaveFile.setVisible(false);
+    bSaveFile.setManaged(false);
+    bReset.setVisible(false);
+    bReset.setManaged(false);
+    pbExtraction.progressProperty().unbind();
+    lProgressInfo.textProperty().unbind();
+    taProgressLog.textProperty().unbind();
+  }
+
   /*@FXML
   public void handleRemoveSelectedEntryAction(ActionEvent actionEvent) {
   }*/
@@ -215,6 +245,8 @@ public class ExtractController implements Initializable {
               bSaveLog.setManaged(true);
               bSaveFile.setVisible(true);
               bSaveFile.setManaged(true);
+              bReset.setVisible(true);
+              bReset.setManaged(true);
           }
         });
 
