@@ -44,22 +44,27 @@ public class ExtractController implements Initializable {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  @FXML private JFXButton bClearList;
-  @FXML private JFXButton bExtract;
   // @FXML private JFXButton bRemoveSelectedEntry;
-  @FXML private BorderPane borderPane;
-  @FXML private TableView ifcFileTable;
-  @FXML private HBox hbFileActions;
-  @FXML private BorderPane bpProgress;
-  @FXML private JFXProgressBar pbExtraction;
-  @FXML private JFXTextArea taProgressLog;
-  @FXML private Label lProgressInfo;
-  @FXML private JFXTabPane tpResult;
-  @FXML private JFXTextArea taExtractedFeatures;
-  @FXML private JFXTextArea taExtractLogOutput;
-  @FXML private JFXButton bSaveFile;
-  @FXML private JFXButton bSaveLog;
-  @FXML private JFXButton bReset;
+  @FXML private JFXButton topPickFilesClearList;
+  @FXML private JFXButton bottomPickFilesExtract;
+
+  @FXML private JFXProgressBar centerProgressProgressBar;
+  @FXML private JFXTextArea centerProgressLog;
+  @FXML private Label centerProgressProgressInfo;
+  @FXML private JFXTextArea centerResultFeatures;
+  @FXML private JFXTextArea centerResultLog;
+
+  //BorderPane Elements
+  @FXML private BorderPane parentPane;
+
+  @FXML private HBox topPickFiles;
+
+  @FXML private TableView centerPickFiles;
+  @FXML private BorderPane centerProgress;
+  @FXML private JFXTabPane centerResults;
+
+  @FXML private HBox bottomResults;
+  @FXML private HBox bottomPickFiles;
 
   private FileChooser saveFileChooser;
   private FileChooser saveLogFileChooser;
@@ -93,22 +98,22 @@ public class ExtractController implements Initializable {
 
     directoryChooser = new DirectoryChooser();
     selectedIfcFiles = new HashSet<>();
-    ifcFileTable.setItems(FXCollections.observableArrayList(selectedIfcFiles));
+    centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
 
-    snackbar = new JFXSnackbar(borderPane);
+    snackbar = new JFXSnackbar(parentPane);
   }
 
   @FXML
   public void handlePickDirectoryAction(ActionEvent actionEvent) {
-    File selectedDirectory = directoryChooser.showDialog(borderPane.getScene().getWindow());
+    File selectedDirectory = directoryChooser.showDialog(parentPane.getScene().getWindow());
     try {
       List<File> selectedFiles = FileUtils.getIfcFilesFromDirectory(selectedDirectory);
       if (selectedFiles.size() > 0) {
         selectedIfcFiles.addAll(
             selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
-        ifcFileTable.setItems(FXCollections.observableArrayList(selectedIfcFiles));
-        bClearList.setDisable(false);
-        bExtract.setDisable(false);
+        centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
+        topPickFilesClearList.setDisable(false);
+        bottomPickFilesExtract.setDisable(false);
       }
     } catch (FileNotFoundException | NotDirectoryException e) {
       logger.warn("No Valid Directory selected");
@@ -118,19 +123,19 @@ public class ExtractController implements Initializable {
   @FXML
   public void handlePickFileAction(ActionEvent actionEvent) {
     List<File> selectedFiles =
-        fileChooser.showOpenMultipleDialog(borderPane.getScene().getWindow());
+        fileChooser.showOpenMultipleDialog(parentPane.getScene().getWindow());
     if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
       selectedIfcFiles.addAll(
           selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
-      ifcFileTable.setItems(FXCollections.observableArrayList(selectedIfcFiles));
-      bClearList.setDisable(false);
-      bExtract.setDisable(false);
+      centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
+      topPickFilesClearList.setDisable(false);
+      bottomPickFilesExtract.setDisable(false);
     }
   }
 
   @FXML
   public void handleSaveFileAction(ActionEvent actionEvent) {
-    File file = saveFileChooser.showSaveDialog(borderPane.getScene().getWindow());
+    File file = saveFileChooser.showSaveDialog(parentPane.getScene().getWindow());
 
     if (Objects.nonNull(file)) {
       try {
@@ -148,15 +153,14 @@ public class ExtractController implements Initializable {
 
       } catch (IOException ioException) {
         ioException.printStackTrace();
+        //TODO: SHOW ERROR
       }
-      // TODO: DISABLE/ENABLE BUTTONS ACCORDINGLY (Add Save Success Message incl. file path)
     }
   }
 
   @FXML
   public void handleSaveLogAction(ActionEvent actionEvent) {
-
-    File file = saveLogFileChooser.showSaveDialog(borderPane.getScene().getWindow());
+    File file = saveLogFileChooser.showSaveDialog(parentPane.getScene().getWindow());
 
     if (Objects.nonNull(file)) {
       try {
@@ -174,17 +178,17 @@ public class ExtractController implements Initializable {
 
       } catch (IOException ioException) {
         ioException.printStackTrace();
+        //TODO: SHOW ERROR
       }
-      // TODO: DISABLE/ENABLE BUTTONS ACCORDINGLY (Add Save Success Message incl. file path)
     }
   }
 
   @FXML
   public void handleClearListAction(ActionEvent actionEvent) {
     selectedIfcFiles.clear();
-    ifcFileTable.setItems(FXCollections.observableArrayList(selectedIfcFiles));
-    bClearList.setDisable(true);
-    bExtract.setDisable(true);
+    centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
+    topPickFilesClearList.setDisable(true);
+    bottomPickFilesExtract.setDisable(true);
   }
 
   @FXML
@@ -192,29 +196,27 @@ public class ExtractController implements Initializable {
     handleClearListAction(actionEvent);
     extractResult = null;
 
-    bExtract.setVisible(true);
-    bExtract.setManaged(true);
-    hbFileActions.setVisible(true);
-    hbFileActions.setManaged(true);
-    ifcFileTable.setVisible(true);
+    bottomPickFiles.setVisible(true);
+    bottomPickFiles.setManaged(true);
 
-    bpProgress.setVisible(false);
-    bpProgress.setManaged(false);
+    topPickFiles.setVisible(true);
+    topPickFiles.setManaged(true);
+    centerPickFiles.setVisible(true);
 
-    taExtractedFeatures.setText("");
-    taExtractLogOutput.setText("");
-    tpResult.setVisible(false);
-    tpResult.setManaged(false);
+    centerProgress.setVisible(false);
+    centerProgress.setManaged(false);
 
-    bSaveLog.setVisible(false);
-    bSaveLog.setManaged(false);
-    bSaveFile.setVisible(false);
-    bSaveFile.setManaged(false);
-    bReset.setVisible(false);
-    bReset.setManaged(false);
-    pbExtraction.progressProperty().unbind();
-    lProgressInfo.textProperty().unbind();
-    taProgressLog.textProperty().unbind();
+    centerResultFeatures.setText("");
+    centerResultLog.setText("");
+    centerResults.setVisible(false);
+    centerResults.setManaged(false);
+
+    centerProgressProgressBar.progressProperty().unbind();
+    centerProgressProgressInfo.textProperty().unbind();
+    centerProgressLog.textProperty().unbind();
+
+    bottomResults.setVisible(false);
+    bottomResults.setManaged(false);
   }
 
   /*@FXML
@@ -223,14 +225,15 @@ public class ExtractController implements Initializable {
 
   @FXML
   public void handleConvertAction(ActionEvent actionEvent) {
-    bExtract.setVisible(false);
-    bExtract.setManaged(false);
-    hbFileActions.setVisible(false);
-    hbFileActions.setManaged(false);
-    ifcFileTable.setVisible(false);
+    bottomPickFiles.setVisible(false);
+    bottomPickFiles.setManaged(false);
 
-    bpProgress.setVisible(true);
-    bpProgress.setManaged(true);
+    topPickFiles.setVisible(false);
+    topPickFiles.setManaged(false);
+    centerPickFiles.setVisible(false);
+
+    centerProgress.setVisible(true);
+    centerProgress.setManaged(true);
 
     Task task =
         PropertyExtractor.generateIfcFileToJsonTask(
@@ -246,28 +249,24 @@ public class ExtractController implements Initializable {
           public void handle(WorkerStateEvent t) {
             extractResult = (ExtractResult) task.getValue();
 
-            bpProgress.setVisible(false);
-            bpProgress.setManaged(false);
+            centerProgress.setVisible(false);
+            centerProgress.setManaged(false);
             Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-            taExtractedFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
-            taExtractLogOutput.setText(extractResult.getLogOutput());
-            tpResult.setVisible(true);
-            tpResult.setManaged(true);
+            centerResultFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
+            centerResultLog.setText(extractResult.getLogOutput());
+            centerResults.setVisible(true);
+            centerResults.setManaged(true);
 
-            bSaveLog.setVisible(true);
-            bSaveLog.setManaged(true);
-            bSaveFile.setVisible(true);
-            bSaveFile.setManaged(true);
-            bReset.setVisible(true);
-            bReset.setManaged(true);
+            bottomResults.setVisible(true);
+            bottomResults.setManaged(true);
           }
         });
 
-    pbExtraction.progressProperty().bind(task.progressProperty());
-    lProgressInfo.textProperty().bind(task.titleProperty());
-    taProgressLog
+    centerProgressProgressBar.progressProperty().bind(task.progressProperty());
+    centerProgressProgressInfo.textProperty().bind(task.titleProperty());
+    centerProgressLog
         .textProperty()
-        .bind(task.messageProperty()); // TODO: Overwrites Message to append use a changelistener
+        .bind(task.messageProperty());
     new Thread(task).start();
   }
 }
