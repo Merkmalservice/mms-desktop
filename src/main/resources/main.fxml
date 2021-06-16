@@ -21,7 +21,7 @@
         </stylesheets>
             <MenuBar fx:id="menuBar" onKeyPressed="#handleKeyInput">
                 <Menu text="App">
-                    <MenuItem text="%label.settings" onAction="#handleSettingsAction" />
+                    <MenuItem text="%label.settings" onAction="#handleSettingsAction" disable="true"/>
                     <SeparatorMenuItem/>
                     <MenuItem text="%label.exit" onAction="#handleExitAction"/>
                 </Menu>
