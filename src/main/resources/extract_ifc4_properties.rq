@@ -1,5 +1,5 @@
 PREFIX express: <https://w3id.org/express#>
-PREFIX ifcowl:  <https://standards.buildingsmart.org/IFC/DEV/IFC4/ADD2_TC1/OWL#>
+PREFIX ifcowl:  <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#>
 
 # TODO units are not yet retrieved for the individual properties, only the project units are used (see extract_ifc_2x3_projectunits.rq for the query)
 # this is due to the fact that none of our available ifc files have set the (optional) unit in the properties and thus the project units will be used
