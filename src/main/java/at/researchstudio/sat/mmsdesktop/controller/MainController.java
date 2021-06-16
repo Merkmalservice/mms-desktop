@@ -31,6 +31,8 @@ public class MainController implements Initializable {
   @Value("classpath:/settings.fxml")
   private Resource settingsResource;
 
+  private ResourceBundle resourceBundle;
+
   @FXML private MenuBar menuBar;
 
   @FXML private BorderPane mainPane;
@@ -109,13 +111,14 @@ public class MainController implements Initializable {
 
   @Override
   public void initialize(java.net.URL arg0, ResourceBundle resources) {
+    this.resourceBundle = resources;
     menuBar.setFocusTraversable(true);
   }
 
   private void switchCenterPane(Resource resource) {
     try {
       FXMLLoader fxmlLoader = new FXMLLoader(resource.getURL());
-      fxmlLoader.setResources(ResourceBundle.getBundle("messages", Locale.getDefault())); //set Default Locale to System default
+      fxmlLoader.setResources(resourceBundle); //set Default Locale to System default
 
       mainPane.setCenter(fxmlLoader.load());
     } catch (IOException e) {
