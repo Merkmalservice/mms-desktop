@@ -85,6 +85,12 @@
                             <PropertyValueFactory property="path"/>
                         </cellValueFactory>
                     </TableColumn>
+                    <TableColumn editable="false" prefWidth="200.0"
+                                 sortType="DESCENDING" text="%label.file.ifcVersion">
+                        <cellValueFactory>
+                            <PropertyValueFactory property="ifcVersion"/>
+                        </cellValueFactory>
+                    </TableColumn>
                 </columns>
             </TableView>
             <FlowPane fx:id="fpProgress" visible="false" managed="false" alignment="CENTER" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
