@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXProgressBar;
+import com.jfoenix.controls.JFXTabPane;
 import com.jfoenix.controls.JFXTextArea;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.concurrent.Task;
@@ -35,7 +36,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,17 +59,18 @@ public class ExtractController implements Initializable {
   @FXML private JFXButton bPickDirectory;
   @FXML private TableView ifcFileTable;
   @FXML private HBox hbFileActions;
-  @FXML private FlowPane fpProgress;
+  @FXML private BorderPane bpProgress;
   @FXML private JFXProgressBar pbExtraction;
   @FXML private JFXTextArea taProgressLog;
   @FXML private Label lProgressInfo;
-  @FXML private FlowPane fpResult;
+  @FXML private JFXTabPane tpResult;
   @FXML private JFXTextArea taExtractedFeatures;
   @FXML private JFXTextArea taExtractLogOutput;
   @FXML private JFXButton bSaveFile;
   @FXML private JFXButton bSaveLog;
 
   private FileChooser saveFileChooser;
+  private FileChooser saveLogFileChooser;
   private FileChooser fileChooser;
   private DirectoryChooser directoryChooser;
   private Set<FileWrapper> selectedIfcFiles;
@@ -80,6 +85,10 @@ public class ExtractController implements Initializable {
     saveFileChooser = new FileChooser();
     saveFileChooser.setInitialFileName("extracted-features.json");
     saveFileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+
+    saveLogFileChooser = new FileChooser();
+    saveFileChooser.setInitialFileName("extraction-log.txt");
+    saveFileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
 
     directoryChooser = new DirectoryChooser();
     selectedIfcFiles = new HashSet<>();
@@ -133,18 +142,18 @@ public class ExtractController implements Initializable {
 
   @FXML
   public void handleSaveLogAction(ActionEvent actionEvent) {
-    //TODO: IMPL FIRST
-    /*File file =
-            saveFileChooser.showSaveDialog(borderPane.getScene().getWindow());
+
+    File file =
+            saveLogFileChooser.showSaveDialog(borderPane.getScene().getWindow());
 
     if (Objects.nonNull(file)) {
       try {
-        Utils.writeToJson(file.getAbsolutePath(), extractResult.getExtractedFeatures());
+        Files.writeString(file.toPath(), extractResult.getLogOutput(), StandardCharsets.UTF_8);
       } catch (IOException ioException) {
         ioException.printStackTrace();
       }
       //TODO: DISABLE/ENABLE BUTTONS ACCORDINGLY (Add Save Success Message incl. file path)
-    }*/
+    }
   }
 
   @FXML
@@ -167,8 +176,8 @@ public class ExtractController implements Initializable {
     hbFileActions.setManaged(false);
     ifcFileTable.setVisible(false);
 
-    fpProgress.setVisible(true);
-    fpProgress.setManaged(true);
+    bpProgress.setVisible(true);
+    bpProgress.setManaged(true);
 
     Task task = PropertyExtractor.generateIfcFileToJsonTask(false, "extracted-features.json", selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()));
 
@@ -178,16 +187,14 @@ public class ExtractController implements Initializable {
           @Override
           public void handle(WorkerStateEvent t) {
               extractResult = (ExtractResult) task.getValue();
-              logger.debug("EXTRACTED: " + extractResult.getExtractedFeatures().size() + " Features");
-              //TODO: DO SOMETHING WITH THE RESULTS
 
-              fpProgress.setVisible(false);
-              fpProgress.setManaged(false);
+              bpProgress.setVisible(false);
+              bpProgress.setManaged(false);
               Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
               taExtractedFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
               taExtractLogOutput.setText(extractResult.getLogOutput());
-              fpResult.setVisible(true);
-              fpResult.setManaged(true);
+              tpResult.setVisible(true);
+              tpResult.setManaged(true);
 
               bSaveLog.setVisible(true);
               bSaveLog.setManaged(true);

@@ -41,7 +41,7 @@ public class PropertyExtractor {
   public static Task generateIfcFileToJsonTask(boolean keepTempFiles, String outputFileName, List<File> ifcFiles) {
     return new Task<ExtractResult>() {
       @Override public ExtractResult call() {
-        String logOutput = "";
+        StringBuilder logOutput = new StringBuilder();
 
         final int max = ifcFiles.size() * 2;
         //TODO: Adapt Properties
@@ -60,19 +60,19 @@ public class PropertyExtractor {
                                   + ".ttl");
           try {
             hdtData.add(IFC2HDTConverter.readFromFile(keepTempFiles, ifcFile, tempOutputFile));
-            logOutput += "Converted " + (++i) + "/" + ifcFiles.size() + " Files to HDT\n";
-            updateMessage(logOutput);
+            logOutput.append("Converted " + (++i) + "/" + ifcFiles.size() + " Files to HDT\n");
+            updateMessage(logOutput.toString());
           } catch (Exception e) {
-            logOutput += "Can't convert file: "
+            logOutput.append("Can't convert file: "
                     + ifcFile.getAbsolutePath()
                     + " Reason: "
                     + e.getMessage()
-                    + "\n";
-            updateMessage(logOutput);
+                    + "\n");
+            updateMessage(logOutput.toString());
           }
           if (isCancelled()) {
-            logOutput += "Operation cancelled by User\n";
-            updateMessage(logOutput);
+            logOutput.append("Operation cancelled by User\n");
+            updateMessage(logOutput.toString());
             break;
           }
           updateProgress(i, max);
@@ -91,34 +91,36 @@ public class PropertyExtractor {
             extractedIfcProperties += extractedPropertyMap.values().stream()
                     .mapToInt(Collection::size)
                     .sum();
-            extractedFeatures.addAll(extractFeaturesFromProperties(extractedPropertyMap));
+            ExtractResult partialExtractResult = extractFeaturesFromProperties(extractedPropertyMap);
+            extractedFeatures.addAll(partialExtractResult.getExtractedFeatures());
+            logOutput.append(partialExtractResult.getLogOutput());
           } catch (IOException ioException) {
-            logOutput += Throwables.getStackTraceAsString(ioException) + "\n";
-            updateMessage(logOutput);
+            logOutput.append(Throwables.getStackTraceAsString(ioException) + "\n");
           }
+          updateMessage(logOutput.toString());
           if (isCancelled()) {
-            logOutput += "Operation cancelled by User\n";
-            updateMessage(logOutput);
+            logOutput.append("Operation cancelled by User\n");
+            updateMessage(logOutput.toString());
             break;
           }
           updateProgress(++i, newMax);
           updateTitle("Extracted Features out of File, Step "+ i + "/" + newMax);
         }
-        logOutput +=
+        logOutput.append(
         "-------------------------------------------------------------------------------\n" +
         "Extracted " + extractedIfcProperties + " out of the " + ifcFiles.size() + " ifcFiles\n" +
         "Parsed " + extractedFeatures.size() + " jsonFeatures\n" +
         "into File: " + new File(outputFileName).getAbsolutePath() + "\n" +
-        "-------------------------------------------------------------------------------\n\n"+"EXITING, converted " + hdtData.size() + "/" + ifcFiles.size()+"\n";
-        updateMessage(logOutput);
+        "-------------------------------------------------------------------------------\n\n"+"EXITING, converted " + hdtData.size() + "/" + ifcFiles.size()+"\n");
+        updateMessage(logOutput.toString());
         if (hdtData.size() != ifcFiles.size()) {
-          logOutput +=
-                  "Not all Files could be converted, look in the log above to find out why\n";
-          updateMessage(logOutput);
+          logOutput.append(
+                  "Not all Files could be converted, look in the log above to find out why\n");
+          updateMessage(logOutput.toString());
         }
 
         //EXTRACTED METHOD END
-        return new ExtractResult(extractedFeatures, logOutput);
+        return new ExtractResult(extractedFeatures, logOutput.toString());
       }
     };
   }
@@ -189,16 +191,17 @@ public class PropertyExtractor {
     }
   }
 
-  private static List<Feature> extractFeaturesFromProperties(
+  private static ExtractResult extractFeaturesFromProperties(
           Map<IfcPropertyType, List<IfcProperty>> extractedProperties) {
     List<Feature> extractedFeatures = new ArrayList<>();
+    StringBuilder fullLog = new StringBuilder();
     for (Map.Entry<IfcPropertyType, List<IfcProperty>> entry : extractedProperties.entrySet()) {
       IfcPropertyType ifcPropertyType = entry.getKey();
       String logString = entry.getValue().size() + " " + ifcPropertyType + " Properties";
       switch (ifcPropertyType) {
         case EXPRESS_BOOL:
         case BOOL:
-          logger.debug(logString);
+          fullLog.append(logString).append(System.getProperty("line.separator"));
           extractedFeatures.addAll(
                   entry.getValue().stream()
                           .map(ifcProperty -> new BooleanFeature(ifcProperty.getName()))
@@ -206,14 +209,14 @@ public class PropertyExtractor {
           break;
         case TEXT:
         case LABEL:
-          logger.debug(logString);
+          fullLog.append(logString).append(System.getProperty("line.separator"));
           extractedFeatures.addAll(
                   entry.getValue().stream()
                           .map(ifcProperty -> new StringFeature(ifcProperty.getName()))
                           .collect(Collectors.toList()));
           break;
         case VOLUME_MEASURE:
-          logger.debug(logString);
+          fullLog.append(logString).append(System.getProperty("line.separator"));
           extractedFeatures.addAll(
                   entry.getValue().stream()
                           .map(
@@ -226,7 +229,7 @@ public class PropertyExtractor {
                           .collect(Collectors.toList()));
           break;
         case AREA_MEASURE:
-          logger.debug(logString);
+          fullLog.append(logString).append(System.getProperty("line.separator"));
           extractedFeatures.addAll(
                   entry.getValue().stream()
                           .map(
@@ -240,7 +243,7 @@ public class PropertyExtractor {
           break;
         case LENGTH_MEASURE:
         case POSITIVE_LENGTH_MEASURE:
-          logger.debug(logString);
+          fullLog.append(logString).append(System.getProperty("line.separator"));
           extractedFeatures.addAll(
                   entry.getValue().stream()
                           .map(
@@ -254,12 +257,12 @@ public class PropertyExtractor {
                           .collect(Collectors.toList()));
           break;
         default:
-          logger.error(logString + ", will be ignored, no matching Feature-Type determined yet for:");
-          entry.getValue().forEach(property -> logger.error(property.toString()));
-          logger.error("-------------------------------------------------------------------------");
+          fullLog.append(logString).append(", will be ignored, no matching Feature-Type determined yet for:").append(System.getProperty("line.separator"));
+          entry.getValue().forEach(property -> fullLog.append(property.toString()).append(System.getProperty("line.separator")));
+          fullLog.append("-------------------------------------------------------------------------").append(System.getProperty("line.separator"));
           break;
       }
     }
-    return extractedFeatures;
+    return new ExtractResult(extractedFeatures, fullLog.toString());
   }
 }
