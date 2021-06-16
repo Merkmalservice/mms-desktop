@@ -22,6 +22,16 @@
             <id>github</id>
             <repositories>
                 <repository>
+                    <id>markdown-viewer</id>
+                    <url>https://sandec.jfrog.io/artifactory/repo</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
                     <id>central</id>
                     <url>https://repo1.maven.org/maven2</url>
                     <releases>
@@ -88,7 +98,11 @@
             <artifactId>merkmalservice-utils</artifactId>
             <version>0.1.6</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.sandec</groupId>
+            <artifactId>mdfx</artifactId>
+            <version>0.2.3</version>
+        </dependency>
         <dependency>
             <groupId>eu.wdaqua</groupId>
             <artifactId>hdt-jena</artifactId>

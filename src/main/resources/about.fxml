@@ -6,7 +6,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="borderPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16"
+<?import com.sandec.mdfx.MarkdownView?>
+<BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="at.researchstudio.sat.mmsdesktop.controller.AboutController">
     <BorderPane.margin>
@@ -26,10 +27,28 @@
     </top>
     <center>
         <AnchorPane>
-            <JFXTextArea fx:id="taAboutText" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                       AnchorPane.bottomAnchor="0.0"
-                       AnchorPane.leftAnchor="0.0" text="TODO: ABOUTTEXT">
-            </JFXTextArea>
+            <MarkdownView fx:id="centerAboutMarkdown" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                          AnchorPane.bottomAnchor="0.0"
+                          AnchorPane.leftAnchor="0.0" mdString="# Merkmalservice Desktop App
+
+## Requirements
+- Java 11 or higher
+
+## Architecture
+- Spring Boot Application
+- JavaFX UI (Version 13)
+- Maven
+- [JFoenix (JFX Component Library)](http://www.jfoenix.com/)
+
+## How to Start (for now)
+1. Checkout Project
+2. `mvn spring-boot:run`
+
+## How to Package as executable jar (for now)
+1. Checkout Project
+2. mvn clean install spring-boot:repackage
+3. execute `target/mms-desktop-spring-boot.jar` directly
+"/>
         </AnchorPane>
     </center>
 </BorderPane>
