@@ -36,22 +36,18 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 public class ExtractController implements Initializable {
   private static final Logger logger =
-          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @FXML private JFXButton bClearList;
   @FXML private JFXButton bExtract;
-  //@FXML private JFXButton bRemoveSelectedEntry;
+  // @FXML private JFXButton bRemoveSelectedEntry;
   @FXML private BorderPane borderPane;
-  @FXML private JFXButton bPickFile;
-  @FXML private JFXButton bPickDirectory;
   @FXML private TableView ifcFileTable;
   @FXML private HBox hbFileActions;
   @FXML private BorderPane bpProgress;
@@ -85,11 +81,15 @@ public class ExtractController implements Initializable {
 
     saveFileChooser = new FileChooser();
     saveFileChooser.setInitialFileName("extracted-features.json");
-    saveFileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
+    saveFileChooser
+        .getExtensionFilters()
+        .addAll(new FileChooser.ExtensionFilter("JSON Files", "*.json"));
 
     saveLogFileChooser = new FileChooser();
     saveLogFileChooser.setInitialFileName("extraction-log.txt");
-    saveLogFileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+    saveLogFileChooser
+        .getExtensionFilters()
+        .addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
 
     directoryChooser = new DirectoryChooser();
     selectedIfcFiles = new HashSet<>();
@@ -130,44 +130,52 @@ public class ExtractController implements Initializable {
 
   @FXML
   public void handleSaveFileAction(ActionEvent actionEvent) {
-    File file =
-            saveFileChooser.showSaveDialog(borderPane.getScene().getWindow());
+    File file = saveFileChooser.showSaveDialog(borderPane.getScene().getWindow());
 
     if (Objects.nonNull(file)) {
       try {
         Utils.writeToJson(file.getAbsolutePath(), extractResult.getExtractedFeatures());
-        final String message = MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.export.success", file.getAbsolutePath());
+        final String message =
+            MessageUtils.getKeyWithParameters(
+                resourceBundle, "label.extract.export.success", file.getAbsolutePath());
 
-        Platform.runLater(() -> {
-          snackbar.fireEvent(new JFXSnackbar.SnackbarEvent(new JFXSnackbarLayout(message), Duration.seconds(5), null));
-        });
+        Platform.runLater(
+            () -> {
+              snackbar.fireEvent(
+                  new JFXSnackbar.SnackbarEvent(
+                      new JFXSnackbarLayout(message), Duration.seconds(5), null));
+            });
 
       } catch (IOException ioException) {
         ioException.printStackTrace();
       }
-      //TODO: DISABLE/ENABLE BUTTONS ACCORDINGLY (Add Save Success Message incl. file path)
+      // TODO: DISABLE/ENABLE BUTTONS ACCORDINGLY (Add Save Success Message incl. file path)
     }
   }
 
   @FXML
   public void handleSaveLogAction(ActionEvent actionEvent) {
 
-    File file =
-            saveLogFileChooser.showSaveDialog(borderPane.getScene().getWindow());
+    File file = saveLogFileChooser.showSaveDialog(borderPane.getScene().getWindow());
 
     if (Objects.nonNull(file)) {
       try {
         Files.writeString(file.toPath(), extractResult.getLogOutput(), StandardCharsets.UTF_8);
-        final String message = MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.exportLog.success", file.getAbsolutePath());
+        final String message =
+            MessageUtils.getKeyWithParameters(
+                resourceBundle, "label.extract.exportLog.success", file.getAbsolutePath());
 
-        Platform.runLater(() -> {
-          snackbar.fireEvent(new JFXSnackbar.SnackbarEvent(new JFXSnackbarLayout(message), Duration.seconds(5), null));
-        });
+        Platform.runLater(
+            () -> {
+              snackbar.fireEvent(
+                  new JFXSnackbar.SnackbarEvent(
+                      new JFXSnackbarLayout(message), Duration.seconds(5), null));
+            });
 
       } catch (IOException ioException) {
         ioException.printStackTrace();
       }
-      //TODO: DISABLE/ENABLE BUTTONS ACCORDINGLY (Add Save Success Message incl. file path)
+      // TODO: DISABLE/ENABLE BUTTONS ACCORDINGLY (Add Save Success Message incl. file path)
     }
   }
 
@@ -224,35 +232,42 @@ public class ExtractController implements Initializable {
     bpProgress.setVisible(true);
     bpProgress.setManaged(true);
 
-    Task task = PropertyExtractor.generateIfcFileToJsonTask(false, "extracted-features.json", selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()), resourceBundle);
+    Task task =
+        PropertyExtractor.generateIfcFileToJsonTask(
+            false,
+            "extracted-features.json",
+            selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()),
+            resourceBundle);
 
     task.addEventHandler(
         WorkerStateEvent.WORKER_STATE_SUCCEEDED,
         new EventHandler<WorkerStateEvent>() {
           @Override
           public void handle(WorkerStateEvent t) {
-              extractResult = (ExtractResult) task.getValue();
+            extractResult = (ExtractResult) task.getValue();
 
-              bpProgress.setVisible(false);
-              bpProgress.setManaged(false);
-              Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-              taExtractedFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
-              taExtractLogOutput.setText(extractResult.getLogOutput());
-              tpResult.setVisible(true);
-              tpResult.setManaged(true);
+            bpProgress.setVisible(false);
+            bpProgress.setManaged(false);
+            Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
+            taExtractedFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
+            taExtractLogOutput.setText(extractResult.getLogOutput());
+            tpResult.setVisible(true);
+            tpResult.setManaged(true);
 
-              bSaveLog.setVisible(true);
-              bSaveLog.setManaged(true);
-              bSaveFile.setVisible(true);
-              bSaveFile.setManaged(true);
-              bReset.setVisible(true);
-              bReset.setManaged(true);
+            bSaveLog.setVisible(true);
+            bSaveLog.setManaged(true);
+            bSaveFile.setVisible(true);
+            bSaveFile.setManaged(true);
+            bReset.setVisible(true);
+            bReset.setManaged(true);
           }
         });
 
     pbExtraction.progressProperty().bind(task.progressProperty());
     lProgressInfo.textProperty().bind(task.titleProperty());
-    taProgressLog.textProperty().bind(task.messageProperty()); //TODO: Overwrites Message to append use a changelistener
+    taProgressLog
+        .textProperty()
+        .bind(task.messageProperty()); // TODO: Overwrites Message to append use a changelistener
     new Thread(task).start();
   }
 }
