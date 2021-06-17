@@ -90,7 +90,7 @@ public class PropertyExtractor {
 
             int sumHashes = 0;
 
-            List<IfcProperty> features = new ArrayList<>();
+            Set<IfcProperty> features = new HashSet<>();
 
             try (LineIterator it = FileUtils.lineIterator(ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
               while (it.hasNext()) {
@@ -103,10 +103,9 @@ public class PropertyExtractor {
 
                   if(matcher.find()) {
                     String name = matcher.group(1); //NAME
-                    //IfcPropertyType type = matcher.group(2); //TYPE //TODO: EXTRACT TYPE
-                    IfcPropertyType type = IfcPropertyType.UNKNOWN;
+                    String type = matcher.group(2); //TYPE
                     String value = matcher.group(3); //VALUE
-                    features.add(new IfcProperty(matcher.group(1), IfcPropertyType.UNKNOWN));
+                    features.add(new IfcProperty(name, type));
                   }
                 }
               }
@@ -327,6 +326,17 @@ public class PropertyExtractor {
                                   ifcProperty.getMeasure())))
                   .collect(Collectors.toList()));
           break;
+        case COUNT_MEASURE:
+          fullLog.append(logString).append(System.getProperty("line.separator"));
+          extractedFeatures.addAll(
+                  entry.getValue().stream()
+                          .map(
+                                  ifcProperty ->
+                                          new NumericFeature(
+                                                  ifcProperty.getName(),
+                                                  QudtQuantityKind.DIMENSIONLESS,
+                                                  QudtUnit.UNITLESS))
+                          .collect(Collectors.toList()));
         case LENGTH_MEASURE:
         case POSITIVE_LENGTH_MEASURE:
           fullLog.append(logString).append(System.getProperty("line.separator"));

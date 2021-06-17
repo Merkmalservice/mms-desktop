@@ -62,9 +62,18 @@ public class IfcProperty {
     }
   }
 
-  public IfcProperty(String name, IfcPropertyType type) {
-    this.name = name;
-    this.type = type;
+  //TODO: ADD PROJECTUNITS TO CONSTRUCTOR
+  public IfcProperty(String name, String type) {
+    this.name = Utils.convertIFCStringToUtf8(name);
+
+    IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
+    try {
+      tempType = IfcPropertyType.fromString(type);
+    } catch (IllegalArgumentException e) {
+      logger.error(e.getMessage());
+    }
+
+    this.type = tempType;
   }
 
   private IfcProperty(Literal name, Resource type) {
@@ -90,6 +99,21 @@ public class IfcProperty {
 
   public IfcUnitMeasure getMeasure() {
     return measure;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    IfcProperty that = (IfcProperty) o;
+    return Objects.equals(name, that.name) &&
+            type == that.type &&
+            measure == that.measure;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, type, measure);
   }
 
   @Override
