@@ -14,6 +14,8 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class IfcProperty {
   private static final Logger logger =
@@ -21,6 +23,8 @@ public class IfcProperty {
 
   private final String name;
   private final IfcPropertyType type;
+
+
 
   private IfcUnitMeasure measure;
 
@@ -56,6 +60,11 @@ public class IfcProperty {
         }
       }
     }
+  }
+
+  public IfcProperty(String name, IfcPropertyType type) {
+    this.name = name;
+    this.type = type;
   }
 
   private IfcProperty(Literal name, Resource type) {
