@@ -90,6 +90,18 @@
                             <PropertyValueFactory property="path"/>
                         </cellValueFactory>
                     </TableColumn>
+                    <TableColumn editable="false" prefWidth="200.0"
+                                 sortType="DESCENDING" text="%label.file.ifcVersion">
+                        <cellValueFactory>
+                            <PropertyValueFactory property="ifcVersion"/>
+                        </cellValueFactory>
+                    </TableColumn>
+                    <TableColumn editable="false" prefWidth="200.0"
+                                 sortType="DESCENDING" text="%label.file.size">
+                        <cellValueFactory>
+                            <PropertyValueFactory property="size"/>
+                        </cellValueFactory>
+                    </TableColumn>
                 </columns>
             </TableView>
             <BorderPane fx:id="centerProgress" visible="false" managed="false" AnchorPane.topAnchor="0.0"

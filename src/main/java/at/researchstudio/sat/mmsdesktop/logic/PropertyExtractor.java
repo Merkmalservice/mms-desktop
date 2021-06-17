@@ -9,6 +9,7 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.IfcUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
+import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtUnit;
@@ -25,10 +26,13 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdtjena.HDTGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,32 +40,39 @@ public class PropertyExtractor {
   private static final Logger logger =
           LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static Task generateIfcFileToJsonTask(boolean keepTempFiles, String outputFileName, List<File> ifcFiles, final ResourceBundle resourceBundle) {
+  public static Task generateIfcFileToJsonTask(boolean keepTempFiles, String outputFileName, List<FileWrapper> ifcFiles, final ResourceBundle resourceBundle) {
     return new Task<ExtractResult>() {
       @Override public ExtractResult call() {
         StringBuilder logOutput = new StringBuilder();
 
         final int max = ifcFiles.size() * 2;
+
         //TODO: Adapt Properties
         // EXTRACTED METHOD
 
-        List<HDT> hdtData = new ArrayList<>();
-
+        Map<String, List<HDT>> hdtData = new HashMap<>();
+        int hdtDataCount = 0;
         int i = 0;
         updateTitle(MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.process.start"));
-        for (File ifcFile : ifcFiles) {
+        for (FileWrapper ifcFile : ifcFiles) {
           File tempOutputFile =
                   new File(
                           "temp_ttl_"
                                   + FilenameUtils.removeExtension(ifcFile.getName())
                                   + ".ttl");
           try {
-            hdtData.add(IFC2HDTConverter.readFromFile(keepTempFiles, ifcFile, tempOutputFile));
+            List<HDT> updatedList = new ArrayList<>();
+            if (!hdtData.isEmpty() && !hdtData.get(ifcFile.getIfcVersion()).isEmpty()) {
+              updatedList.addAll(hdtData.get(ifcFile.getIfcVersion()));
+            }
+            updatedList.add(IFC2HDTConverter.readFromFile(keepTempFiles, ifcFile.getFile(), tempOutputFile));
+            hdtDataCount++;
+            hdtData.put(ifcFile.getIfcVersion(), updatedList);
             logOutput.append("Converted " + (++i) + "/" + ifcFiles.size() + " Files to HDT\n");
             updateMessage(logOutput.toString());
           } catch (Exception e) {
             logOutput.append("Can't convert file: "
-                    + ifcFile.getAbsolutePath()
+                    + ifcFile.getPath()
                     + " Reason: "
                     + e.getMessage()
                     + "\n");
@@ -80,37 +91,40 @@ public class PropertyExtractor {
         int extractedIfcProperties = 0;
 
         final int newMax = ifcFiles.size() + hdtData.size();
-        for (HDT hdt : hdtData) {
-          try {
-            Map<IfcUnitType, List<IfcUnit>> extractedProjectUnitMap = extractProjectUnits(hdt);
-            Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap = extractPropertiesFromHdtData(
-                    hdt, extractedProjectUnitMap);
-            extractedIfcProperties += extractedPropertyMap.values().stream()
-                    .mapToInt(Collection::size)
-                    .sum();
-            ExtractResult partialExtractResult = extractFeaturesFromProperties(extractedPropertyMap);
-            extractedFeatures.addAll(partialExtractResult.getExtractedFeatures());
-            logOutput.append(partialExtractResult.getLogOutput());
-          } catch (IOException ioException) {
-            logOutput.append(Throwables.getStackTraceAsString(ioException) + "\n");
-          }
-          updateMessage(logOutput.toString());
-          if (isCancelled()) {
-            logOutput.append("Operation cancelled by User\n");
+        for (Map.Entry<String, List<HDT>> hdtMapEntry : hdtData.entrySet()) {
+          for (HDT hdt : hdtMapEntry.getValue()) {
+            try {
+              Map<IfcUnitType, List<IfcUnit>> extractedProjectUnitMap = extractProjectUnits(hdt, hdtMapEntry.getKey());
+              Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap = extractPropertiesFromHdtData(
+                      hdt, extractedProjectUnitMap, hdtMapEntry.getKey());
+              extractedIfcProperties += extractedPropertyMap.values().stream()
+                      .mapToInt(Collection::size)
+                      .sum();
+              ExtractResult partialExtractResult = extractFeaturesFromProperties(extractedPropertyMap);
+              extractedFeatures.addAll(partialExtractResult.getExtractedFeatures());
+              logOutput.append(partialExtractResult.getLogOutput());
+            } catch (IOException ioException) {
+              logOutput.append(Throwables.getStackTraceAsString(ioException) + "\n");
+            }
             updateMessage(logOutput.toString());
-            break;
+            if (isCancelled()) {
+              logOutput.append("Operation cancelled by User\n");
+              updateMessage(logOutput.toString());
+              break;
+            }
+            updateProgress(++i, newMax);
+            updateTitle(MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.process.features", i, newMax));
           }
-          updateProgress(++i, newMax);
-          updateTitle(MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.process.features", i, newMax));
         }
+
         logOutput.append(
         "-------------------------------------------------------------------------------\n" +
         "Extracted " + extractedIfcProperties + " out of the " + ifcFiles.size() + " ifcFiles\n" +
         "Parsed " + extractedFeatures.size() + " jsonFeatures\n" +
         "into File: " + new File(outputFileName).getAbsolutePath() + "\n" +
-        "-------------------------------------------------------------------------------\n\n"+"EXITING, converted " + hdtData.size() + "/" + ifcFiles.size()+"\n");
+        "-------------------------------------------------------------------------------\n\n"+"EXITING, converted " + hdtDataCount + "/" + ifcFiles.size()+"\n");
         updateMessage(logOutput.toString());
-        if (hdtData.size() != ifcFiles.size()) {
+        if (hdtDataCount != ifcFiles.size()) {
           logOutput.append(
                   "Not all Files could be converted, look in the log above to find out why\n");
           updateMessage(logOutput.toString());
@@ -122,29 +136,24 @@ public class PropertyExtractor {
     };
   }
 
-  private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(HDT hdtData)
+  private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(HDT hdtData, String ifcVersion)
           throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
-    //TODO: FIGURE OUT HOW TO LOAD FROM CLASSPATH AGAIN
-    String extractPropNamesQuery = "PREFIX express: <https://w3id.org/express#>\n" +
-            "PREFIX ifcowl: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>\n" +
-            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-            "PREFIX ifc: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>\n" +
-            "\n" +
-            "PREFIX express: <https://w3id.org/express#>\n" +
-            "PREFIX ifcowl: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>\n" +
-            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-            "PREFIX ifc: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>\n" +
-            "\n" +
-            "SELECT DISTINCT ?projectUri ?unitAssignmentUri ?unitUri ?unitType ?unitMeasure\n" +
-            "WHERE {\n" +
-            "          ?projectUri a ifcowl:IfcProject .\n" +
-            "          ?projectUri ifcowl:unitsInContext_IfcProject ?unitAssignmentUri .\n" +
-            "          ?unitAssignmentUri ifcowl:units_IfcUnitAssignment ?unitUri .\n" +
-            "          ?unitUri ifcowl:unitType_IfcNamedUnit ?unitType .\n" +
-            "          ?unitUri ifc:name_IfcSIUnit ?unitMeasure .\n" +
-            "      }";
+    ResourceLoader resourceLoader = new DefaultResourceLoader();
+    String query;
+    switch(ifcVersion) {
+      case "IFC4":
+        query = "extract_ifc4_projectunits";
+        break;
+      case "IFC2X3":
+      default:
+        query = "extract_ifc2x3_projectunits";
+        break;
+    }
+    Resource resource = resourceLoader.getResource("classpath:" + query + ".rq");
+    InputStream inputStream = resource.getInputStream();
+    String extractPropNamesQuery = getFileContent(inputStream, StandardCharsets.UTF_8.toString());
     try (QueryExecution qe = QueryExecutionFactory.create(extractPropNamesQuery, model)) {
       ResultSet rs = qe.execSelect();
       List<IfcUnit> extractedUnits = new ArrayList<>();
@@ -157,26 +166,23 @@ public class PropertyExtractor {
   }
 
   private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromHdtData(
-          HDT hdtData, Map<IfcUnitType, List<IfcUnit>> projectUnits) throws IOException {
+          HDT hdtData, Map<IfcUnitType, List<IfcUnit>> projectUnits, String ifcVersion) throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
-    //TODO: FIGURE OUT HOW TO LOAD FROM CLASSPATH AGAIN
-    String extractPropNamesQuery =
-        "PREFIX express: <https://w3id.org/express#>\n"
-            + "PREFIX ifcowl: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>\n"
-            + "\n"
-            + "# TODO units are not yet retrieved for the individual properties, only the project units are used (see extract_projectunits.rq for the query)\n"
-            + "# this is due to the fact that none of our available ifc files have set the (optional) unit in the properties and thus the project units will be used\n"
-            + "\n"
-            + "SELECT DISTINCT ?propName ?propType\n"
-            + "WHERE {\n"
-            + "          ?propUri ifcowl:name_IfcProperty ?propNameUri.\n"
-            + "          ?propUri ifcowl:nominalValue_IfcPropertySingleValue ?propTypeUri .\n"
-            + "          ?propTypeUri a ?propType .\n"
-            + "          ?propNameUri\n"
-            + "          a                       ifcowl:IfcIdentifier ;\n"
-            + "          express:hasString       ?propName ;\n"
-            + "      }\n";
+    ResourceLoader resourceLoader = new DefaultResourceLoader();
+    String query;
+    switch (ifcVersion) {
+      case "IFC4":
+        query = "extract_ifc4_properties";
+        break;
+      case "IFC2X3":
+      default:
+        query = "extract_ifc2x3_properties";
+        break;
+    }
+    Resource resource = resourceLoader.getResource("classpath:" + query + ".rq");
+    InputStream inputStream = resource.getInputStream();
+    String extractPropNamesQuery = getFileContent(inputStream, StandardCharsets.UTF_8.toString());
     try (QueryExecution qe = QueryExecutionFactory.create(extractPropNamesQuery, model)) {
       ResultSet rs = qe.execSelect();
       List<IfcProperty> extractedProperties = new ArrayList<>();
@@ -261,5 +267,19 @@ public class PropertyExtractor {
       }
     }
     return new ExtractResult(extractedFeatures, fullLog.toString());
+  }
+
+  private static String getFileContent(
+          InputStream fis, String encoding) throws IOException {
+    try (BufferedReader br =
+                 new BufferedReader(new InputStreamReader(fis, encoding))) {
+      StringBuilder sb = new StringBuilder();
+      String line;
+      while ((line = br.readLine()) != null) {
+        sb.append(line);
+        sb.append('\n');
+      }
+      return sb.toString();
+    }
   }
 }

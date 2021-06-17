@@ -239,7 +239,7 @@ public class ExtractController implements Initializable {
         PropertyExtractor.generateIfcFileToJsonTask(
             false,
             "extracted-features.json",
-            selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()),
+            selectedIfcFiles.stream().collect(Collectors.toList()),
             resourceBundle);
 
     task.addEventHandler(
