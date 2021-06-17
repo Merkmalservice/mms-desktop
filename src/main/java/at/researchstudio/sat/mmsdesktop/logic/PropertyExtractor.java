@@ -6,10 +6,11 @@ import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.merkmalservice.model.StringFeature;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcProperty;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcUnit;
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcVersion;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
-import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
+import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtUnit;
@@ -40,7 +41,7 @@ public class PropertyExtractor {
   private static final Logger logger =
           LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  public static Task generateIfcFileToJsonTask(boolean keepTempFiles, String outputFileName, List<FileWrapper> ifcFiles, final ResourceBundle resourceBundle) {
+  public static Task generateIfcFileToJsonTask(boolean keepTempFiles, String outputFileName, List<IfcFileWrapper> ifcFiles, final ResourceBundle resourceBundle) {
     return new Task<ExtractResult>() {
       @Override public ExtractResult call() {
         StringBuilder logOutput = new StringBuilder();
@@ -50,11 +51,11 @@ public class PropertyExtractor {
         //TODO: Adapt Properties
         // EXTRACTED METHOD
 
-        Map<String, List<HDT>> hdtData = new HashMap<>();
+        Map<IfcVersion, List<HDT>> hdtData = new HashMap<>();
         int hdtDataCount = 0;
         int i = 0;
         updateTitle(MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.process.start"));
-        for (FileWrapper ifcFile : ifcFiles) {
+        for (IfcFileWrapper ifcFile : ifcFiles) {
           File tempOutputFile =
                   new File(
                           "temp_ttl_"
@@ -91,7 +92,7 @@ public class PropertyExtractor {
         int extractedIfcProperties = 0;
 
         final int newMax = ifcFiles.size() + hdtData.size();
-        for (Map.Entry<String, List<HDT>> hdtMapEntry : hdtData.entrySet()) {
+        for (Map.Entry<IfcVersion, List<HDT>> hdtMapEntry : hdtData.entrySet()) {
           for (HDT hdt : hdtMapEntry.getValue()) {
             try {
               Map<IfcUnitType, List<IfcUnit>> extractedProjectUnitMap = extractProjectUnits(hdt, hdtMapEntry.getKey());
@@ -136,17 +137,17 @@ public class PropertyExtractor {
     };
   }
 
-  private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(HDT hdtData, String ifcVersion)
+  private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(HDT hdtData, IfcVersion ifcVersion)
           throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
     ResourceLoader resourceLoader = new DefaultResourceLoader();
     String query;
     switch(ifcVersion) {
-      case "IFC4":
+      case IFC4:
         query = "extract_ifc4_projectunits";
         break;
-      case "IFC2X3":
+      case IFC2X3:
       default:
         query = "extract_ifc2x3_projectunits";
         break;
@@ -166,16 +167,16 @@ public class PropertyExtractor {
   }
 
   private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromHdtData(
-          HDT hdtData, Map<IfcUnitType, List<IfcUnit>> projectUnits, String ifcVersion) throws IOException {
+          HDT hdtData, Map<IfcUnitType, List<IfcUnit>> projectUnits, IfcVersion ifcVersion) throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
     ResourceLoader resourceLoader = new DefaultResourceLoader();
     String query;
     switch (ifcVersion) {
-      case "IFC4":
+      case IFC4:
         query = "extract_ifc4_properties";
         break;
-      case "IFC2X3":
+      case IFC2X3:
       default:
         query = "extract_ifc2x3_properties";
         break;

@@ -1,17 +1,25 @@
 package at.researchstudio.sat.mmsdesktop.util;
 
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Scanner;
 
-public class FileWrapper {
+public class IfcFileWrapper {
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private final File file;
     private final String name;
     private final String path;
-    private final String ifcVersion; //TODO: CHANGE TO ENUM
+    private final IfcVersion ifcVersion;
 
-    public FileWrapper(File file) {
+    public IfcFileWrapper(File file) {
         this.file = file;
         this.name = file.getName();
         this.path = file.getAbsolutePath();
@@ -30,7 +38,7 @@ public class FileWrapper {
         return path;
     }
 
-    public String getIfcVersion() {
+    public IfcVersion getIfcVersion() {
         return ifcVersion;
     }
 
@@ -38,7 +46,7 @@ public class FileWrapper {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FileWrapper that = (FileWrapper) o;
+        IfcFileWrapper that = (IfcFileWrapper) o;
         return Objects.equals(name, that.name) &&
                Objects.equals(path, that.path);
     }
@@ -48,7 +56,7 @@ public class FileWrapper {
         return Objects.hash(name, path);
     }
 
-    private String extractIFCVersionFromFile(File file) {
+    private IfcVersion extractIFCVersionFromFile(File file) {
         try {
             Scanner scanner = new Scanner(file);
             //now read the file line by line...
@@ -58,13 +66,13 @@ public class FileWrapper {
                 lineNum++;
                 if (line.contains("FILE_SCHEMA")) {
                     String versionString = line.substring(14, line.indexOf(")") - 1);
-                    System.out.println("Version: " + versionString); //FIXME: LOGGER INSTEAD OF SYSTEM.OUT
-                    return versionString;
+                    logger.debug("File: "+file.getAbsolutePath()+" is in IfcVersion: " + versionString);
+                    return IfcVersion.valueOf(versionString);
                 }
             }
         } catch (FileNotFoundException e) {
             //TODO: handle this
         }
-        return "Unknown";
+        return IfcVersion.UNKNOWN;
     }
 }

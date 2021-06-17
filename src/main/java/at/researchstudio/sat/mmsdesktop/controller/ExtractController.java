@@ -4,7 +4,7 @@ import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
-import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
+import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -70,7 +70,7 @@ public class ExtractController implements Initializable {
   private FileChooser saveLogFileChooser;
   private FileChooser fileChooser;
   private DirectoryChooser directoryChooser;
-  private Set<FileWrapper> selectedIfcFiles;
+  private Set<IfcFileWrapper> selectedIfcFiles;
 
   private JFXSnackbar snackbar;
 
@@ -110,7 +110,7 @@ public class ExtractController implements Initializable {
       List<File> selectedFiles = FileUtils.getIfcFilesFromDirectory(selectedDirectory);
       if (selectedFiles.size() > 0) {
         selectedIfcFiles.addAll(
-            selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
+            selectedFiles.stream().map(IfcFileWrapper::new).collect(Collectors.toList()));
         centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
         topPickFilesClearList.setDisable(false);
         bottomPickFilesExtract.setDisable(false);
@@ -126,7 +126,7 @@ public class ExtractController implements Initializable {
         fileChooser.showOpenMultipleDialog(parentPane.getScene().getWindow());
     if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
       selectedIfcFiles.addAll(
-          selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
+          selectedFiles.stream().map(IfcFileWrapper::new).collect(Collectors.toList()));
       centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
       topPickFilesClearList.setDisable(false);
       bottomPickFilesExtract.setDisable(false);
