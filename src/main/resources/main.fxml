@@ -14,7 +14,7 @@
 <?import javafx.scene.text.Font?>
 <?import java.net.URL?>
 
-<VBox xmlns="http://javafx.com/javafx/13" xmlns:fx="http://javafx.com/fxml/1"
+<VBox xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="at.researchstudio.sat.mmsdesktop.controller.MainController">
         <stylesheets>
             <URL value="@main.css"/>

@@ -26,7 +26,7 @@ public class AboutController implements Initializable {
             + "\n"
             + "## Architecture\n"
             + "- Spring Boot Application\n"
-            + "- JavaFX UI (Version 13)\n"
+            + "- JavaFX UI (Version 16)\n"
             + "- Maven\n"
             + "- [JFoenix (JFX Component Library)](http://www.jfoenix.com/) \n"
             + "\n"

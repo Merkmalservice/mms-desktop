@@ -5,7 +5,7 @@
 
 ## Architecture
 - Spring Boot Application
-- JavaFX UI (Version 13)
+- JavaFX UI (Version 16)
 - Maven
 - [JFoenix (JFX Component Library)](http://www.jfoenix.com/) 
 
