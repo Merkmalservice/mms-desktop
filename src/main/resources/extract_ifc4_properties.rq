@@ -6,13 +6,13 @@ PREFIX express: <https://w3id.org/express#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX ifc:     <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#>
 
-select distinct ?uri ?propName ?typeUri where {
+select distinct ?propName ?propType where {
     {
         ?uri a ifc:IfcQuantityLength.
         ?uri ifc:name_IfcPhysicalQuantity ?labelUri .
         ?uri ifc:lengthValue_IfcQuantityLength ?measureUri .
         ?labelUri express:hasString	?propName .
-        ?measureUri rdf:type ?typeUri ;
+        ?measureUri rdf:type ?propType ;
     }
     UNION
     {
@@ -20,7 +20,7 @@ select distinct ?uri ?propName ?typeUri where {
         ?uri ifc:name_IfcPhysicalQuantity ?labelUri .
         ?uri ifc:volumeValue_IfcQuantityVolume ?measureUri .
         ?labelUri express:hasString	?propName .
-        ?measureUri rdf:type ?typeUri ;
+        ?measureUri rdf:type ?propType ;
     }
     UNION
     {
@@ -28,6 +28,6 @@ select distinct ?uri ?propName ?typeUri where {
         ?uri ifc:name_IfcPhysicalQuantity ?labelUri .
         ?uri ifc:areaValue_IfcQuantityArea ?measureUri .
         ?labelUri express:hasString	?propName .
-        ?measureUri rdf:type ?typeUri ;
+        ?measureUri rdf:type ?propType ;
     }
 }

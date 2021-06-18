@@ -15,6 +15,7 @@ public enum IfcPropertyType {
   INTEGER("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcInteger", "IFCINTEGER"),
   LENGTH_MEASURE(
       "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcLengthMeasure",
+      "http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#IfcLengthMeasure",
       "IFCLENGTHMEASURE"),
   COUNT_MEASURE(
       "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcCountMeasure",
@@ -29,9 +30,12 @@ public enum IfcPropertyType {
       "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcPlaneAngleMeasure",
       "IFCPLANEANGLEMEASURE"),
   AREA_MEASURE(
-      "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcAreaMeasure", "IFCAREAMEASURE"),
+      "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcAreaMeasure",
+      "http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#IfcAreaMeasure",
+      "IFCAREAMEASURE"),
   VOLUME_MEASURE(
       "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcVolumeMeasure",
+      "http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#IfcVolumeMeasure",
       "IFCVOLUMEMEASURE"),
   THERMAL_TRANSMITTANCE_MEASURE(
       "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcThermalTransmittanceMeasure",
