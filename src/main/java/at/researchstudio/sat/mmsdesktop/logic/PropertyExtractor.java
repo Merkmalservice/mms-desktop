@@ -56,7 +56,7 @@ public class PropertyExtractor {
                                   + FilenameUtils.removeExtension(ifcFile.getName())
                                   + ".ttl");
           try {
-            hdtData.add(IFC2HDTConverter.readFromFile(keepTempFiles, ifcFile, tempOutputFile));
+            hdtData.add(IFC2HDTConverter.readFromFile(ifcFile));
             logOutput.append("Converted " + (++i) + "/" + ifcFiles.size() + " Files to HDT\n");
             updateMessage(logOutput.toString());
           } catch (Exception e) {

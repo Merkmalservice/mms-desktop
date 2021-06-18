@@ -22,16 +22,6 @@
             <id>github</id>
             <repositories>
                 <repository>
-                    <id>markdown-viewer</id>
-                    <url>https://sandec.jfrog.io/artifactory/repo</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
                     <id>central</id>
                     <url>https://repo1.maven.org/maven2</url>
                     <releases>
@@ -55,7 +45,18 @@
             </repositories>
         </profile>
     </profiles>
-
+    <repositories>
+        <repository>
+            <id>markdown-viewer</id>
+            <url>https://sandec.jfrog.io/artifactory/repo</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -90,7 +91,7 @@
         <dependency>
             <groupId>com.github.pipauwel</groupId>
             <artifactId>IFCtoRDF</artifactId>
-            <version>0.4</version>
+            <version>0.5-SNAPSHOT</version>
         </dependency>
 
         <dependency>
