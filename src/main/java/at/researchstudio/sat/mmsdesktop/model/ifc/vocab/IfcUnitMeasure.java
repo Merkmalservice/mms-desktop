@@ -23,8 +23,8 @@ public enum IfcUnitMeasure {
   RADIAN("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#RADIAN", "RADIAN"),
   CANDELA("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#CANDELA", "CANDELA"),
   PASCAL("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#PASCAL", "PASCAL"),
-  JOULE("http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#JOULE"),
-  STERIDIAN("http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#STERADIAN"),
+  JOULE("http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#JOULE", "JOULE"),
+  STERIDIAN("http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#STERADIAN", "STERIDIAN"),
   UNKNOWN();
 
   // declaring private variable for getting values
