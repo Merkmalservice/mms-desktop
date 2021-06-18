@@ -14,7 +14,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 @Component
@@ -44,11 +43,8 @@ public class MainController implements Initializable {
    * @param event Input event.
    */
   public void handleKeyInput(KeyEvent event) {
-    if (event instanceof KeyEvent) {
-      final KeyEvent keyEvent = event;
-      if (keyEvent.isControlDown() && keyEvent.getCode() == KeyCode.A) {
-        provideAboutFunctionality();
-      }
+    if (event != null && event.isControlDown() && event.getCode() == KeyCode.A) {
+      provideAboutFunctionality();
     }
   }
 
@@ -70,7 +66,7 @@ public class MainController implements Initializable {
   @FXML
   private void handleExitAction(final ActionEvent event) {
     Stage stage = (Stage) menuBar.getScene().getWindow();
-    //TODO: Clean up if necessary
+    // TODO: Clean up if necessary
     stage.close();
   }
 
@@ -118,7 +114,7 @@ public class MainController implements Initializable {
   private void switchCenterPane(Resource resource) {
     try {
       FXMLLoader fxmlLoader = new FXMLLoader(resource.getURL());
-      fxmlLoader.setResources(resourceBundle); //set Default Locale to System default
+      fxmlLoader.setResources(resourceBundle); // set Default Locale to System default
 
       mainPane.setCenter(fxmlLoader.load());
     } catch (IOException e) {

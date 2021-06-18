@@ -14,7 +14,6 @@ import javafx.concurrent.Task;
 import javafx.collections.FXCollections;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -54,7 +53,7 @@ public class ExtractController implements Initializable {
   @FXML private JFXTextArea centerResultFeatures;
   @FXML private JFXTextArea centerResultLog;
 
-  //BorderPane Elements
+  // BorderPane Elements
   @FXML private BorderPane parentPane;
 
   @FXML private HBox topPickFiles;
@@ -145,15 +144,14 @@ public class ExtractController implements Initializable {
                 resourceBundle, "label.extract.export.success", file.getAbsolutePath());
 
         Platform.runLater(
-            () -> {
-              snackbar.fireEvent(
-                  new JFXSnackbar.SnackbarEvent(
-                      new JFXSnackbarLayout(message), Duration.seconds(5), null));
-            });
+            () ->
+                snackbar.fireEvent(
+                    new JFXSnackbar.SnackbarEvent(
+                        new JFXSnackbarLayout(message), Duration.seconds(5), null)));
 
       } catch (IOException ioException) {
         ioException.printStackTrace();
-        //TODO: SHOW ERROR
+        // TODO: SHOW ERROR
       }
     }
   }
@@ -170,15 +168,14 @@ public class ExtractController implements Initializable {
                 resourceBundle, "label.extract.exportLog.success", file.getAbsolutePath());
 
         Platform.runLater(
-            () -> {
-              snackbar.fireEvent(
-                  new JFXSnackbar.SnackbarEvent(
-                      new JFXSnackbarLayout(message), Duration.seconds(5), null));
-            });
+            () ->
+                snackbar.fireEvent(
+                    new JFXSnackbar.SnackbarEvent(
+                        new JFXSnackbarLayout(message), Duration.seconds(5), null)));
 
       } catch (IOException ioException) {
         ioException.printStackTrace();
-        //TODO: SHOW ERROR
+        // TODO: SHOW ERROR
       }
     }
   }
@@ -235,38 +232,30 @@ public class ExtractController implements Initializable {
     centerProgress.setVisible(true);
     centerProgress.setManaged(true);
 
-    Task task =
+    Task<ExtractResult> task =
         PropertyExtractor.generateIfcFileToJsonTask(
-            false,
-            "extracted-features.json",
-            selectedIfcFiles.stream().collect(Collectors.toList()),
-            resourceBundle);
+            false, "extracted-features.json", new ArrayList<>(selectedIfcFiles), resourceBundle);
 
     task.addEventHandler(
         WorkerStateEvent.WORKER_STATE_SUCCEEDED,
-        new EventHandler<WorkerStateEvent>() {
-          @Override
-          public void handle(WorkerStateEvent t) {
-            extractResult = (ExtractResult) task.getValue();
+        t -> {
+          extractResult = task.getValue();
 
-            centerProgress.setVisible(false);
-            centerProgress.setManaged(false);
-            Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-            centerResultFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
-            centerResultLog.setText(extractResult.getLogOutput());
-            centerResults.setVisible(true);
-            centerResults.setManaged(true);
+          centerProgress.setVisible(false);
+          centerProgress.setManaged(false);
+          Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
+          centerResultFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
+          centerResultLog.setText(extractResult.getLogOutput());
+          centerResults.setVisible(true);
+          centerResults.setManaged(true);
 
-            bottomResults.setVisible(true);
-            bottomResults.setManaged(true);
-          }
+          bottomResults.setVisible(true);
+          bottomResults.setManaged(true);
         });
 
     centerProgressProgressBar.progressProperty().bind(task.progressProperty());
     centerProgressProgressInfo.textProperty().bind(task.titleProperty());
-    centerProgressLog
-        .textProperty()
-        .bind(task.messageProperty());
+    centerProgressLog.textProperty().bind(task.messageProperty());
     new Thread(task).start();
   }
 }

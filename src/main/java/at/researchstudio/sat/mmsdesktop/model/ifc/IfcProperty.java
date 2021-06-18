@@ -14,19 +14,38 @@ import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class IfcProperty {
   private static final Logger logger =
-          LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private final String name;
   private final IfcPropertyType type;
 
-
-
   private IfcUnitMeasure measure;
+
+  public IfcProperty(IfcProperty ifc, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+    this(ifc.name, ifc.type);
+
+    if (this.type.isMeasureType()) {
+      IfcUnitMeasure tempMeasure = IfcUnitMeasure.UNKNOWN;
+      if (Objects.nonNull(projectUnits)) {
+        IfcUnitType tempUnitType = this.type.getUnitType();
+        List<IfcUnit> units = projectUnits.get(tempUnitType);
+
+        if (Objects.nonNull(units)) {
+          if (units.size() == 1) {
+            IfcUnit ifcUnit = units.get(0);
+            tempMeasure = ifcUnit.getMeasure();
+          } else {
+            logger.debug("More than one unit present, leaving it empty");
+            units.forEach(unit -> logger.debug(unit.toString()));
+          }
+        }
+      }
+      this.measure = tempMeasure;
+    }
+  }
 
   public IfcProperty(QuerySolution qs, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
     this(qs.getLiteral("propName"), qs.getResource("propType"));
@@ -62,7 +81,7 @@ public class IfcProperty {
     }
   }
 
-  //TODO: ADD PROJECTUNITS TO CONSTRUCTOR
+  // TODO: ADD PROJECTUNITS TO CONSTRUCTOR
   public IfcProperty(String name, String type) {
     this.name = Utils.convertIFCStringToUtf8(name);
 
@@ -74,6 +93,11 @@ public class IfcProperty {
     }
 
     this.type = tempType;
+  }
+
+  public IfcProperty(String name, IfcPropertyType type) {
+    this.name = Utils.convertIFCStringToUtf8(name);
+    this.type = type;
   }
 
   private IfcProperty(Literal name, Resource type) {
@@ -106,9 +130,7 @@ public class IfcProperty {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     IfcProperty that = (IfcProperty) o;
-    return Objects.equals(name, that.name) &&
-            type == that.type &&
-            measure == that.measure;
+    return Objects.equals(name, that.name) && type == that.type && measure == that.measure;
   }
 
   @Override
@@ -119,13 +141,13 @@ public class IfcProperty {
   @Override
   public String toString() {
     return "IfcProperty{"
-            + "name='"
-            + name
-            + '\''
-            + ", type="
-            + type
-            + ", measure="
-            + measure
-            + '}';
+        + "name='"
+        + name
+        + '\''
+        + ", type="
+        + type
+        + ", measure="
+        + measure
+        + '}';
   }
 }
