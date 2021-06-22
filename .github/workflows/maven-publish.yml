@@ -21,7 +21,7 @@ jobs:
         java-version: '11'
         distribution: 'adopt'
     - name: Build with Maven
-      run: mvn -B -P github clean install spring-boot:repackage --file pom.xml
+      run: mvn -B clean install spring-boot:repackage --file pom.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: 'Rename File'
