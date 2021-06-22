@@ -251,15 +251,13 @@ public class PropertyExtractor {
           updateTitle(
               MessageUtils.getKeyWithParameters(resourceBundle, "label.extract.process.start"));
           for (IfcFileWrapper ifcFile : ifcFiles) {
-            File tempOutputFile =
-                new File("temp_ttl_" + FilenameUtils.removeExtension(ifcFile.getName()) + ".ttl");
             try {
               List<HDT> updatedList = new ArrayList<>();
               if (!hdtData.isEmpty() && !hdtData.get(ifcFile.getIfcVersion()).isEmpty()) {
                 updatedList.addAll(hdtData.get(ifcFile.getIfcVersion()));
               }
               updatedList.add(
-                  IFC2HDTConverter.readFromFile(keepTempFiles, ifcFile.getFile(), tempOutputFile));
+                  IFC2HDTConverter.readFromFile(ifcFile.getFile()));
               hdtDataCount++;
               hdtData.put(ifcFile.getIfcVersion(), updatedList);
               logOutput
