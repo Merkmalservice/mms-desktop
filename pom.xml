@@ -17,44 +17,39 @@
         <java.version>11</java.version>
     </properties>
 
-    <profiles>
-        <profile>
+    <repositories>
+        <repository>
+            <id>markdown-viewer</id>
+            <url>https://sandec.jfrog.io/artifactory/repo</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>github</id>
-            <repositories>
-                <repository>
-                    <id>markdown-viewer</id>
-                    <url>https://sandec.jfrog.io/artifactory/repo</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
-                    <id>central</id>
-                    <url>https://repo1.maven.org/maven2</url>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-                <repository>
-                    <id>github</id>
-                    <name>GitHub Merkmalservice</name>
-                    <url>https://maven.pkg.github.com/Merkmalservice/utils</url>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                    <releases>
-                        <enabled>true</enabled>
-                    </releases>
-                </repository>
-            </repositories>
-        </profile>
-    </profiles>
+            <name>GitHub Merkmalservice</name>
+            <url>https://maven.pkg.github.com/Merkmalservice/*</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -89,8 +84,8 @@
         </dependency>
         <dependency>
             <groupId>com.github.pipauwel</groupId>
-            <artifactId>IFCtoRDF</artifactId>
-            <version>0.4</version>
+            <artifactId>ifctordf</artifactId>
+            <version>0.5-SNAPSHOT</version>
         </dependency>
 
         <dependency>
