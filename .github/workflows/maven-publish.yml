@@ -27,7 +27,8 @@ jobs:
     - name: Build with Maven
       run: mvn -B -P github clean install spring-boot:repackage --file pom.xml
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_USER_REF: ${{ secrets.GH_PACKAGE_REPO_USERNAME }}
+        GITHUB_TOKEN_REF: ${{ secrets.GH_PACKAGE_REPO_PASSWORD }}
     - name: 'Rename File'
       run: mv target/mms-desktop-spring-boot.jar target/mms-desktop.jar
     - name: 'Upload Artifact'
