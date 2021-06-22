@@ -23,7 +23,7 @@ This Token must have the `read:packages` Scope
   <servers>
     <server>
       <id>github</id>
-      <username>[GITHUB USER NAME]</username>
+      <username>[GITHUB USERNAME]</username>
       <password>[TOKEN]</password>
     </server>
   </servers>
@@ -37,5 +37,5 @@ This snippet already contains the correct server id, if you however (for any rea
 
 ## How to Package as executable jar (for now)
 1. Checkout Project
-3. mvn clean install spring-boot:repackage
+3. `mvn clean install spring-boot:repackage`
 4. execute `target/mms-desktop-spring-boot.jar` directly
