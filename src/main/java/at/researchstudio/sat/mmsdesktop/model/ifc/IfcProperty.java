@@ -16,15 +16,14 @@ import java.util.Map;
 import java.util.Objects;
 
 public class IfcProperty {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final String name;
-  private final IfcPropertyType type;
+    private final String name;
+    private final IfcPropertyType type;
 
-  private IfcUnitMeasure measure;
+    private IfcUnitMeasure measure;
 
-  public IfcProperty(IfcProperty ifc, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+    public IfcProperty(IfcProperty ifc, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
     this(ifc.name, ifc.type);
 
     if (this.type.isMeasureType()) {
@@ -47,7 +46,7 @@ public class IfcProperty {
     }
   }
 
-  public IfcProperty(QuerySolution qs, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+    public IfcProperty(QuerySolution qs, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
     this(qs.getLiteral("propName"), qs.getResource("propType"));
 
     if (this.type.isMeasureType()) {
@@ -81,73 +80,67 @@ public class IfcProperty {
     }
   }
 
-  // TODO: ADD PROJECTUNITS TO CONSTRUCTOR
-  public IfcProperty(String name, String type) {
-    this.name = Utils.convertIFCStringToUtf8(name);
+    // TODO: ADD PROJECTUNITS TO CONSTRUCTOR
+    public IfcProperty(String name, String type) {
+        this.name = Utils.convertIFCStringToUtf8(name);
 
-    IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
-    try {
-      tempType = IfcPropertyType.fromString(type);
-    } catch (IllegalArgumentException e) {
-      logger.error(e.getMessage());
+        IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
+        try {
+            tempType = IfcPropertyType.fromString(type);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+        }
+
+        this.type = tempType;
     }
 
-    this.type = tempType;
-  }
-
-  public IfcProperty(String name, IfcPropertyType type) {
-    this.name = Utils.convertIFCStringToUtf8(name);
-    this.type = type;
-  }
-
-  private IfcProperty(Literal name, Resource type) {
-    this.name = Utils.convertIFCStringToUtf8(name.toString());
-
-    IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
-    try {
-      tempType = IfcPropertyType.fromResource(type);
-    } catch (IllegalArgumentException e) {
-      logger.error(e.getMessage());
+    public IfcProperty(String name, IfcPropertyType type) {
+        this.name = Utils.convertIFCStringToUtf8(name);
+        this.type = type;
     }
 
-    this.type = tempType;
-  }
+    private IfcProperty(Literal name, Resource type) {
+        this.name = Utils.convertIFCStringToUtf8(name.toString());
 
-  public String getName() {
-    return name;
-  }
+        IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
+        try {
+            tempType = IfcPropertyType.fromResource(type);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+        }
 
-  public IfcPropertyType getType() {
-    return type;
-  }
+        this.type = tempType;
+    }
 
-  public IfcUnitMeasure getMeasure() {
-    return measure;
-  }
+    public String getName() {
+        return name;
+    }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    IfcProperty that = (IfcProperty) o;
-    return Objects.equals(name, that.name) && type == that.type && measure == that.measure;
-  }
+    public IfcPropertyType getType() {
+        return type;
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(name, type, measure);
-  }
+    public IfcUnitMeasure getMeasure() {
+        return measure;
+    }
 
-  @Override
-  public String toString() {
-    return "IfcProperty{"
-        + "name='"
-        + name
-        + '\''
-        + ", type="
-        + type
-        + ", measure="
-        + measure
-        + '}';
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        IfcProperty that = (IfcProperty) o;
+        return Objects.equals(name, that.name) && type == that.type && measure == that.measure;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type, measure);
+    }
+
+    @Override
+    public String toString() {
+        return "IfcProperty{" + "name='" + name + '\'' + ", type=" + type + ", measure=" + measure + '}';
+    }
 }

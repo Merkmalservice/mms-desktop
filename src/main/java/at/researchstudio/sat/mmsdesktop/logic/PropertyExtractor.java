@@ -44,12 +44,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class PropertyExtractor {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final boolean USE_NEWEXTRACTION = false;
+    private static final boolean USE_NEWEXTRACTION = false;
 
-  public static Task<ExtractResult> generateIfcFileToJsonTask(
+    public static Task<ExtractResult> generateIfcFileToJsonTask(
       boolean keepTempFiles,
       String outputFileName,
       List<IfcFileWrapper> ifcFiles,
@@ -367,7 +366,7 @@ public class PropertyExtractor {
     };
   }
 
-  private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(
+    private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(
       HDT hdtData, IfcVersion ifcVersion) throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
@@ -396,14 +395,14 @@ public class PropertyExtractor {
     }
   }
 
-  private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromData(
+    private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromData(
       Set<IfcProperty> ifcProperties, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
     return ifcProperties.stream()
         .map(ifc -> new IfcProperty(ifc, projectUnits))
         .collect(Collectors.groupingBy(IfcProperty::getType));
   }
 
-  private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromHdtData(
+    private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromHdtData(
       HDT hdtData, Map<IfcUnitType, List<IfcUnit>> projectUnits, IfcVersion ifcVersion)
       throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
@@ -433,7 +432,7 @@ public class PropertyExtractor {
     }
   }
 
-  private static ExtractResult extractFeaturesFromProperties(
+    private static ExtractResult extractFeaturesFromProperties(
       Map<IfcPropertyType, List<IfcProperty>> extractedProperties) {
     List<Feature> extractedFeatures = new ArrayList<>();
     StringBuilder fullLog = new StringBuilder();
@@ -533,7 +532,7 @@ public class PropertyExtractor {
     return new ExtractResult(extractedFeatures, fullLog.toString());
   }
 
-  private static String getFileContent(InputStream fis, String encoding) throws IOException {
+    private static String getFileContent(InputStream fis, String encoding) throws IOException {
     try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, encoding))) {
       StringBuilder sb = new StringBuilder();
       String line;

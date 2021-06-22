@@ -40,44 +40,57 @@ import java.util.stream.Collectors;
 
 @Component
 public class ExtractController implements Initializable {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  // @FXML private JFXButton bRemoveSelectedEntry;
-  @FXML private JFXButton topPickFilesClearList;
-  @FXML private JFXButton bottomPickFilesExtract;
+    // @FXML private JFXButton bRemoveSelectedEntry;
+    @FXML
+    private JFXButton topPickFilesClearList;
+    @FXML
+    private JFXButton bottomPickFilesExtract;
 
-  @FXML private JFXProgressBar centerProgressProgressBar;
-  @FXML private JFXTextArea centerProgressLog;
-  @FXML private Label centerProgressProgressInfo;
-  @FXML private JFXTextArea centerResultFeatures;
-  @FXML private JFXTextArea centerResultLog;
+    @FXML
+    private JFXProgressBar centerProgressProgressBar;
+    @FXML
+    private JFXTextArea centerProgressLog;
+    @FXML
+    private Label centerProgressProgressInfo;
+    @FXML
+    private JFXTextArea centerResultFeatures;
+    @FXML
+    private JFXTextArea centerResultLog;
 
-  // BorderPane Elements
-  @FXML private BorderPane parentPane;
+    // BorderPane Elements
+    @FXML
+    private BorderPane parentPane;
 
-  @FXML private HBox topPickFiles;
+    @FXML
+    private HBox topPickFiles;
 
-  @FXML private TableView centerPickFiles;
-  @FXML private BorderPane centerProgress;
-  @FXML private JFXTabPane centerResults;
+    @FXML
+    private TableView centerPickFiles;
+    @FXML
+    private BorderPane centerProgress;
+    @FXML
+    private JFXTabPane centerResults;
 
-  @FXML private HBox bottomResults;
-  @FXML private HBox bottomPickFiles;
+    @FXML
+    private HBox bottomResults;
+    @FXML
+    private HBox bottomPickFiles;
 
-  private FileChooser saveFileChooser;
-  private FileChooser saveLogFileChooser;
-  private FileChooser fileChooser;
-  private DirectoryChooser directoryChooser;
-  private Set<IfcFileWrapper> selectedIfcFiles;
+    private FileChooser saveFileChooser;
+    private FileChooser saveLogFileChooser;
+    private FileChooser fileChooser;
+    private DirectoryChooser directoryChooser;
+    private Set<IfcFileWrapper> selectedIfcFiles;
 
-  private JFXSnackbar snackbar;
+    private JFXSnackbar snackbar;
 
-  private ExtractResult extractResult;
+    private ExtractResult extractResult;
 
-  private ResourceBundle resourceBundle;
+    private ResourceBundle resourceBundle;
 
-  @Override
+    @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
     this.resourceBundle = resourceBundle;
     fileChooser = new FileChooser();
@@ -102,7 +115,7 @@ public class ExtractController implements Initializable {
     snackbar = new JFXSnackbar(parentPane);
   }
 
-  @FXML
+    @FXML
   public void handlePickDirectoryAction(ActionEvent actionEvent) {
     File selectedDirectory = directoryChooser.showDialog(parentPane.getScene().getWindow());
     try {
@@ -119,7 +132,7 @@ public class ExtractController implements Initializable {
     }
   }
 
-  @FXML
+    @FXML
   public void handlePickFileAction(ActionEvent actionEvent) {
     List<File> selectedFiles =
         fileChooser.showOpenMultipleDialog(parentPane.getScene().getWindow());
@@ -132,7 +145,7 @@ public class ExtractController implements Initializable {
     }
   }
 
-  @FXML
+    @FXML
   public void handleSaveFileAction(ActionEvent actionEvent) {
     File file = saveFileChooser.showSaveDialog(parentPane.getScene().getWindow());
 
@@ -156,7 +169,7 @@ public class ExtractController implements Initializable {
     }
   }
 
-  @FXML
+    @FXML
   public void handleSaveLogAction(ActionEvent actionEvent) {
     File file = saveLogFileChooser.showSaveDialog(parentPane.getScene().getWindow());
 
@@ -180,47 +193,48 @@ public class ExtractController implements Initializable {
     }
   }
 
-  @FXML
-  public void handleClearListAction(ActionEvent actionEvent) {
-    selectedIfcFiles.clear();
-    centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
-    topPickFilesClearList.setDisable(true);
-    bottomPickFilesExtract.setDisable(true);
-  }
+    @FXML
+    public void handleClearListAction(ActionEvent actionEvent) {
+        selectedIfcFiles.clear();
+        centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
+        topPickFilesClearList.setDisable(true);
+        bottomPickFilesExtract.setDisable(true);
+    }
 
-  @FXML
-  public void handleResetAction(ActionEvent actionEvent) {
-    handleClearListAction(actionEvent);
-    extractResult = null;
+    @FXML
+    public void handleResetAction(ActionEvent actionEvent) {
+        handleClearListAction(actionEvent);
+        extractResult = null;
 
-    bottomPickFiles.setVisible(true);
-    bottomPickFiles.setManaged(true);
+        bottomPickFiles.setVisible(true);
+        bottomPickFiles.setManaged(true);
 
-    topPickFiles.setVisible(true);
-    topPickFiles.setManaged(true);
-    centerPickFiles.setVisible(true);
+        topPickFiles.setVisible(true);
+        topPickFiles.setManaged(true);
+        centerPickFiles.setVisible(true);
 
-    centerProgress.setVisible(false);
-    centerProgress.setManaged(false);
+        centerProgress.setVisible(false);
+        centerProgress.setManaged(false);
 
-    centerResultFeatures.setText("");
-    centerResultLog.setText("");
-    centerResults.setVisible(false);
-    centerResults.setManaged(false);
+        centerResultFeatures.setText("");
+        centerResultLog.setText("");
+        centerResults.setVisible(false);
+        centerResults.setManaged(false);
 
-    centerProgressProgressBar.progressProperty().unbind();
-    centerProgressProgressInfo.textProperty().unbind();
-    centerProgressLog.textProperty().unbind();
+        centerProgressProgressBar.progressProperty().unbind();
+        centerProgressProgressInfo.textProperty().unbind();
+        centerProgressLog.textProperty().unbind();
 
-    bottomResults.setVisible(false);
-    bottomResults.setManaged(false);
-  }
+        bottomResults.setVisible(false);
+        bottomResults.setManaged(false);
+    }
 
-  /*@FXML
-  public void handleRemoveSelectedEntryAction(ActionEvent actionEvent) {
-  }*/
+    /*
+     * @FXML public void handleRemoveSelectedEntryAction(ActionEvent
+     * actionEvent) { }
+     */
 
-  @FXML
+    @FXML
   public void handleConvertAction(ActionEvent actionEvent) {
     bottomPickFiles.setVisible(false);
     bottomPickFiles.setManaged(false);

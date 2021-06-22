@@ -17,20 +17,18 @@ import java.util.ResourceBundle;
 
 @Component
 public class StageInitializer implements ApplicationListener<StageReadyEvent> {
-  @Value("classpath:/main.fxml")
-  private Resource mainResource;
+    @Value("classpath:/main.fxml")
+    private Resource mainResource;
 
-  private final String applicationTitle;
-  private final ApplicationContext applicationContext;
+    private final String applicationTitle;
+    private final ApplicationContext applicationContext;
 
-  public StageInitializer(
-      @Value("${spring.application.ui.title}") String applicationTitle,
-      ApplicationContext applicationContext) {
-    this.applicationTitle = applicationTitle;
-    this.applicationContext = applicationContext;
-  }
+    public StageInitializer(@Value("${spring.application.ui.title}") String applicationTitle, ApplicationContext applicationContext) {
+        this.applicationTitle = applicationTitle;
+        this.applicationContext = applicationContext;
+    }
 
-  @Override
+    @Override
   public void onApplicationEvent(StageReadyEvent stageReadyEvent) {
     try {
       FXMLLoader fxmlLoader = new FXMLLoader(mainResource.getURL());

@@ -16,7 +16,8 @@ public class Utils {
     }
 
     /**
-     * Converts any given String occuring in an ifc-file to utf-8 (replace \X2\*\X0\ with the correct special character
+     * Converts any given String occuring in an ifc-file to utf-8 (replace
+     * \X2\*\X0\ with the correct special character
      */
     public static String convertIFCStringToUtf8(String s) {
          Matcher matcher = UNICODE_REPLACEMENT_PATTERn.matcher(s);

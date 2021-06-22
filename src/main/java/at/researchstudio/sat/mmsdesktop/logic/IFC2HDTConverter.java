@@ -14,32 +14,21 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 
 public class IFC2HDTConverter {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  private static final String BASE_URI = "https://researchstudio.at/";
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final String BASE_URI = "https://researchstudio.at/";
 
-  public static HDT readFromFile(boolean keepTempFiles, File ifcFile, File outputFile)
-      throws IOException, ParserException {
-    IfcSpfReader r = new IfcSpfReader();
+    public static HDT readFromFile(boolean keepTempFiles, File ifcFile, File outputFile) throws IOException, ParserException {
+        IfcSpfReader r = new IfcSpfReader();
 
-    r.setup(ifcFile.getAbsolutePath());
-    r.convert(ifcFile.getAbsolutePath(), outputFile.getAbsolutePath(), BASE_URI);
+        r.setup(ifcFile.getAbsolutePath());
+        r.convert(ifcFile.getAbsolutePath(), outputFile.getAbsolutePath(), BASE_URI);
 
-    HDT hdt =
-        HDTManager.generateHDT(
-            outputFile.getAbsolutePath(),
-            BASE_URI,
-            RDFNotation.TURTLE,
-            new HDTSpecification(),
-            null);
+        HDT hdt = HDTManager.generateHDT(outputFile.getAbsolutePath(), BASE_URI, RDFNotation.TURTLE, new HDTSpecification(), null);
 
-    if (!keepTempFiles && !outputFile.delete()) {
+        if (!keepTempFiles && !outputFile.delete()) {
 
-      logger.error(
-          "Could not delete temp-file: "
-              + outputFile.getAbsolutePath()
-              + " try removing it manually later...");
+            logger.error("Could not delete temp-file: " + outputFile.getAbsolutePath() + " try removing it manually later...");
+        }
+        return hdt;
     }
-    return hdt;
-  }
 }

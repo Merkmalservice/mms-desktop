@@ -13,51 +13,52 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class IfcFileWrapper {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final File file;
-  private final String name;
-  private final String path;
-  private final IfcVersion ifcVersion;
+    private final File file;
+    private final String name;
+    private final String path;
+    private final IfcVersion ifcVersion;
 
-  public IfcFileWrapper(File file) {
-    this.file = file;
-    this.name = file.getName();
-    this.path = file.getAbsolutePath();
-    this.ifcVersion = extractIFCVersionFromFile(file);
-  }
+    public IfcFileWrapper(File file) {
+        this.file = file;
+        this.name = file.getName();
+        this.path = file.getAbsolutePath();
+        this.ifcVersion = extractIFCVersionFromFile(file);
+    }
 
-  public File getFile() {
-    return file;
-  }
+    public File getFile() {
+        return file;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public String getPath() {
-    return path;
-  }
+    public String getPath() {
+        return path;
+    }
 
-  public IfcVersion getIfcVersion() {
-    return ifcVersion;
-  }
+    public IfcVersion getIfcVersion() {
+        return ifcVersion;
+    }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    IfcFileWrapper that = (IfcFileWrapper) o;
-    return Objects.equals(name, that.name) && Objects.equals(path, that.path);
-  }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        IfcFileWrapper that = (IfcFileWrapper) o;
+        return Objects.equals(name, that.name) && Objects.equals(path, that.path);
+    }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(name, path);
-  }
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, path);
+    }
 
-  private IfcVersion extractIFCVersionFromFile(File file) {
+    private IfcVersion extractIFCVersionFromFile(File file) {
     try (LineIterator it = FileUtils.lineIterator(file, StandardCharsets.UTF_8.toString())) {
       while (it.hasNext()) {
         String line = it.nextLine();
