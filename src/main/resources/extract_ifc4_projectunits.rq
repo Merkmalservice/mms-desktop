@@ -1,0 +1,11 @@
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ifc:  <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#>
+
+SELECT DISTINCT ?projectUri ?unitAssignmentUri ?unitUri ?unitType ?unitMeasure
+WHERE {
+    ?projectUri a ifc:IfcProject .
+    ?projectUri ifc:unitsInContext_IfcContext ?unitAssignmentUri .
+    ?unitAssignmentUri ifc:units_IfcUnitAssignment ?unitUri .
+    ?unitUri ifc:unitType_IfcNamedUnit ?unitType .
+    ?unitUri ifc:name_IfcSIUnit ?unitMeasure .
+}

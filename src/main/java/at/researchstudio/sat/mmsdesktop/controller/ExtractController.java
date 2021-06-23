@@ -4,17 +4,16 @@ import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
-import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
+import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jfoenix.controls.*;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.collections.FXCollections;
-import javafx.concurrent.WorkerStateEvent;
+import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -24,6 +23,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
+import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -39,8 +39,7 @@ import java.nio.file.NotDirectoryException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
-public class ExtractController implements Initializable {
+@Component public class ExtractController implements Initializable {
   private static final Logger logger =
       LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -54,7 +53,7 @@ public class ExtractController implements Initializable {
   @FXML private JFXTextArea centerResultFeatures;
   @FXML private JFXTextArea centerResultLog;
 
-  //BorderPane Elements
+  // BorderPane Elements
   @FXML private BorderPane parentPane;
 
   @FXML private HBox topPickFiles;
@@ -70,7 +69,7 @@ public class ExtractController implements Initializable {
   private FileChooser saveLogFileChooser;
   private FileChooser fileChooser;
   private DirectoryChooser directoryChooser;
-  private Set<FileWrapper> selectedIfcFiles;
+  private ObservableList<IfcFileWrapper> selectedIfcFiles;
 
   private JFXSnackbar snackbar;
 
@@ -78,8 +77,7 @@ public class ExtractController implements Initializable {
 
   private ResourceBundle resourceBundle;
 
-  @Override
-  public void initialize(URL url, ResourceBundle resourceBundle) {
+  @Override public void initialize(URL url, ResourceBundle resourceBundle) {
     this.resourceBundle = resourceBundle;
     fileChooser = new FileChooser();
     fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("IFC Files", "*.ifc"));
@@ -97,8 +95,7 @@ public class ExtractController implements Initializable {
         .addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
 
     directoryChooser = new DirectoryChooser();
-    selectedIfcFiles = new HashSet<>();
-    centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
+    selectedIfcFiles = FXCollections.observableArrayList();
 
     snackbar = new JFXSnackbar(parentPane);
   }
@@ -109,9 +106,10 @@ public class ExtractController implements Initializable {
     try {
       List<File> selectedFiles = FileUtils.getIfcFilesFromDirectory(selectedDirectory);
       if (selectedFiles.size() > 0) {
-        selectedIfcFiles.addAll(
-            selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
-        centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
+        Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<IfcFileWrapper>(selectedIfcFiles);
+        selectedIfcFileSet
+            .addAll(selectedFiles.stream().map(IfcFileWrapper::new).collect(Collectors.toList()));
+        selectedIfcFiles.setAll(selectedIfcFileSet);
         topPickFilesClearList.setDisable(false);
         bottomPickFilesExtract.setDisable(false);
       }
@@ -125,9 +123,10 @@ public class ExtractController implements Initializable {
     List<File> selectedFiles =
         fileChooser.showOpenMultipleDialog(parentPane.getScene().getWindow());
     if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
-      selectedIfcFiles.addAll(
-          selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
-      centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
+      Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<IfcFileWrapper>(selectedIfcFiles);
+      selectedIfcFileSet
+          .addAll(selectedFiles.stream().map(IfcFileWrapper::new).collect(Collectors.toList()));
+      selectedIfcFiles.setAll(selectedIfcFileSet);
       topPickFilesClearList.setDisable(false);
       bottomPickFilesExtract.setDisable(false);
     }
@@ -145,15 +144,14 @@ public class ExtractController implements Initializable {
                 resourceBundle, "label.extract.export.success", file.getAbsolutePath());
 
         Platform.runLater(
-            () -> {
-              snackbar.fireEvent(
-                  new JFXSnackbar.SnackbarEvent(
-                      new JFXSnackbarLayout(message), Duration.seconds(5), null));
-            });
+            () ->
+                snackbar.fireEvent(
+                    new JFXSnackbar.SnackbarEvent(
+                        new JFXSnackbarLayout(message), Duration.seconds(5), null)));
 
       } catch (IOException ioException) {
         ioException.printStackTrace();
-        //TODO: SHOW ERROR
+        // TODO: SHOW ERROR
       }
     }
   }
@@ -170,29 +168,24 @@ public class ExtractController implements Initializable {
                 resourceBundle, "label.extract.exportLog.success", file.getAbsolutePath());
 
         Platform.runLater(
-            () -> {
-              snackbar.fireEvent(
-                  new JFXSnackbar.SnackbarEvent(
-                      new JFXSnackbarLayout(message), Duration.seconds(5), null));
-            });
+            () ->
+                snackbar.fireEvent(new JFXSnackbar.SnackbarEvent(new JFXSnackbarLayout(message),
+                    Duration.seconds(5), null)));
 
       } catch (IOException ioException) {
         ioException.printStackTrace();
-        //TODO: SHOW ERROR
+        // TODO: SHOW ERROR
       }
     }
   }
 
-  @FXML
-  public void handleClearListAction(ActionEvent actionEvent) {
+  @FXML public void handleClearListAction(ActionEvent actionEvent) {
     selectedIfcFiles.clear();
-    centerPickFiles.setItems(FXCollections.observableArrayList(selectedIfcFiles));
     topPickFilesClearList.setDisable(true);
     bottomPickFilesExtract.setDisable(true);
   }
 
-  @FXML
-  public void handleResetAction(ActionEvent actionEvent) {
+  @FXML public void handleResetAction(ActionEvent actionEvent) {
     handleClearListAction(actionEvent);
     extractResult = null;
 
@@ -219,12 +212,11 @@ public class ExtractController implements Initializable {
     bottomResults.setManaged(false);
   }
 
-  /*@FXML
-  public void handleRemoveSelectedEntryAction(ActionEvent actionEvent) {
-  }*/
+  /*
+   * @FXML public void handleRemoveSelectedEntryAction(ActionEvent actionEvent) { }
+   */
 
-  @FXML
-  public void handleConvertAction(ActionEvent actionEvent) {
+  @FXML public void handleConvertAction(ActionEvent actionEvent) {
     bottomPickFiles.setVisible(false);
     bottomPickFiles.setManaged(false);
 
@@ -235,38 +227,52 @@ public class ExtractController implements Initializable {
     centerProgress.setVisible(true);
     centerProgress.setManaged(true);
 
-    Task task =
-        PropertyExtractor.generateIfcFileToJsonTask(
-            false,
-            "extracted-features.json",
-            selectedIfcFiles.stream().map(FileWrapper::getFile).collect(Collectors.toList()),
-            resourceBundle);
+    Task<ExtractResult> task =
+        PropertyExtractor.generateIfcFileToJsonTask(selectedIfcFiles, resourceBundle);
 
-    task.addEventHandler(
-        WorkerStateEvent.WORKER_STATE_SUCCEEDED,
-        new EventHandler<WorkerStateEvent>() {
-          @Override
-          public void handle(WorkerStateEvent t) {
-            extractResult = (ExtractResult) task.getValue();
+    task.setOnSucceeded(t -> {
+      extractResult = task.getValue();
 
-            centerProgress.setVisible(false);
-            centerProgress.setManaged(false);
-            Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-            centerResultFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
-            centerResultLog.setText(extractResult.getLogOutput());
-            centerResults.setVisible(true);
-            centerResults.setManaged(true);
+      centerProgress.setVisible(false);
+      centerProgress.setManaged(false);
+      Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
+      centerResultFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
+      centerResultLog.setText(extractResult.getLogOutput());
+      centerResults.setVisible(true);
+      centerResults.setManaged(true);
 
-            bottomResults.setVisible(true);
-            bottomResults.setManaged(true);
-          }
-        });
+      bottomResults.setVisible(true);
+      bottomResults.setManaged(true);
+    });
+
+    task.setOnFailed(event -> {
+      //TODO: MAYBE SHOW DIALOG INSTEAD
+
+      extractResult = task.getValue();
+
+      centerProgress.setVisible(false);
+      centerProgress.setManaged(false);
+      centerResultFeatures.setText("[]");
+      centerResultLog.setText(Throwables.getStackTraceAsString(task.getException()));
+      centerResults.setVisible(true);
+      centerResults.setManaged(true);
+
+      bottomResults.setVisible(true);
+      bottomResults.setManaged(true);
+    });
 
     centerProgressProgressBar.progressProperty().bind(task.progressProperty());
     centerProgressProgressInfo.textProperty().bind(task.titleProperty());
-    centerProgressLog
-        .textProperty()
-        .bind(task.messageProperty());
+    centerProgressLog.textProperty().bind(task.messageProperty());
+
     new Thread(task).start();
+  }
+
+  public ObservableList<IfcFileWrapper> getSelectedIfcFiles() {
+    return selectedIfcFiles;
+  }
+
+  public void setSelectedIfcFiles(ObservableList<IfcFileWrapper> selectedIfcFiles) {
+    this.selectedIfcFiles = selectedIfcFiles;
   }
 }
