@@ -13,7 +13,6 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -24,6 +23,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
+import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -230,16 +230,32 @@ import java.util.stream.Collectors;
     Task<ExtractResult> task =
         PropertyExtractor.generateIfcFileToJsonTask(selectedIfcFiles, resourceBundle);
 
-    task.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, t -> {
+    task.setOnSucceeded(t -> {
       extractResult = task.getValue();
 
       centerProgress.setVisible(false);
       centerProgress.setManaged(false);
       Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
       centerResultFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
-          centerResultLog.setText(extractResult.getLogOutput());
-          centerResults.setVisible(true);
-          centerResults.setManaged(true);
+      centerResultLog.setText(extractResult.getLogOutput());
+      centerResults.setVisible(true);
+      centerResults.setManaged(true);
+
+      bottomResults.setVisible(true);
+      bottomResults.setManaged(true);
+    });
+
+    task.setOnFailed(event -> {
+      //TODO: MAYBE SHOW DIALOG INSTEAD
+
+      extractResult = task.getValue();
+
+      centerProgress.setVisible(false);
+      centerProgress.setManaged(false);
+      centerResultFeatures.setText("[]");
+      centerResultLog.setText(Throwables.getStackTraceAsString(task.getException()));
+      centerResults.setVisible(true);
+      centerResults.setManaged(true);
 
       bottomResults.setVisible(true);
       bottomResults.setManaged(true);
@@ -248,6 +264,7 @@ import java.util.stream.Collectors;
     centerProgressProgressBar.progressProperty().bind(task.progressProperty());
     centerProgressProgressInfo.textProperty().bind(task.titleProperty());
     centerProgressLog.textProperty().bind(task.messageProperty());
+
     new Thread(task).start();
   }
 
