@@ -16,7 +16,6 @@ import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtUnit;
 import javafx.concurrent.Task;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.ext.com.google.common.base.Throwables;
@@ -35,7 +34,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.StopWatch;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -49,8 +51,6 @@ public class PropertyExtractor {
     private static final boolean USE_NEWEXTRACTION = false;
 
     public static Task<ExtractResult> generateIfcFileToJsonTask(
-      boolean keepTempFiles,
-      String outputFileName,
       List<IfcFileWrapper> ifcFiles,
       final ResourceBundle resourceBundle) {
     return new Task<>() {
@@ -221,9 +221,6 @@ public class PropertyExtractor {
               .append(extractedFeatures.size())
               .append(" jsonFeatures")
               .append(System.lineSeparator())
-              .append("into File: ")
-              .append(new File(outputFileName).getAbsolutePath())
-              .append(System.lineSeparator())
               .append(
                   "-------------------------------------------------------------------------------")
               .append(System.lineSeparator())
@@ -338,9 +335,6 @@ public class PropertyExtractor {
               .append(extractedFeatures.size())
               .append(" jsonFeatures")
               .append(System.lineSeparator())
-              .append("into File: ")
-              .append(new File(outputFileName).getAbsolutePath())
-              .append(System.lineSeparator())
               .append(
                   "-------------------------------------------------------------------------------")
               .append(System.lineSeparator())
@@ -371,6 +365,9 @@ public class PropertyExtractor {
     ResourceLoader resourceLoader = new DefaultResourceLoader();
     String query;
     switch (ifcVersion) {
+      case IFC4x3_RC1:
+      case IFC4_ADD2:
+        //TODO: IMPL
       case IFC4:
         query = "extract_ifc4_projectunits";
         break;
@@ -408,6 +405,9 @@ public class PropertyExtractor {
     ResourceLoader resourceLoader = new DefaultResourceLoader();
     String query;
     switch (ifcVersion) {
+      case IFC4x3_RC1:
+      case IFC4_ADD2:
+        //TODO: IMPL
       case IFC4:
         query = "extract_ifc4_properties";
         break;

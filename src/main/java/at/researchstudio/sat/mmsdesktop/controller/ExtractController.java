@@ -10,8 +10,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jfoenix.controls.*;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -246,9 +246,8 @@ public class ExtractController implements Initializable {
     centerProgress.setVisible(true);
     centerProgress.setManaged(true);
 
-    Task<ExtractResult> task =
-        PropertyExtractor.generateIfcFileToJsonTask(
-            false, "extracted-features.json", new ArrayList<>(selectedIfcFiles), resourceBundle);
+        Task<ExtractResult> task =
+                        PropertyExtractor.generateIfcFileToJsonTask(new ArrayList<>(selectedIfcFiles), resourceBundle);
 
     task.addEventHandler(
         WorkerStateEvent.WORKER_STATE_SUCCEEDED,
