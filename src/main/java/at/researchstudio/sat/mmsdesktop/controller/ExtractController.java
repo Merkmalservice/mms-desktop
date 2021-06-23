@@ -150,7 +150,7 @@ import java.util.stream.Collectors;
                         new JFXSnackbarLayout(message), Duration.seconds(5), null)));
 
       } catch (IOException ioException) {
-        ioException.printStackTrace();
+        logger.error(Throwables.getStackTraceAsString(ioException));
         // TODO: SHOW ERROR
       }
     }
@@ -173,7 +173,7 @@ import java.util.stream.Collectors;
                     Duration.seconds(5), null)));
 
       } catch (IOException ioException) {
-        ioException.printStackTrace();
+        logger.error(Throwables.getStackTraceAsString(ioException));
         // TODO: SHOW ERROR
       }
     }

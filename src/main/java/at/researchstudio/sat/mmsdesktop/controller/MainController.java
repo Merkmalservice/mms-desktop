@@ -9,23 +9,26 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import org.apache.jena.ext.com.google.common.base.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.util.ResourceBundle;
 
-@Component
-public class MainController implements Initializable {
-    @Value("classpath:/about.fxml")
-    private Resource aboutResource;
+@Component public class MainController implements Initializable {
+    private static final Logger logger =
+        LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    @Value("classpath:/convert.fxml")
-    private Resource convertResource;
+    @Value("classpath:/about.fxml") private Resource aboutResource;
 
-    @Value("classpath:/extract.fxml")
-    private Resource extractResource;
+    @Value("classpath:/convert.fxml") private Resource convertResource;
+
+    @Value("classpath:/extract.fxml") private Resource extractResource;
 
     @Value("classpath:/settings.fxml")
     private Resource settingsResource;
@@ -127,7 +130,8 @@ public class MainController implements Initializable {
 
             mainPane.setCenter(fxmlLoader.load());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(Throwables.getStackTraceAsString(e));
+            //TODO: SHOW ERROR
         }
     }
 }
