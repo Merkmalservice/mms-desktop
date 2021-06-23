@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 public class PropertyExtractor {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private static final boolean USE_NEWEXTRACTION = true;
+    private static final boolean USE_NEWEXTRACTION = false;
 
     public static Task<ExtractResult> generateIfcFileToJsonTask(
       List<IfcFileWrapper> ifcFiles,
