@@ -3,49 +3,21 @@ package at.researchstudio.sat.mmsdesktop.model.ifc.vocab;
 import org.apache.jena.rdf.model.Resource;
 
 public enum IfcPropertyType {
-  TEXT("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcText", "IFCTEXT"),
-  LABEL("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcLabel", "IFCLABEL"),
-  LOGICAL("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcLogical", "IFCLOGICAL"),
-  IDENTIFIER(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcIdentifier", "IFCIDENTIFIER"),
-  BOOL("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcBoolean", "IFCBOOLEAN"),
-  EXPRESS_REAL("https://w3id.org/express#REAL"),
-  EXPRESS_BOOL("https://w3id.org/express#BOOLEAN"),
-  EXPRESS_INTEGER("https://w3id.org/express#INTEGER"),
-  INTEGER("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcInteger", "IFCINTEGER"),
-  LENGTH_MEASURE(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcLengthMeasure",
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#IfcLengthMeasure",
-                  "IFCLENGTHMEASURE"),
-  COUNT_MEASURE(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcCountMeasure",
-                  "IFCCOUNTMEASURE"),
-  POSITIVE_LENGTH_MEASURE(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcPositiveLengthMeasure",
-                  "IFCPOSITIVELENGTHMEASURE"),
-  NORMALISED_RATIO_MEASURE(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcNormalisedRatioMeasure",
-                  "IFCNORMALISEDRATIOMEASURE"),
-  PLANE_ANGLE_MEASURE(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcPlaneAngleMeasure",
-                  "IFCPLANEANGLEMEASURE"),
-  AREA_MEASURE(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcAreaMeasure",
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#IfcAreaMeasure",
-                  "IFCAREAMEASURE"),
-  VOLUME_MEASURE(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcVolumeMeasure",
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD1/OWL#IfcVolumeMeasure",
-                  "IFCVOLUMEMEASURE"),
-  THERMAL_TRANSMITTANCE_MEASURE(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcThermalTransmittanceMeasure",
-                  "IFCTHERMALTRANSMITTANCEMEASURE"),
-  TIMESTAMP(
-                  "http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcTimeStamp", "IFCTIMESTAMP"),
-  // REF("bla"), //TODO: HOW DO REF PROPS LOOK LIKE
+  TEXT("IfcText", "IFCTEXT"), LABEL("IfcLabel", "IFCLABEL"), LOGICAL("IfcLogical",
+      "IFCLOGICAL"), IDENTIFIER("IfcIdentifier", "IFCIDENTIFIER"), BOOL("IfcBoolean",
+      "IFCBOOLEAN"), EXPRESS_REAL("REAL"), EXPRESS_BOOL("BOOLEAN"), EXPRESS_INTEGER(
+      "INTEGER"), INTEGER("IfcInteger", "IFCINTEGER"), POSITIVE_INTEGER("IfcPositiveInteger",
+      "IFCPOSITIVEINTEGER"), DIMENSION_COUNT("IfcDimensionCount",
+      "IFCDIMENSIONCOUNT"), LENGTH_MEASURE("IfcLengthMeasure", "IFCLENGTHMEASURE"), COUNT_MEASURE(
+      "IfcCountMeasure", "IFCCOUNTMEASURE"), POSITIVE_LENGTH_MEASURE("IfcPositiveLengthMeasure",
+      "IFCPOSITIVELENGTHMEASURE"), NORMALISED_RATIO_MEASURE("IfcNormalisedRatioMeasure",
+      "IFCNORMALISEDRATIOMEASURE"), PLANE_ANGLE_MEASURE("IfcPlaneAngleMeasure",
+      "IFCPLANEANGLEMEASURE"), AREA_MEASURE("IfcAreaMeasure", "IFCAREAMEASURE"), VOLUME_MEASURE(
+      "IfcVolumeMeasure", "IFCVOLUMEMEASURE"), THERMAL_TRANSMITTANCE_MEASURE(
+      "IfcThermalTransmittanceMeasure", "IFCTHERMALTRANSMITTANCEMEASURE"), TIMESTAMP("IfcTimeStamp",
+      "IFCTIMESTAMP"), // REF("bla"), //TODO: HOW DO REF PROPS LOOK LIKE
   // ENUM("bla"), //TODO: HOW DO ENUM PROPS LOOK LIKE
-  REAL("http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#IfcReal", "IFCREAL"),
-  UNKNOWN();
+  REAL("IfcReal", "IFCREAL"), UNKNOWN();
 
   // declaring private variable for getting values
   private final String[] typeUris;
@@ -55,13 +27,19 @@ public enum IfcPropertyType {
   }
 
   public static IfcPropertyType fromResource(Resource propertyType)
-                  throws IllegalArgumentException {
+      throws IllegalArgumentException {
     return fromString(propertyType.getURI());
   }
 
   public static IfcPropertyType fromString(String propertyType) throws IllegalArgumentException {
     for (IfcPropertyType type : IfcPropertyType.values()) {
       for (String enumUri : type.typeUris) {
+        if (propertyType.contains("#")) {
+          String[] splitPropertyType = propertyType.split("#");
+          if (splitPropertyType.length == 2 && enumUri.equals(splitPropertyType[1])) {
+            return type;
+          }
+        }
         if (enumUri.equals(propertyType)) {
           return type;
         }

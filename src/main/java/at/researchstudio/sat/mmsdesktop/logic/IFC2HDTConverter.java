@@ -1,9 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.logic;
 
 import be.ugent.IfcSpfReader;
-import org.rdfhdt.hdt.enums.RDFNotation;
 import org.apache.jena.atlas.lib.Sink;
-import org.apache.jena.graph.Graph;
+import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.system.StreamRDFLib;
 import org.rdfhdt.hdt.exceptions.ParserException;
@@ -18,7 +17,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -45,7 +47,7 @@ public class IFC2HDTConverter {
             try {
                 hdt.set(HDTManager.generateHDT(sinkToIterator.iterator(), BASE_URI, new HDTSpecification(), null));
             } catch (IOException|ParserException e) {
-                e.printStackTrace();
+                logger.error(Throwables.getStackTraceAsString(e));
             }
         }, "HDT Writer");
         hdtWriterThread.start();

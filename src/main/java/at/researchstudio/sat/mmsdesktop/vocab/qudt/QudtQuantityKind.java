@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.vocab.qudt;
 
 public abstract class QudtQuantityKind {
     public static final String AREA = "http://qudt.org/vocab/quantitykind/Area";
+    public static final String ANGLE = "http://qudt.org/vocab/quantitykind/Angle";
     public static final String VOLUME = "http://qudt.org/vocab/quantitykind/Volume";
     public static final String LENGTH = "http://qudt.org/vocab/quantitykind/Length";
     public static final String WIDTH = "http://qudt.org/vocab/quantitykind/Width";

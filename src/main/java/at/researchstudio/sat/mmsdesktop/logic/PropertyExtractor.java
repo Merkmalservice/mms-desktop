@@ -27,8 +27,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdtjena.HDTGraph;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -38,7 +36,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -46,24 +43,22 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class PropertyExtractor {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final boolean USE_NEWEXTRACTION = false;
 
-    private static final boolean USE_NEWEXTRACTION = false;
-
-    public static Task<ExtractResult> generateIfcFileToJsonTask(
-      List<IfcFileWrapper> ifcFiles,
+  public static Task<ExtractResult> generateIfcFileToJsonTask(List<IfcFileWrapper> ifcFiles,
       final ResourceBundle resourceBundle) {
     return new Task<>() {
-      @Override
-      public ExtractResult call() {
+      @Override public ExtractResult call() {
         StringBuilder logOutput = new StringBuilder();
         final int max = ifcFiles.size() * 2;
 
+        List<Feature> extractedFeatures = new ArrayList<>();
+        int extractedIfcProperties = 0;
+
         if (USE_NEWEXTRACTION) {
           // NEW PROCESS
-          final Pattern propertyExtractPattern =
-              Pattern.compile(
-                  "(?>#[0-9]*= IFCPROPERTYSINGLEVALUE\\(')(?<name>.*)',\\$,(?<type>[A-Z]*)\\(('?)(?<value>.*)(\\),\\$)");
+          final Pattern propertyExtractPattern = Pattern.compile(
+              "(?>#[0-9]*= IFCPROPERTYSINGLEVALUE\\(')(?<name>.*)',\\$,(?<type>[A-Z]*)\\(('?)(?<value>.*)(\\),\\$)");
           // <- warning might contain a . or ' at the end of the value
           // Pattern.compile("^#\\d+=IFCPROPERTYSINGLEVALUE\\('([^']+)',\\$,([A-Z]+)\\('?([^)']+)'?\\),\\$\\);\\s*$");
 
@@ -183,9 +178,6 @@ public class PropertyExtractor {
                     resourceBundle, "label.extract.process.ifc2hdt", i, max));
           }
 
-          List<Feature> extractedFeatures = new ArrayList<>();
-          int extractedIfcProperties = 0;
-
           final int newMax = ifcFiles.size() + propertyData.size();
           for (Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap : propertyData) {
             extractedIfcProperties +=
@@ -237,11 +229,8 @@ public class PropertyExtractor {
                 .append(System.lineSeparator());
             updateMessage(logOutput.toString());
           }
-
-          return new ExtractResult(extractedFeatures, logOutput.toString());
         } else {
           // OLD PROCESS
-
           Map<IfcVersion, List<HDT>> hdtData = new HashMap<>();
           int hdtDataCount = 0;
           int i = 0;
@@ -253,8 +242,7 @@ public class PropertyExtractor {
               if (!hdtData.isEmpty() && !hdtData.get(ifcFile.getIfcVersion()).isEmpty()) {
                 updatedList.addAll(hdtData.get(ifcFile.getIfcVersion()));
               }
-              updatedList.add(
-                  IFC2HDTConverter.readFromFile(ifcFile.getFile()));
+              updatedList.add(IFC2HDTConverter.readFromFile(ifcFile.getFile()));
               hdtDataCount++;
               hdtData.put(ifcFile.getIfcVersion(), updatedList);
               logOutput
@@ -284,9 +272,6 @@ public class PropertyExtractor {
                 MessageUtils.getKeyWithParameters(
                     resourceBundle, "label.extract.process.ifc2hdt", i, max));
           }
-
-          List<Feature> extractedFeatures = new ArrayList<>();
-          int extractedIfcProperties = 0;
 
           final int newMax = ifcFiles.size() + hdtData.size();
           for (Map.Entry<IfcVersion, List<HDT>> hdtMapEntry : hdtData.entrySet()) {
@@ -351,32 +336,19 @@ public class PropertyExtractor {
                 .append(System.lineSeparator());
             updateMessage(logOutput.toString());
           }
-
-          return new ExtractResult(extractedFeatures, logOutput.toString());
         }
+        return new ExtractResult(extractedFeatures, logOutput.toString());
       }
     };
   }
 
-    private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(
-      HDT hdtData, IfcVersion ifcVersion) throws IOException {
+  private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(HDT hdtData,
+      IfcVersion ifcVersion) throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
     ResourceLoader resourceLoader = new DefaultResourceLoader();
     String query;
-    switch (ifcVersion) {
-      case IFC4x3_RC1:
-      case IFC4_ADD2:
-        //TODO: IMPL
-      case IFC4:
-        query = "extract_ifc4_projectunits";
-        break;
-      case IFC2X3:
-      default:
-        query = "extract_ifc2x3_projectunits";
-        break;
-    }
-    Resource resource = resourceLoader.getResource("classpath:" + query + ".rq");
+    Resource resource = resourceLoader.getResource(ifcVersion.getProjectUnitQueryResourceString());
     InputStream inputStream = resource.getInputStream();
     String extractPropNamesQuery = getFileContent(inputStream, StandardCharsets.UTF_8.toString());
     try (QueryExecution qe = QueryExecutionFactory.create(extractPropNamesQuery, model)) {
@@ -390,33 +362,18 @@ public class PropertyExtractor {
     }
   }
 
-    private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromData(
+  private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromData(
       Set<IfcProperty> ifcProperties, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
-    return ifcProperties.stream()
-        .map(ifc -> new IfcProperty(ifc, projectUnits))
+    return ifcProperties.stream().map(ifc -> new IfcProperty(ifc, projectUnits))
         .collect(Collectors.groupingBy(IfcProperty::getType));
   }
 
-    private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromHdtData(
-      HDT hdtData, Map<IfcUnitType, List<IfcUnit>> projectUnits, IfcVersion ifcVersion)
-      throws IOException {
+  private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromHdtData(HDT hdtData,
+      Map<IfcUnitType, List<IfcUnit>> projectUnits, IfcVersion ifcVersion) throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
     ResourceLoader resourceLoader = new DefaultResourceLoader();
-    String query;
-    switch (ifcVersion) {
-      case IFC4x3_RC1:
-      case IFC4_ADD2:
-        //TODO: IMPL
-      case IFC4:
-        query = "extract_ifc4_properties";
-        break;
-      case IFC2X3:
-      default:
-        query = "extract_ifc2x3_properties";
-        break;
-    }
-    Resource resource = resourceLoader.getResource("classpath:" + query + ".rq");
+    Resource resource = resourceLoader.getResource(ifcVersion.getPropertyQueryResourceString());
     InputStream inputStream = resource.getInputStream();
     String extractPropNamesQuery = getFileContent(inputStream, StandardCharsets.UTF_8.toString());
     try (QueryExecution qe = QueryExecutionFactory.create(extractPropNamesQuery, model)) {
@@ -430,7 +387,7 @@ public class PropertyExtractor {
     }
   }
 
-    private static ExtractResult extractFeaturesFromProperties(
+  private static ExtractResult extractFeaturesFromProperties(
       Map<IfcPropertyType, List<IfcProperty>> extractedProperties) {
     List<Feature> extractedFeatures = new ArrayList<>();
     StringBuilder fullLog = new StringBuilder();
@@ -470,53 +427,52 @@ public class PropertyExtractor {
           break;
         case AREA_MEASURE:
           fullLog.append(logString).append(System.getProperty("line.separator"));
-          extractedFeatures.addAll(
-              entry.getValue().stream()
-                  .map(
-                      ifcProperty ->
-                          new NumericFeature(
-                              ifcProperty.getName(),
-                              QudtQuantityKind.AREA,
-                              QudtUnit.getUnitBasedOnIfcUnitMeasureLengthBasedOnName(
-                                  ifcProperty.getMeasure())))
-                  .collect(Collectors.toList()));
+          extractedFeatures.addAll(entry.getValue().stream().map(
+              ifcProperty -> new NumericFeature(ifcProperty.getName(), QudtQuantityKind.AREA,
+                  QudtUnit.getUnitBasedOnIfcUnitMeasureLengthBasedOnName(ifcProperty.getMeasure())))
+              .collect(Collectors.toList()));
           break;
+        case DIMENSION_COUNT:
+        case REAL:
+        case EXPRESS_INTEGER:
+        case POSITIVE_INTEGER:
         case INTEGER:
         case COUNT_MEASURE:
           fullLog.append(logString).append(System.getProperty("line.separator"));
-          extractedFeatures.addAll(
-              entry.getValue().stream()
-                  .map(
-                      ifcProperty ->
-                          new NumericFeature(
-                              ifcProperty.getName(),
-                              QudtQuantityKind.DIMENSIONLESS,
-                              QudtUnit.UNITLESS))
-                  .collect(Collectors.toList()));
+          extractedFeatures.addAll(entry.getValue().stream().map(
+              ifcProperty -> new NumericFeature(ifcProperty.getName(),
+                  QudtQuantityKind.DIMENSIONLESS,
+                              QudtUnit.UNITLESS)).collect(Collectors.toList()));
           break;
+        case PLANE_ANGLE_MEASURE:
+          fullLog.append(logString).append(System.getProperty("line.separator"));
+          extractedFeatures.addAll(entry.getValue().stream().map(
+              ifcProperty -> new NumericFeature(ifcProperty.getName(), QudtQuantityKind.ANGLE,
+                  QudtUnit.getUnitBasedOnIfcUnitMeasureLengthBasedOnName(ifcProperty.getMeasure())))
+              .collect(Collectors.toList()));
+          break;
+        case THERMAL_TRANSMITTANCE_MEASURE:
+          fullLog.append(logString).append(System.getProperty("line.separator"));
+          extractedFeatures.addAll(entry.getValue().stream().map(
+              ifcProperty -> new NumericFeature(ifcProperty.getName(),
+                  QudtQuantityKind.DIMENSIONLESS,
+                  //TODO: Figure out what THERMAL_TRANSMITTANCE_MEASURE is in QUDT.QuantityKind
+                  QudtUnit.getUnitBasedOnIfcUnitMeasureLengthBasedOnName(ifcProperty.getMeasure())))
+              .collect(Collectors.toList()));
         case LENGTH_MEASURE:
         case POSITIVE_LENGTH_MEASURE:
           fullLog.append(logString).append(System.getProperty("line.separator"));
-          extractedFeatures.addAll(
-              entry.getValue().stream()
-                  .map(
-                      ifcProperty ->
-                          new NumericFeature(
-                              ifcProperty.getName(),
-                              QudtQuantityKind.getQuantityKindLengthBasedOnName(
-                                  ifcProperty.getName()),
-                              QudtUnit.getUnitBasedOnIfcUnitMeasureLengthBasedOnName(
-                                  ifcProperty.getMeasure())))
-                  .collect(Collectors.toList()));
+          extractedFeatures.addAll(entry.getValue().stream().map(
+              ifcProperty -> new NumericFeature(ifcProperty.getName(),
+                  QudtQuantityKind.getQuantityKindLengthBasedOnName(ifcProperty.getName()),
+                  QudtUnit.getUnitBasedOnIfcUnitMeasureLengthBasedOnName(ifcProperty.getMeasure())))
+              .collect(Collectors.toList()));
           break;
         default:
-          fullLog
-              .append(logString)
+          fullLog.append(logString)
               .append(", will be ignored, no matching Feature-Type determined yet for:")
               .append(System.getProperty("line.separator"));
-          entry
-              .getValue()
-              .forEach(
+          entry.getValue().forEach(
                   property ->
                       fullLog
                           .append(property.toString())
@@ -530,7 +486,8 @@ public class PropertyExtractor {
     return new ExtractResult(extractedFeatures, fullLog.toString());
   }
 
-    private static String getFileContent(InputStream fis, String encoding) throws IOException {
+  private static String getFileContent(InputStream fis, String encoding) throws IOException {
+    //TODO: REFACTOR THIS
     try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, encoding))) {
       StringBuilder sb = new StringBuilder();
       String line;
