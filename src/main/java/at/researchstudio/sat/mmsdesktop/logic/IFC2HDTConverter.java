@@ -1,6 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.logic;
 
 import be.ugent.IfcSpfReader;
+import be.ugent.progress.TaskProgressListener;
 import org.apache.jena.atlas.lib.Sink;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.apache.jena.graph.Triple;
@@ -8,7 +9,9 @@ import org.apache.jena.riot.system.StreamRDFLib;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.rdf.TripleWriter;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +31,9 @@ public class IFC2HDTConverter {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String BASE_URI = "https://researchstudio.at/";
 
-    public static HDT readFromFile(File ifcFile) throws IOException {
+    public static HDT readFromFile(File ifcFile, TaskProgressListener taskProgressListener) throws IOException {
         IfcSpfReader r = new IfcSpfReader();
-
-        r.setup(ifcFile.getAbsolutePath());
+        r.setup(ifcFile.getAbsolutePath(), taskProgressListener);
         SinkToIterator sinkToIterator = new SinkToIterator();
         Thread converterThread = new Thread(() -> {
             try {
@@ -45,8 +47,38 @@ public class IFC2HDTConverter {
         AtomicReference<HDT> hdt = new AtomicReference<>();
         Thread hdtWriterThread = new Thread(() -> {
             try {
-                hdt.set(HDTManager.generateHDT(sinkToIterator.iterator(), BASE_URI, new HDTSpecification(), null));
-            } catch (IOException|ParserException e) {
+                File hdtFile = File.createTempFile("ifc-hdt","hdt");
+                System.out.println("writing to " + hdtFile);
+                TripleWriter writer = null;
+                try {
+                    writer = HDTManager
+                                    .getHDTWriter(hdtFile.getAbsolutePath(), BASE_URI, new HDTSpecification());
+                    Iterator<TripleString> it = sinkToIterator.iterator();
+                    while (it.hasNext()) {
+                        writer.addTriple(it.next());
+                    }
+                    hdt.set(HDTManager.loadHDT(hdtFile.getAbsolutePath(), new ProgressListener() {
+                        @Override public void notifyProgress(float level, String message) {
+                            taskProgressListener.notifyProgress("Reading back generated HDT file", message, level);
+                        }
+                    }));
+                } finally {
+                    if (writer != null) {
+                        writer.close();
+                    }
+                }
+
+                /**
+                 *
+
+                hdt.set(HDTManager.generateHDT(sinkToIterator.iterator(), BASE_URI, new HDTSpecification(),
+                                new ProgressListener() {
+                                    @Override public void notifyProgress(float level, String message) {
+                                        taskProgressListener.notifyProgress("writing HDT", message, level);
+                                    }
+                                }));
+                 */
+            } catch (Exception e) {
                 logger.error(Throwables.getStackTraceAsString(e));
             }
         }, "HDT Writer");

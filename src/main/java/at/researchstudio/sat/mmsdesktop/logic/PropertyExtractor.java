@@ -14,6 +14,7 @@ import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtUnit;
+import be.ugent.progress.StatefulTaskProgressListener;
 import javafx.concurrent.Task;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
@@ -242,7 +243,32 @@ public class PropertyExtractor {
               if (!hdtData.isEmpty() && !hdtData.get(ifcFile.getIfcVersion()).isEmpty()) {
                 updatedList.addAll(hdtData.get(ifcFile.getIfcVersion()));
               }
-              updatedList.add(IFC2HDTConverter.readFromFile(ifcFile.getFile()));
+              updatedList.add(IFC2HDTConverter.readFromFile(ifcFile.getFile(), new StatefulTaskProgressListener() {
+                @Override public void doNotifyProgress(String task, String message, float progress) {
+                  Set<String> taskNames = getTaskNames();
+                  double cumulativeProgress = taskNames.stream()
+                                  .map(tn -> getTaskProgress(tn))
+                                  .filter(p -> ! p.isFinished())
+                                  .mapToDouble(st -> st.getLevel())
+                                  .sum();
+                  long taskcount = taskNames.stream()
+                                  .map(tn -> getTaskProgress(tn))
+                                  .filter(p -> ! p.isFinished())
+                                  .filter(p -> p.getLevel() > 0)
+                                                  .count();
+                  double progressToDisplay = cumulativeProgress / (double) taskcount;
+                  if (progress > 0) {
+                    updateMessage(String.format("%s: %s (%.0f%%)", task, message, progress * 100));
+                  } else {
+                    updateMessage(String.format("%s: %s", task, message));
+                  }
+                  updateProgress(progressToDisplay, 1);
+                }
+
+                @Override public void doNotifyFinished(String s) {
+                  //ignore
+                }
+              }));
               hdtDataCount++;
               hdtData.put(ifcFile.getIfcVersion(), updatedList);
               logOutput
