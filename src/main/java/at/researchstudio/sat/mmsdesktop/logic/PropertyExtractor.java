@@ -241,7 +241,6 @@ public class PropertyExtractor {
           return new ExtractResult(extractedFeatures, logOutput.toString());
         } else {
           // OLD PROCESS
-
           Map<IfcVersion, List<HDT>> hdtData = new HashMap<>();
           int hdtDataCount = 0;
           int i = 0;
@@ -364,20 +363,9 @@ public class PropertyExtractor {
     Model model = ModelFactory.createModelForGraph(graph);
     ResourceLoader resourceLoader = new DefaultResourceLoader();
     String query;
-    switch (ifcVersion) {
-      case IFC4x3_RC1:
-      case IFC4_ADD2:
-        //TODO: IMPL
-      case IFC4:
-        query = "extract_ifc4_projectunits";
-        break;
-      case IFC2X3:
-      default:
-        query = "extract_ifc2x3_projectunits";
-        break;
-    }
-    Resource resource = resourceLoader.getResource("classpath:" + query + ".rq");
-    InputStream inputStream = resource.getInputStream();
+      Resource resource =
+          resourceLoader.getResource(ifcVersion.getProjectUnitQueryResourceString());
+      InputStream inputStream = resource.getInputStream();
     String extractPropNamesQuery = getFileContent(inputStream, StandardCharsets.UTF_8.toString());
     try (QueryExecution qe = QueryExecutionFactory.create(extractPropNamesQuery, model)) {
       ResultSet rs = qe.execSelect();
@@ -402,22 +390,9 @@ public class PropertyExtractor {
       throws IOException {
     HDTGraph graph = new HDTGraph(hdtData);
     Model model = ModelFactory.createModelForGraph(graph);
-    ResourceLoader resourceLoader = new DefaultResourceLoader();
-    String query;
-    switch (ifcVersion) {
-      case IFC4x3_RC1:
-      case IFC4_ADD2:
-        //TODO: IMPL
-      case IFC4:
-        query = "extract_ifc4_properties";
-        break;
-      case IFC2X3:
-      default:
-        query = "extract_ifc2x3_properties";
-        break;
-    }
-    Resource resource = resourceLoader.getResource("classpath:" + query + ".rq");
-    InputStream inputStream = resource.getInputStream();
+      ResourceLoader resourceLoader = new DefaultResourceLoader();
+      Resource resource = resourceLoader.getResource(ifcVersion.getPropertyQueryResourceString());
+      InputStream inputStream = resource.getInputStream();
     String extractPropNamesQuery = getFileContent(inputStream, StandardCharsets.UTF_8.toString());
     try (QueryExecution qe = QueryExecutionFactory.create(extractPropNamesQuery, model)) {
       ResultSet rs = qe.execSelect();
