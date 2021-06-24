@@ -6,8 +6,8 @@ public enum IfcUnitMeasure {
   METRE("METRE"), SQUARE_METRE("SQUARE_METRE"), CUBIC_METRE("CUBIC_METRE"), GRAM("GRAM"), SECOND(
       "SECOND"), HERTZ("HERTZ"), DEGREE_CELSIUS("DEGREE_CELSIUS"), AMPERE("AMPERE"), VOLT(
       "VOLT"), WATT("WATT"), NEWTON("NEWTON"), LUX("LUX"), LUMEN("LUMEN"), KELVIN("KELVIN"), RADIAN(
-      "RADIAN"), CANDELA("CANDELA"), PASCAL("PASCAL"), JOULE("JOULE"), STERIDIAN(
-      "STERIDIAN"), UNKNOWN();
+      "RADIAN"), CANDELA("CANDELA"), PASCAL("PASCAL"), JOULE("JOULE"), STERADIAN(
+      "STERADIAN"), UNKNOWN();
 
   // declaring private variable for getting values
   private final String[] measureUris;
