@@ -106,7 +106,7 @@ import java.util.stream.Collectors;
     try {
       List<File> selectedFiles = FileUtils.getIfcFilesFromDirectory(selectedDirectory);
       if (selectedFiles.size() > 0) {
-        Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<IfcFileWrapper>(selectedIfcFiles);
+        Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<>(selectedIfcFiles);
         selectedIfcFileSet
             .addAll(selectedFiles.stream().map(IfcFileWrapper::new).collect(Collectors.toList()));
         selectedIfcFiles.setAll(selectedIfcFileSet);
@@ -123,7 +123,7 @@ import java.util.stream.Collectors;
     List<File> selectedFiles =
         fileChooser.showOpenMultipleDialog(parentPane.getScene().getWindow());
     if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
-      Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<IfcFileWrapper>(selectedIfcFiles);
+      Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<>(selectedIfcFiles);
       selectedIfcFileSet
           .addAll(selectedFiles.stream().map(IfcFileWrapper::new).collect(Collectors.toList()));
       selectedIfcFiles.setAll(selectedIfcFileSet);
