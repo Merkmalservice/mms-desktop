@@ -6,12 +6,10 @@ import org.apache.jena.atlas.lib.Sink;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.system.StreamRDFLib;
-import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.rdf.TripleWriter;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +45,7 @@ public class IFC2HDTConverter {
         AtomicReference<HDT> hdt = new AtomicReference<>();
         Thread hdtWriterThread = new Thread(() -> {
             try {
-                File hdtFile = File.createTempFile("ifc-hdt","hdt");
+                /*File hdtFile = File.createTempFile("ifc-hdt","hdt");
                 System.out.println("writing to " + hdtFile);
                 TripleWriter writer = null;
                 try {
@@ -66,10 +64,7 @@ public class IFC2HDTConverter {
                     if (writer != null) {
                         writer.close();
                     }
-                }
-
-                /**
-                 *
+                }*/
 
                 hdt.set(HDTManager.generateHDT(sinkToIterator.iterator(), BASE_URI, new HDTSpecification(),
                                 new ProgressListener() {
@@ -77,7 +72,6 @@ public class IFC2HDTConverter {
                                         taskProgressListener.notifyProgress("writing HDT", message, level);
                                     }
                                 }));
-                 */
             } catch (Exception e) {
                 logger.error(Throwables.getStackTraceAsString(e));
             }

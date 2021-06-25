@@ -243,32 +243,29 @@ public class PropertyExtractor {
               if (!hdtData.isEmpty() && !hdtData.get(ifcFile.getIfcVersion()).isEmpty()) {
                 updatedList.addAll(hdtData.get(ifcFile.getIfcVersion()));
               }
-              updatedList.add(IFC2HDTConverter.readFromFile(ifcFile.getFile(), new StatefulTaskProgressListener() {
-                @Override public void doNotifyProgress(String task, String message, float progress) {
-                  Set<String> taskNames = getTaskNames();
-                  double cumulativeProgress = taskNames.stream()
-                                  .map(tn -> getTaskProgress(tn))
-                                  .filter(p -> ! p.isFinished())
-                                  .mapToDouble(st -> st.getLevel())
-                                  .sum();
-                  long taskcount = taskNames.stream()
-                                  .map(tn -> getTaskProgress(tn))
-                                  .filter(p -> ! p.isFinished())
-                                  .filter(p -> p.getLevel() > 0)
-                                                  .count();
-                  double progressToDisplay = cumulativeProgress / (double) taskcount;
-                  if (progress > 0) {
-                    updateMessage(String.format("%s: %s (%.0f%%)", task, message, progress * 100));
-                  } else {
-                    updateMessage(String.format("%s: %s", task, message));
-                  }
-                  updateProgress(progressToDisplay, 1);
-                }
+              updatedList.add(IFC2HDTConverter
+                  .readFromFile(ifcFile.getFile(), new StatefulTaskProgressListener() {
+                    @Override
+                    public void doNotifyProgress(String task, String message, float progress) {
+                      Set<String> taskNames = getTaskNames();
+                      double cumulativeProgress = taskNames.stream().map(tn -> getTaskProgress(tn))
+                          .filter(p -> !p.isFinished()).mapToDouble(st -> st.getLevel()).sum();
+                      long taskcount = taskNames.stream().map(tn -> getTaskProgress(tn))
+                          .filter(p -> !p.isFinished()).filter(p -> p.getLevel() > 0).count();
+                      double progressToDisplay = cumulativeProgress / (double) taskcount;
+                      if (progress > 0) {
+                        updateMessage(
+                            String.format("%s: %s (%.0f%%)", task, message, progress * 100));
+                      } else {
+                        updateMessage(String.format("%s: %s", task, message));
+                      }
+                      updateProgress(progressToDisplay, 1);
+                    }
 
-                @Override public void doNotifyFinished(String s) {
-                  //ignore
-                }
-              }));
+                    @Override public void doNotifyFinished(String s) {
+                      // ignore
+                    }
+                  }));
               hdtDataCount++;
               hdtData.put(ifcFile.getIfcVersion(), updatedList);
               logOutput
@@ -404,12 +401,26 @@ public class PropertyExtractor {
     String extractPropNamesQuery = getFileContent(inputStream, StandardCharsets.UTF_8.toString());
     try (QueryExecution qe = QueryExecutionFactory.create(extractPropNamesQuery, model)) {
       ResultSet rs = qe.execSelect();
-      List<IfcProperty> extractedProperties = new ArrayList<>();
-      while (rs.hasNext()) {
-        QuerySolution qs = rs.next();
-        extractedProperties.add(new IfcProperty(qs, projectUnits));
+      Set<IfcProperty> extractedProperties = new HashSet<>();
+
+      try {
+        while (rs.hasNext()) {
+          QuerySolution qs = rs.next();
+          IfcProperty prop = extractedProperties.stream().findAny().orElse(null);
+
+          if (prop == null) {
+            prop = new IfcProperty(qs, projectUnits);
+            extractedProperties.add(prop);
+          }
+          prop.addExtractedValue(qs);
+
+          extractedProperties.add(new IfcProperty(qs, projectUnits));
+        }
+      } catch (NullPointerException npe) {
+        boolean fail = true;
       }
       return extractedProperties.stream().collect(Collectors.groupingBy(IfcProperty::getType));
+
     }
   }
 
@@ -442,13 +453,9 @@ public class PropertyExtractor {
           fullLog.append(logString).append(System.getProperty("line.separator"));
           extractedFeatures.addAll(
               entry.getValue().stream()
-                  .map(
-                      ifcProperty ->
-                          new NumericFeature(
-                              ifcProperty.getName(),
-                              QudtQuantityKind.VOLUME,
-                              QudtUnit.getUnitBasedOnIfcUnitMeasureLengthBasedOnName(
-                                  ifcProperty.getMeasure())))
+                  .map(ifcProperty -> new NumericFeature(ifcProperty.getName(),
+                      QudtQuantityKind.VOLUME, QudtUnit
+                      .getUnitBasedOnIfcUnitMeasureLengthBasedOnName(ifcProperty.getMeasure())))
                   .collect(Collectors.toList()));
           break;
         case AREA_MEASURE:
@@ -467,8 +474,7 @@ public class PropertyExtractor {
           fullLog.append(logString).append(System.getProperty("line.separator"));
           extractedFeatures.addAll(entry.getValue().stream().map(
               ifcProperty -> new NumericFeature(ifcProperty.getName(),
-                  QudtQuantityKind.DIMENSIONLESS,
-                              QudtUnit.UNITLESS)).collect(Collectors.toList()));
+                  QudtQuantityKind.DIMENSIONLESS, QudtUnit.UNITLESS)).collect(Collectors.toList()));
           break;
         case PLANE_ANGLE_MEASURE:
           fullLog.append(logString).append(System.getProperty("line.separator"));
@@ -482,7 +488,8 @@ public class PropertyExtractor {
           extractedFeatures.addAll(entry.getValue().stream().map(
               ifcProperty -> new NumericFeature(ifcProperty.getName(),
                   QudtQuantityKind.DIMENSIONLESS,
-                  //TODO: Figure out what THERMAL_TRANSMITTANCE_MEASURE is in QUDT.QuantityKind
+                  // TODO: Figure out what THERMAL_TRANSMITTANCE_MEASURE is in
+                  // QUDT.QuantityKind
                   QudtUnit.getUnitBasedOnIfcUnitMeasureLengthBasedOnName(ifcProperty.getMeasure())))
               .collect(Collectors.toList()));
         case LENGTH_MEASURE:
@@ -498,11 +505,8 @@ public class PropertyExtractor {
           fullLog.append(logString)
               .append(", will be ignored, no matching Feature-Type determined yet for:")
               .append(System.getProperty("line.separator"));
-          entry.getValue().forEach(
-                  property ->
-                      fullLog
-                          .append(property.toString())
-                          .append(System.getProperty("line.separator")));
+          entry.getValue().forEach(property -> fullLog.append(property.toString())
+              .append(System.getProperty("line.separator")));
           fullLog
               .append("-------------------------------------------------------------------------")
               .append(System.getProperty("line.separator"));
@@ -513,7 +517,7 @@ public class PropertyExtractor {
   }
 
   private static String getFileContent(InputStream fis, String encoding) throws IOException {
-    //TODO: REFACTOR THIS
+    // TODO: REFACTOR THIS
     try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, encoding))) {
       StringBuilder sb = new StringBuilder();
       String line;

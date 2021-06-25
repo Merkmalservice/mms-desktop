@@ -3,18 +3,63 @@
 # TODO: SOMEHOW I THINK IFC4 SPLITS THE PROPERTIES BASED ON THE TYPE:
 
 PREFIX express: <https://w3id.org/express#>
+PREFIX list: <https://w3id.org/list#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX ifc:     <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD2_TC1/OWL#>
 
-SELECT DISTINCT ?propName ?propType
+SELECT DISTINCT ?propName ?propType ?valueType ?propValue
 WHERE {
-          ?propUri ifc:name_IfcProperty ?propNameUri.
-          ?propUri ifc:nominalValue_IfcPropertySingleValue ?propTypeUri .
-          ?propTypeUri a ?propType .
-          ?propNameUri
-          a                       ifc:IfcIdentifier ;
-          express:hasString       ?propName ;
+          ?propUri
+        	ifc:nominalValue_IfcPropertySingleValue ?propValueUri ;
+        	ifc:name_IfcProperty ?propNameUri .
+          ?propValueUri a ?propType .
+    	  ?propValueUri express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue .
+    	  ?propValueUri ?valueType ?propValue .
+ 		  ?propNameUri
+	          a                       ifc:IfcIdentifier ;
+    	      express:hasString       ?propName ;
       }
+
+# Query that returns propNames and types with all distinct values too
+#
+# PREFIX express: <https://w3id.org/express#>
+# PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# PREFIX ifc:     <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD2_TC1/OWL#>
+#
+# SELECT DISTINCT ?propName ?propType ?propValue
+# WHERE {
+#          ?propUri
+#        	ifc:nominalValue_IfcPropertySingleValue ?propValueUri ;
+#        	ifc:name_IfcProperty ?propNameUri .
+#          ?propValueUri a ?propType .
+#    	  ?propValueUri express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue .
+# 		  ?propNameUri
+#	          a                       ifc:IfcIdentifier ;
+#    	      express:hasString       ?propName ;
+#      }
+
+# IfcPropertyEnumeratedValue -> are enumerated Properties
+# PREFIX express: <https://w3id.org/express#>
+# PREFIX list: <https://w3id.org/list#>
+# PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# PREFIX ifc:     <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD2_TC1/OWL#>
+#
+# SELECT DISTINCT ?propUri ?propName ?listValue ?enumType
+# WHERE {
+#     ?propUri
+#         a ifc:IfcPropertyEnumeratedValue ;
+#     	ifc:name_IfcProperty ?propNameUri ;
+#     	ifc:enumerationValues_IfcPropertyEnumeratedValue ?enumValuesUri .
+#     ?propNameUri
+#         a                       ifc:IfcIdentifier ;
+#         express:hasString       ?propName .
+#     ?enumValuesUri
+#         a ifc:IfcValue_List ;
+#     	list:hasContents ?listContentUri .
+# 	?listContentUri express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?listValue .
+#     ?listContentUri ?enumType ?listValue .
+# }
+
 
 # select distinct ?propName ?propType where {
 #     {

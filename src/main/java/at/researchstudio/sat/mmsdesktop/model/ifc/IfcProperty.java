@@ -5,14 +5,15 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class IfcProperty {
   private static final Logger logger =
@@ -22,6 +23,8 @@ public class IfcProperty {
   private final IfcPropertyType type;
 
   private IfcUnitMeasure measure;
+
+  private Set<String> extractedUniqueValues;
 
   public IfcProperty(IfcProperty ifc, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
     this.name = Utils.convertIFCStringToUtf8(ifc.name);
@@ -108,6 +111,24 @@ public class IfcProperty {
     return measure;
   }
 
+  public Set<String> getExtractedUniqueValues() {
+    return extractedUniqueValues;
+  }
+
+  public void addExtractedValue(String value) {
+    if (extractedUniqueValues == null) {
+      extractedUniqueValues = new HashSet<>();
+    }
+    extractedUniqueValues.add(value);
+  }
+
+  public void addExtractedValue(QuerySolution qs) {
+    Literal propValue = qs.getLiteral("propValue");
+    if (propValue != null) {
+      addExtractedValue(Utils.convertIFCStringToUtf8(propValue.toString()));
+    }
+  }
+
   @Override public boolean equals(Object o) {
     if (this == o)
       return true;
@@ -122,7 +143,11 @@ public class IfcProperty {
   }
 
   @Override public String toString() {
+    String extractedUniqueValuesString = "NO VALUES";
+    if (!CollectionUtils.isEmpty(extractedUniqueValues)) {
+      extractedUniqueValues.stream().collect(Collectors.joining("\n\t", "{\n", "\n}"));
+    }
     return "IfcProperty{" + "name='" + name + '\'' + ", type=" + type + ", measure=" + measure
-        + '}';
+        + ", extractedUniqueValues=" + extractedUniqueValues + '}';
   }
 }
