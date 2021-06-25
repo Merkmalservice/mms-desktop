@@ -1,13 +1,13 @@
 package at.researchstudio.sat.mmsdesktop.vocab.qudt;
 
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
+import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
-
 public abstract class QudtUnit {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final String METRE = "http://qudt.org/vocab/unit/M";
     public static final String SQUARE_METRE = "http://qudt.org/vocab/unit/M2";
@@ -29,38 +29,43 @@ public abstract class QudtUnit {
     public static String getUnitBasedOnIfcUnitMeasureLengthBasedOnName(IfcUnitMeasure measure) {
         switch (measure) {
             case METRE:
-            return METRE;
+                return METRE;
             case SQUARE_METRE:
-            return SQUARE_METRE;
+                return SQUARE_METRE;
             case CUBIC_METRE:
-            return CUBIC_METRE;
+                return CUBIC_METRE;
             case GRAM:
-            return GRAM;
+                return GRAM;
             case SECOND:
-            return SECOND;
+                return SECOND;
             case HERTZ:
-            return HERTZ;
+                return HERTZ;
             case DEGREE_CELSIUS:
-            return DEGREE_CELSIUS;
+                return DEGREE_CELSIUS;
             case AMPERE:
-            return AMPERE;
+                return AMPERE;
             case VOLT:
-            return VOLT;
+                return VOLT;
             case WATT:
-            return WATT;
+                return WATT;
             case NEWTON:
-            return NEWTON;
+                return NEWTON;
             case LUX:
-            return LUX;
+                return LUX;
             case LUMEN:
-            return LUMEN;
+                return LUMEN;
             case CANDELA:
-            return CANDELA;
+                return CANDELA;
             case PASCAL:
-            return PASCAL;
+                return PASCAL;
             default:
-            logger.error("Could not find QudtUnit for ifcMeasure: " + measure + ", returning UNITLESS(" + UNITLESS + ")");
-            return UNITLESS;
+                logger.error(
+                        "Could not find QudtUnit for ifcMeasure: "
+                                + measure
+                                + ", returning UNITLESS("
+                                + UNITLESS
+                                + ")");
+                return UNITLESS;
         }
     }
 }

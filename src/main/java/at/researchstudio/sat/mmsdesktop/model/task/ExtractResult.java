@@ -1,7 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.model.task;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
-
 import java.io.Serializable;
 import java.util.List;
 

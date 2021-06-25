@@ -12,7 +12,8 @@ public class UIApplication extends Application {
 
     @Override
     public void init() throws Exception {
-        applicationContext = new SpringApplicationBuilder(MerkmalserviceDesktopApplication.class).run();
+        applicationContext =
+                new SpringApplicationBuilder(MerkmalserviceDesktopApplication.class).run();
     }
 
     @Override
