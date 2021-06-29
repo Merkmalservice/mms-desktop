@@ -1,88 +1,85 @@
-# TODO units are not yet retrieved for the individual properties, only the project units are used (see extract_projectunits.rq for the query)
-# this is due to the fact that none of our available ifc files have set the (optional) unit in the properties and thus the project units will be used
-# TODO: SOMEHOW I THINK IFC4 SPLITS THE PROPERTIES BASED ON THE TYPE:
-
 PREFIX express: <https://w3id.org/express#>
 PREFIX list: <https://w3id.org/list#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX ifc:     <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD2_TC1/OWL#>
 
-SELECT DISTINCT ?propName ?propType ?valueType ?propValue
-WHERE {
-          ?propUri
-        	ifc:nominalValue_IfcPropertySingleValue ?propValueUri ;
-        	ifc:name_IfcProperty ?propNameUri .
-          ?propValueUri a ?propType .
-    	  ?propValueUri express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue .
-    	  ?propValueUri ?valueType ?propValue .
- 		  ?propNameUri
-	          a                       ifc:IfcIdentifier ;
-    	      express:hasString       ?propName ;
-      }
-
-# Query that returns propNames and types with all distinct values too
-#
-# PREFIX express: <https://w3id.org/express#>
-# PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-# PREFIX ifc:     <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD2_TC1/OWL#>
-#
-# SELECT DISTINCT ?propName ?propType ?propValue
-# WHERE {
-#          ?propUri
-#        	ifc:nominalValue_IfcPropertySingleValue ?propValueUri ;
-#        	ifc:name_IfcProperty ?propNameUri .
-#          ?propValueUri a ?propType .
-#    	  ?propValueUri express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue .
-# 		  ?propNameUri
-#	          a                       ifc:IfcIdentifier ;
-#    	      express:hasString       ?propName ;
-#      }
-
-# IfcPropertyEnumeratedValue -> are enumerated Properties
-# PREFIX express: <https://w3id.org/express#>
-# PREFIX list: <https://w3id.org/list#>
-# PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-# PREFIX ifc:     <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD2_TC1/OWL#>
-#
-# SELECT DISTINCT ?propUri ?propName ?listValue ?enumType
-# WHERE {
-#     ?propUri
-#         a ifc:IfcPropertyEnumeratedValue ;
-#     	ifc:name_IfcProperty ?propNameUri ;
-#     	ifc:enumerationValues_IfcPropertyEnumeratedValue ?enumValuesUri .
-#     ?propNameUri
-#         a                       ifc:IfcIdentifier ;
-#         express:hasString       ?propName .
-#     ?enumValuesUri
-#         a ifc:IfcValue_List ;
-#     	list:hasContents ?listContentUri .
-# 	?listContentUri express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?listValue .
-#     ?listContentUri ?enumType ?listValue .
-# }
-
-
-# select distinct ?propName ?propType where {
-#     {
-#         ?uri a ifc:IfcQuantityLength.
-#         ?uri ifc:name_IfcPhysicalQuantity ?labelUri .
-#         ?uri ifc:lengthValue_IfcQuantityLength ?measureUri .
-#         ?labelUri express:hasString	?propName .
-#         ?measureUri rdf:type ?propType ;
-#     }
-#     UNION
-#     {
-#         ?uri a ifc:IfcQuantityVolume.
-#         ?uri ifc:name_IfcPhysicalQuantity ?labelUri .
-#         ?uri ifc:volumeValue_IfcQuantityVolume ?measureUri .
-#         ?labelUri express:hasString	?propName .
-#         ?measureUri rdf:type ?propType ;
-#     }
-#     UNION
-#     {
-#         ?uri a ifc:IfcQuantityArea.
-#         ?uri ifc:name_IfcPhysicalQuantity ?labelUri .
-#         ?uri ifc:areaValue_IfcQuantityArea ?measureUri .
-#         ?labelUri express:hasString	?propName .
-#         ?measureUri rdf:type ?propType ;
-#     }
-# }
+SELECT DISTINCT ?propName ?propType ?valueType ?propValue ?enumOptionValue WHERE {
+    {
+        ?uri
+            ifc:nominalValue_IfcPropertySingleValue ?propValueUri ;
+            ifc:name_IfcProperty ?labelUri .
+        ?labelUri express:hasString ?propName .
+        ?propValueUri
+            a ?propType ;
+            express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue ;
+            ?valueType ?propValue .
+    }
+    UNION
+    {
+        ?uri
+            a ifc:IfcQuantityLength ;
+            ifc:name_IfcPhysicalQuantity ?labelUri ;
+            ifc:lengthValue_IfcQuantityLength ?measureUri .
+        ?labelUri express:hasString	?propName .
+        ?measureUri
+            express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue ;
+            ?valueType ?propValue ;
+            rdf:type ?propType .
+    }
+    UNION
+    {
+        ?uri
+            a ifc:IfcQuantityVolume ;
+            ifc:name_IfcPhysicalQuantity ?labelUri ;
+            ifc:volumeValue_IfcQuantityVolume ?measureUri .
+        ?labelUri express:hasString	?propName .
+        ?measureUri
+            express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue ;
+            ?valueType ?propValue ;
+            rdf:type ?propType .
+    }
+    UNION
+    {
+        ?uri
+            a ifc:IfcQuantityArea ;
+            ifc:name_IfcPhysicalQuantity ?labelUri ;
+            ifc:areaValue_IfcQuantityArea ?measureUri .
+        ?labelUri express:hasString	?propName .
+        ?measureUri
+            express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue ;
+            ?valueType ?propValue ;
+            rdf:type ?propType .
+    }
+    UNION
+    {
+        ?uri
+            ifc:enumerationValues_IfcPropertyEnumeratedValue ?propValueUri ;
+            ifc:name_IfcProperty ?labelUri .
+        ?labelUri express:hasString ?propName .
+        ?propValueUri
+            a ?propType ;
+            list:hasContents ?enumValueUri .
+        ?enumValueUri
+            express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue ;
+            ?valueType ?propValue .
+    }
+    UNION
+    {
+        ?uri
+            ifc:enumerationValues_IfcPropertyEnumeratedValue ?propValueUri ;
+            ifc:enumerationReference_IfcPropertyEnumeratedValue ?enumRefUri ;  # --> IFC Reference (to extract all values)
+            ifc:name_IfcProperty ?labelUri .
+        ?labelUri express:hasString ?propName .
+        ?enumRefUri ifc:enumerationValues_IfcPropertyEnumeration/list:hasNext* ?enumOptionUri .
+        ?enumOptionUri
+            list:hasContents ?enumOptionPropUri ;
+            list:hasNext ?nextEnumOptionUri .
+        ?enumOptionPropUri express:hasString ?enumOptionValue .
+        ?propValueUri
+            a ?propType ;
+            list:hasContents ?enumValueUri .
+        ?enumValueUri
+            express:hasString|express:hasBoolean|express:hasDouble|express:hasInteger ?propValue ;
+            ?valueType ?propValue .
+    }
+}
