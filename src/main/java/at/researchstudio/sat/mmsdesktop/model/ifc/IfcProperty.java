@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.model.ifc;
 
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
+import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasurePrefix;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
 import java.lang.invoke.MethodHandles;
@@ -22,8 +23,11 @@ public class IfcProperty {
     private final IfcPropertyType type;
 
     private IfcUnitMeasure measure;
+    private IfcUnitMeasurePrefix measurePrefix;
 
     private Set<String> extractedUniqueValues;
+
+    private Set<String> enumOptionValues;
 
     public IfcProperty(IfcProperty ifc, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
         this.name = Utils.convertIFCStringToUtf8(ifc.name);
@@ -31,6 +35,7 @@ public class IfcProperty {
 
         if (this.type.isMeasureType()) {
             this.measure = generateMeasureFromProjectUnits(ifc.type, projectUnits);
+            this.measurePrefix = generateMeasurePrefixFromProjectUnits(ifc.type, projectUnits);
         }
     }
 
@@ -47,13 +52,17 @@ public class IfcProperty {
         this.type = tempType;
 
         if (this.type.isMeasureType()) {
-            // TODO: update query and add optional propMeasure to add the ifc unit to the query
+            // TODO: update query and add optional propMeasure and propMeasurePrefix to add the ifc
+            // unit to the query
             // output
             // (not yet possible since our ifc-files do not have a specific unit attached to the
             // properties)
             Resource unitMeasure = qs.getResource("propMeasure");
+            Resource unitMeasurePrefix = qs.getResource("propMeasurePrefix");
 
             IfcUnitMeasure tempMeasure = IfcUnitMeasure.UNKNOWN;
+            IfcUnitMeasurePrefix tempMeasurePrefix = IfcUnitMeasurePrefix.NONE;
+
             if (Objects.nonNull(unitMeasure)) {
                 try {
                     tempMeasure = IfcUnitMeasure.fromResource(unitMeasure);
@@ -63,7 +72,18 @@ public class IfcProperty {
             } else {
                 tempMeasure = generateMeasureFromProjectUnits(this.type, projectUnits);
             }
+
+            if (Objects.nonNull(unitMeasurePrefix)) {
+                try {
+                    tempMeasure = IfcUnitMeasure.fromResource(unitMeasurePrefix);
+                } catch (IllegalArgumentException e) {
+                    logger.error(e.getMessage());
+                }
+            } else {
+                tempMeasurePrefix = generateMeasurePrefixFromProjectUnits(this.type, projectUnits);
+            }
             this.measure = tempMeasure;
+            this.measurePrefix = tempMeasurePrefix;
         }
     }
 
@@ -91,12 +111,36 @@ public class IfcProperty {
                     IfcUnit ifcUnit = units.get(0);
                     return ifcUnit.getMeasure();
                 } else {
-                    logger.debug("More than one unit present, leaving it empty");
+                    logger.warn(
+                            "More than one unit present for IfcPropertyType<{}>, leaving it empty",
+                            type);
                     units.forEach(unit -> logger.debug(unit.toString()));
                 }
             }
         }
+        logger.warn("Could not find projectUnit for IfcPropertyType<{}>", type);
         return IfcUnitMeasure.UNKNOWN;
+    }
+
+    private static IfcUnitMeasurePrefix generateMeasurePrefixFromProjectUnits(
+            IfcPropertyType type, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+        if (Objects.nonNull(projectUnits)) {
+            IfcUnitType tempUnitType = type.getUnitType();
+            List<IfcUnit> units = projectUnits.get(tempUnitType);
+
+            if (Objects.nonNull(units)) {
+                if (units.size() == 1) {
+                    IfcUnit ifcUnit = units.get(0);
+                    return ifcUnit.getPrefix();
+                } else {
+                    logger.warn(
+                            "More than one unit present for IfcPropertyType<{}>, leaving it empty",
+                            type);
+                    units.forEach(unit -> logger.debug(unit.toString()));
+                }
+            }
+        }
+        return IfcUnitMeasurePrefix.NONE;
     }
 
     public String getName() {
@@ -111,8 +155,16 @@ public class IfcProperty {
         return measure;
     }
 
+    public IfcUnitMeasurePrefix getMeasurePrefix() {
+        return measurePrefix;
+    }
+
     public Set<String> getExtractedUniqueValues() {
         return extractedUniqueValues;
+    }
+
+    public Set<String> getEnumOptionValues() {
+        return enumOptionValues;
     }
 
     public void addExtractedValue(String value) {
@@ -120,6 +172,20 @@ public class IfcProperty {
             extractedUniqueValues = new HashSet<>();
         }
         extractedUniqueValues.add(value);
+    }
+
+    public void addEnumOptionValue(String value) {
+        if (enumOptionValues == null) {
+            enumOptionValues = new HashSet<>();
+        }
+        enumOptionValues.add(value);
+    }
+
+    public void addEnumOptionValue(QuerySolution qs) {
+        Literal enumOptionValue = qs.getLiteral("enumOptionValue");
+        if (enumOptionValue != null) {
+            addEnumOptionValue(Utils.convertIFCStringToUtf8(enumOptionValue.toString()));
+        }
     }
 
     public void addExtractedValue(QuerySolution qs) {
@@ -146,18 +212,31 @@ public class IfcProperty {
     public String toString() {
         String extractedUniqueValuesString = "NO VALUES";
         if (!CollectionUtils.isEmpty(extractedUniqueValues)) {
-            extractedUniqueValues.stream().collect(Collectors.joining("\n\t", "{\n", "\n}"));
+            extractedUniqueValuesString =
+                    extractedUniqueValues.stream()
+                            .collect(Collectors.joining("\n\t", "{\n\t", "\n}"));
         }
+        String optionValues = "";
+        if (IfcPropertyType.VALUELIST.equals(type) && !CollectionUtils.isEmpty(enumOptionValues)) {
+            optionValues =
+                    ", optionValues="
+                            + enumOptionValues.stream()
+                                    .collect(Collectors.joining("\n\t", "{\n\t", "\n}"));
+        }
+
         return "IfcProperty{"
                 + "name='"
                 + name
                 + '\''
                 + ", type="
                 + type
+                + ", measurePrefix="
+                + measurePrefix
                 + ", measure="
                 + measure
                 + ", extractedUniqueValues="
-                + extractedUniqueValues
+                + extractedUniqueValuesString
+                + optionValues
                 + '}';
     }
 }

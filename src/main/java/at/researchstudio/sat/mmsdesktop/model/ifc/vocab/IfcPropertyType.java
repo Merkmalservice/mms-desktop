@@ -14,25 +14,37 @@ public enum IfcPropertyType {
     INTEGER("IfcInteger", "IFCINTEGER"),
     POSITIVE_INTEGER("IfcPositiveInteger", "IFCPOSITIVEINTEGER"),
     DIMENSION_COUNT("IfcDimensionCount", "IFCDIMENSIONCOUNT"),
-    LENGTH_MEASURE("IfcLengthMeasure", "IFCLENGTHMEASURE"),
-    COUNT_MEASURE("IfcCountMeasure", "IFCCOUNTMEASURE"),
-    POSITIVE_LENGTH_MEASURE("IfcPositiveLengthMeasure", "IFCPOSITIVELENGTHMEASURE"),
-    NORMALISED_RATIO_MEASURE("IfcNormalisedRatioMeasure", "IFCNORMALISEDRATIOMEASURE"),
-    PLANE_ANGLE_MEASURE("IfcPlaneAngleMeasure", "IFCPLANEANGLEMEASURE"),
-    AREA_MEASURE("IfcAreaMeasure", "IFCAREAMEASURE"),
-    VOLUME_MEASURE("IfcVolumeMeasure", "IFCVOLUMEMEASURE"),
+    LENGTH_MEASURE(true, "IfcLengthMeasure", "IFCLENGTHMEASURE"),
+    COUNT_MEASURE(true, "IfcCountMeasure", "IFCCOUNTMEASURE"),
+    POSITIVE_LENGTH_MEASURE(true, "IfcPositiveLengthMeasure", "IFCPOSITIVELENGTHMEASURE"),
+    NORMALISED_RATIO_MEASURE(true, "IfcNormalisedRatioMeasure", "IFCNORMALISEDRATIOMEASURE"),
+    PLANE_ANGLE_MEASURE(true, "IfcPlaneAngleMeasure", "IFCPLANEANGLEMEASURE"),
+    AREA_MEASURE(true, "IfcAreaMeasure", "IFCAREAMEASURE"),
+    AREA_DENSITY_MEASURE(true, "IfcAreaDensityMeasure"),
+    VOLUME_MEASURE(true, "IfcVolumeMeasure", "IFCVOLUMEMEASURE"),
+    PRESSURE_MEASURE(true, "IfcPressureMeasure", "IFCPRESSUREMEASURE"),
+    MASS_MEASURE(true, "IfcMassMeasure", "IFCMASSMEASURE"),
+    VOLUMETRIC_FLOW_RATE_MEASURE(true, "IfcVolumetricFlowRateMeasure"),
+    RATIO_MEASURE(true, "IfcRatioMeasure"),
+    THERMODYNAMIC_TEMPERATURE_MEASURE(true, "IfcThermodynamicTemperatureMeasure"),
+    VALUELIST("IfcValue_List"),
     THERMAL_TRANSMITTANCE_MEASURE(
-            "IfcThermalTransmittanceMeasure", "IFCTHERMALTRANSMITTANCEMEASURE"),
+            true, "IfcThermalTransmittanceMeasure", "IFCTHERMALTRANSMITTANCEMEASURE"),
     TIMESTAMP("IfcTimeStamp", "IFCTIMESTAMP"), // REF("bla"), //TODO: HOW DO REF PROPS LOOK LIKE
-    // ENUM("bla"), //TODO: HOW DO ENUM PROPS LOOK LIKE
     REAL("IfcReal", "IFCREAL"),
     UNKNOWN();
 
     // declaring private variable for getting values
     private final String[] typeUris;
+    private final boolean measureType;
+
+    IfcPropertyType(boolean measureType, String... typeUris) {
+        this.measureType = measureType;
+        this.typeUris = typeUris;
+    }
 
     IfcPropertyType(String... typeUris) {
-        this.typeUris = typeUris;
+        this(false, typeUris);
     }
 
     public static IfcPropertyType fromResource(Resource propertyType)
@@ -54,23 +66,12 @@ public enum IfcPropertyType {
                 }
             }
         }
-        throw new IllegalArgumentException("No enum constant for value: " + propertyType);
+        throw new IllegalArgumentException(
+                "No IfcPropertyType enum constant for value: " + propertyType);
     }
 
     public boolean isMeasureType() {
-        switch (this) {
-            case COUNT_MEASURE:
-            case LENGTH_MEASURE:
-            case POSITIVE_LENGTH_MEASURE:
-            case NORMALISED_RATIO_MEASURE:
-            case PLANE_ANGLE_MEASURE:
-            case AREA_MEASURE:
-            case VOLUME_MEASURE:
-            case THERMAL_TRANSMITTANCE_MEASURE:
-                return true;
-            default:
-                return false;
-        }
+        return measureType;
     }
 
     public IfcUnitType getUnitType() {

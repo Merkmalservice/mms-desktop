@@ -50,6 +50,7 @@ public enum IfcUnitMeasure {
                 }
             }
         }
-        throw new IllegalArgumentException("No enum constant for value: " + unitMeasure);
+        throw new IllegalArgumentException(
+                "No enum IfcUnitMeasure constant for value: " + unitMeasure);
     }
 }

@@ -1,6 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.vocab.qudt;
 
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
+import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasurePrefix;
 import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,10 @@ public abstract class QudtUnit {
     public static final String PASCAL = "http://qudt.org/vocab/unit/PA";
     public static final String UNITLESS = "http://qudt.org/vocab/unit/UNITLESS";
 
-    public static String getUnitBasedOnIfcUnitMeasureLengthBasedOnName(IfcUnitMeasure measure) {
+    public static String getUnitBasedOnIfcUnitMeasureLengthBasedOnName(
+            IfcUnitMeasurePrefix prefix, IfcUnitMeasure measure) {
+        // TODO: INCLUDE PREFIX IN QUDT TRANSLATION
+
         switch (measure) {
             case METRE:
                 return METRE;
@@ -58,14 +62,16 @@ public abstract class QudtUnit {
                 return CANDELA;
             case PASCAL:
                 return PASCAL;
-            default:
-                logger.error(
-                        "Could not find QudtUnit for ifcMeasure: "
-                                + measure
-                                + ", returning UNITLESS("
-                                + UNITLESS
-                                + ")");
-                return UNITLESS;
         }
+
+        logger.error(
+                "Could not find QudtUnit for ifcMeasure: "
+                        + prefix
+                        + " "
+                        + measure
+                        + ", returning UNITLESS("
+                        + UNITLESS
+                        + ")");
+        return UNITLESS;
     }
 }

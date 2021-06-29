@@ -1,200 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.5.1</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
-    <groupId>at.researchstudio.at</groupId>
-    <artifactId>mms-desktop</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>mms-desktop</name>
-    <description>Merkmalservice Desktop Application</description>
-    <properties>
-        <java.version>11</java.version>
-    </properties>
-
-    <repositories>
-        <repository>
-            <id>github</id>
-            <name>GitHub Merkmalservice</name>
-            <url>https://maven.pkg.github.com/Merkmalservice/*</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>markdown-viewer</id>
-            <url>https://sandec.jfrog.io/artifactory/repo</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-graphics</artifactId>
-            <version>16</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-fxml</artifactId>
-            <version>16</version>
-        </dependency>
-        <dependency>
-            <groupId>com.jfoenix</groupId>
-            <artifactId>jfoenix</artifactId>
-            <version>9.0.10</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.7</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.pipauwel</groupId>
-            <artifactId>ifctordf</artifactId>
-            <version>0.5-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-base</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-arq</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-iri</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-shaded-guava</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>at.researchstudio.sat</groupId>
-            <artifactId>merkmalservice-utils</artifactId>
-            <version>0.1.6</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sandec</groupId>
-            <artifactId>mdfx</artifactId>
-            <version>0.2.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.rdfhdt</groupId>
-            <artifactId>hdt-jena</artifactId>
-            <version>2.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.rdfhdt</groupId>
-            <artifactId>hdt-java-core</artifactId>
-            <version>2.1.2</version>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>spring-boot</classifier>
-                            <mainClass>
-                                at.researchstudio.sat.mmsdesktop.MerkmalserviceDesktopApplication
-                            </mainClass>
-                            <finalName>mms-desktop</finalName>
-                            <executable>true</executable>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.1.0</version>
-                <configuration>
-                    <formats>
-                        <!-- you can define as many formats as you want, each is independent -->
-                        <format>
-                            <!-- define the files to apply to -->
-                            <includes>
-                                <include>*.md</include>
-                                <include>.gitignore</include>
-                            </includes>
-                            <!-- define the steps to apply to those files -->
-                            <trimTrailingWhitespace/>
-                            <endWithNewline/>
-                            <indent>
-                                <tabs>true</tabs>
-                                <spacesPerTab>4</spacesPerTab>
-                            </indent>
-                        </format>
-                    </formats>
-                    <!-- define a language-specific format -->
-                    <java>
-                        <!-- no need to specify files, inferred automatically, but you can if you want -->
-                        <!-- apply a specific flavor of google-java-format -->
-                        <googleJavaFormat>
-                            <version>1.9</version>
-                            <style>AOSP</style>
-                        </googleJavaFormat>
-                    </java>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>check-code-format</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/Merkmalservice/mms-desktop</url>
-        </repository>
-    </distributionManagement>
-</project>
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0"         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">    <modelVersion>4.0.0</modelVersion>    <parent>        <groupId>org.springframework.boot</groupId>        <artifactId>spring-boot-starter-parent</artifactId>        <version>2.5.1</version>        <relativePath/> <!-- lookup parent from repository -->    </parent>    <groupId>at.researchstudio.at</groupId>    <artifactId>mms-desktop</artifactId>    <version>0.0.1-SNAPSHOT</version>    <name>mms-desktop</name>    <description>Merkmalservice Desktop Application</description>    <properties>        <java.version>11</java.version>    </properties>    <repositories>        <repository>            <id>github</id>            <name>GitHub Merkmalservice</name>            <url>https://maven.pkg.github.com/Merkmalservice/*</url>            <snapshots>                <enabled>true</enabled>                <updatePolicy>always</updatePolicy>            </snapshots>            <releases>                <enabled>true</enabled>            </releases>        </repository>        <repository>            <id>markdown-viewer</id>            <url>https://sandec.jfrog.io/artifactory/repo</url>            <releases>                <enabled>true</enabled>            </releases>            <snapshots>                <enabled>true</enabled>            </snapshots>        </repository>    </repositories>    <dependencies>        <dependency>            <groupId>org.springframework.boot</groupId>            <artifactId>spring-boot-starter</artifactId>        </dependency>        <dependency>            <groupId>org.springframework.boot</groupId>            <artifactId>spring-boot-starter-test</artifactId>            <scope>test</scope>        </dependency>        <dependency>            <groupId>org.openjfx</groupId>            <artifactId>javafx-graphics</artifactId>            <version>16</version>        </dependency>        <dependency>            <groupId>org.openjfx</groupId>            <artifactId>javafx-fxml</artifactId>            <version>16</version>        </dependency>        <dependency>            <groupId>com.jfoenix</groupId>            <artifactId>jfoenix</artifactId>            <version>9.0.10</version>        </dependency>        <dependency>            <groupId>commons-io</groupId>            <artifactId>commons-io</artifactId>            <version>2.7</version>        </dependency>        <dependency>            <groupId>com.github.pipauwel</groupId>            <artifactId>ifctordf</artifactId>            <version>0.5-SNAPSHOT</version>            <exclusions>                <exclusion>                    <groupId>org.apache.jena</groupId>                    <artifactId>jena-base</artifactId>                </exclusion>                <exclusion>                    <groupId>org.apache.jena</groupId>                    <artifactId>jena-arq</artifactId>                </exclusion>                <exclusion>                    <groupId>org.apache.jena</groupId>                    <artifactId>jena-core</artifactId>                </exclusion>                <exclusion>                    <groupId>org.apache.jena</groupId>                    <artifactId>jena-iri</artifactId>                </exclusion>                <exclusion>                    <groupId>org.apache.jena</groupId>                    <artifactId>jena-shaded-guava</artifactId>                </exclusion>            </exclusions>        </dependency>        <dependency>            <groupId>at.researchstudio.sat</groupId>            <artifactId>merkmalservice-utils</artifactId>            <version>0.1.6</version>        </dependency>        <dependency>            <groupId>com.sandec</groupId>            <artifactId>mdfx</artifactId>            <version>0.2.3</version>        </dependency>        <dependency>            <groupId>org.rdfhdt</groupId>            <artifactId>hdt-jena</artifactId>            <version>2.1.2</version>        </dependency>        <dependency>            <groupId>org.rdfhdt</groupId>            <artifactId>hdt-java-core</artifactId>            <version>2.1.2</version>        </dependency>    </dependencies>    <build>        <plugins>            <plugin>                <groupId>org.springframework.boot</groupId>                <artifactId>spring-boot-maven-plugin</artifactId>                <executions>                    <execution>                        <goals>                            <goal>repackage</goal>                        </goals>                        <configuration>                            <classifier>spring-boot</classifier>                            <mainClass>                                at.researchstudio.sat.mmsdesktop.MerkmalserviceDesktopApplication                            </mainClass>                            <finalName>mms-desktop</finalName>                            <executable>true</executable>                        </configuration>                    </execution>                </executions>            </plugin>            <plugin>                <groupId>com.diffplug.spotless</groupId>                <artifactId>spotless-maven-plugin</artifactId>                <version>2.1.0</version>                <configuration>                    <formats>                        <!-- you can define as many formats as you want, each is independent -->                        <format>                            <!-- define the files to apply to -->                            <includes>                                <include>*.md</include>                                <include>.gitignore</include>                            </includes>                            <!-- define the steps to apply to those files -->                            <trimTrailingWhitespace/>                            <endWithNewline/>                            <indent>                                <tabs>true</tabs>                                <spacesPerTab>4</spacesPerTab>                            </indent>                        </format>                    </formats>                    <!-- define a language-specific format -->                    <java>                        <!-- no need to specify files, inferred automatically, but you can if you want -->                        <!-- apply a specific flavor of google-java-format -->                        <googleJavaFormat>                            <version>1.9</version>                            <style>AOSP</style>                        </googleJavaFormat>                    </java>                </configuration>                <executions>                    <execution>                        <id>check-code-format</id>                        <phase>process-sources</phase>                        <goals>                            <goal>check</goal>                        </goals>                    </execution>                </executions>            </plugin>        </plugins>    </build>    <distributionManagement>        <repository>            <id>github</id>            <name>GitHub Packages</name>            <url>https://maven.pkg.github.com/Merkmalservice/mms-desktop</url>        </repository>    </distributionManagement></project>
