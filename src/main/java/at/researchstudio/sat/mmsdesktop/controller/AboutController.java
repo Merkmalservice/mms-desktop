@@ -1,27 +1,25 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
 import com.sandec.mdfx.MarkdownView;
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.BorderPane;
 import org.springframework.stereotype.Component;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
 @Component
 public class AboutController implements Initializable {
-    @FXML
-    private BorderPane parentPane;
-    @FXML
-    private MarkdownView centerAboutMarkdown;
+    @FXML private BorderPane parentPane;
+    @FXML private MarkdownView centerAboutMarkdown;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // TODO: SEE https://github.com/JPro-one/markdown-javafx-renderer for
         // reference
         // centerAboutMarkdown = new MarkdownView("#bla ##blabla");
-        centerAboutMarkdown.setMdString("### Merkmalservice Desktop App\n"
+        centerAboutMarkdown.setMdString(
+                "### Merkmalservice Desktop App\n"
                         + "\n"
                         + "#### Version\n"
                         + "- 0.0.1\n"

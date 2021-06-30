@@ -1,22 +1,26 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
+import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasurePrefix;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
+import java.lang.invoke.MethodHandles;
+import java.util.Objects;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Objects;
-
 public class IfcUnit {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final IfcUnitType type;
     private final IfcUnitMeasure measure;
+    private final IfcUnitMeasurePrefix prefix;
 
-    public IfcUnit(Resource type, Resource measure) {
+    public IfcUnit(Resource type, Resource measure, Resource prefix) {
         IfcUnitMeasure tempMeasure = IfcUnitMeasure.UNKNOWN;
         IfcUnitType tempType = IfcUnitType.UNKNOWN;
+        IfcUnitMeasurePrefix tempPrefix = IfcUnitMeasurePrefix.NONE;
+
         try {
             tempType = IfcUnitType.fromResource(type);
         } catch (IllegalArgumentException e) {
@@ -29,13 +33,21 @@ public class IfcUnit {
             logger.error(e.getMessage());
         }
 
+        try {
+            tempPrefix = IfcUnitMeasurePrefix.fromResource(prefix);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+        }
+
         this.type = tempType;
         this.measure = tempMeasure;
+        this.prefix = tempPrefix;
     }
 
-    public IfcUnit(String type, String measure) {
+    public IfcUnit(String type, String measure, String prefix) {
         IfcUnitMeasure tempMeasure = IfcUnitMeasure.UNKNOWN;
         IfcUnitType tempType = IfcUnitType.UNKNOWN;
+        IfcUnitMeasurePrefix tempPrefix = IfcUnitMeasurePrefix.NONE;
         try {
             tempType = IfcUnitType.fromString(type);
         } catch (IllegalArgumentException e) {
@@ -48,8 +60,15 @@ public class IfcUnit {
             logger.error(e.getMessage());
         }
 
+        try {
+            tempPrefix = IfcUnitMeasurePrefix.fromString(prefix);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+        }
+
         this.type = tempType;
         this.measure = tempMeasure;
+        this.prefix = tempPrefix;
     }
 
     public IfcUnitType getType() {
@@ -60,12 +79,14 @@ public class IfcUnit {
         return measure;
     }
 
+    public IfcUnitMeasurePrefix getPrefix() {
+        return prefix;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         IfcUnit ifcUnit = (IfcUnit) o;
         return type == ifcUnit.type && measure == ifcUnit.measure;
     }
@@ -77,6 +98,6 @@ public class IfcUnit {
 
     @Override
     public String toString() {
-        return "IfcUnit{" + "type=" + type + ", measure=" + measure + '}';
+        return "IfcUnit{" + "type=" + type + ", measure=" + measure + ", prefix=" + prefix + '}';
     }
 }

@@ -2,127 +2,248 @@ package at.researchstudio.sat.mmsdesktop.model.ifc;
 
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
+import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasurePrefix;
 import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import org.springframework.util.CollectionUtils;
 
 public class IfcProperty {
-  private static final Logger logger =
-      LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final String name;
-  private final IfcPropertyType type;
+    private final String name;
+    private final IfcPropertyType type;
 
-  private IfcUnitMeasure measure;
+    private IfcUnitMeasure measure;
+    private IfcUnitMeasurePrefix measurePrefix;
 
-  public IfcProperty(IfcProperty ifc, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
-    this.name = Utils.convertIFCStringToUtf8(ifc.name);
-    this.type = ifc.type;
+    private Set<String> extractedUniqueValues;
 
-    if (this.type.isMeasureType()) {
-      this.measure = generateMeasureFromProjectUnits(ifc.type, projectUnits);
-    }
-  }
+    private Set<String> enumOptionValues;
 
-  public IfcProperty(QuerySolution qs, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
-    this.name = Utils.convertIFCStringToUtf8(qs.getLiteral("propName").toString());
+    public IfcProperty(IfcProperty ifc, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+        this.name = Utils.convertIFCStringToUtf8(ifc.name);
+        this.type = ifc.type;
 
-    IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
-    try {
-      tempType = IfcPropertyType.fromResource(qs.getResource("propType"));
-    } catch (IllegalArgumentException e) {
-      logger.error(e.getMessage());
+        if (this.type.isMeasureType()) {
+            this.measure = generateMeasureFromProjectUnits(ifc.type, projectUnits);
+            this.measurePrefix = generateMeasurePrefixFromProjectUnits(ifc.type, projectUnits);
+        }
     }
 
-    this.type = tempType;
+    public IfcProperty(QuerySolution qs, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+        this.name = Utils.convertIFCStringToUtf8(qs.getLiteral("propName").toString());
 
-    if (this.type.isMeasureType()) {
-      // TODO: update query and add optional propMeasure to add the ifc unit to the query output
-      // (not yet possible since our ifc-files do not have a specific unit attached to the
-      // properties)
-      Resource unitMeasure = qs.getResource("propMeasure");
-
-      IfcUnitMeasure tempMeasure = IfcUnitMeasure.UNKNOWN;
-      if (Objects.nonNull(unitMeasure)) {
+        IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
         try {
-          tempMeasure = IfcUnitMeasure.fromResource(unitMeasure);
+            tempType = IfcPropertyType.fromResource(qs.getResource("propType"));
         } catch (IllegalArgumentException e) {
-          logger.error(e.getMessage());
+            logger.error(e.getMessage());
         }
-      } else {
-        tempMeasure = generateMeasureFromProjectUnits(this.type, projectUnits);
-      }
-      this.measure = tempMeasure;
-    }
-  }
 
-  public IfcProperty(String name, String type) {
-    this.name = Utils.convertIFCStringToUtf8(name);
+        this.type = tempType;
 
-    IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
-    try {
-      tempType = IfcPropertyType.fromString(type);
-    } catch (IllegalArgumentException e) {
-      logger.error(e.getMessage());
-    }
+        if (this.type.isMeasureType()) {
+            // TODO: update query and add optional propMeasure and propMeasurePrefix to add the ifc
+            // unit to the query
+            // output
+            // (not yet possible since our ifc-files do not have a specific unit attached to the
+            // properties)
+            Resource unitMeasure = qs.getResource("propMeasure");
+            Resource unitMeasurePrefix = qs.getResource("propMeasurePrefix");
 
-    this.type = tempType;
-  }
+            IfcUnitMeasure tempMeasure = IfcUnitMeasure.UNKNOWN;
+            IfcUnitMeasurePrefix tempMeasurePrefix = IfcUnitMeasurePrefix.NONE;
 
-  private static IfcUnitMeasure generateMeasureFromProjectUnits(IfcPropertyType type,
-      Map<IfcUnitType, List<IfcUnit>> projectUnits) {
-    if (Objects.nonNull(projectUnits)) {
-      IfcUnitType tempUnitType = type.getUnitType();
-      List<IfcUnit> units = projectUnits.get(tempUnitType);
+            if (Objects.nonNull(unitMeasure)) {
+                try {
+                    tempMeasure = IfcUnitMeasure.fromResource(unitMeasure);
+                } catch (IllegalArgumentException e) {
+                    logger.error(e.getMessage());
+                }
+            } else {
+                tempMeasure = generateMeasureFromProjectUnits(this.type, projectUnits);
+            }
 
-      if (Objects.nonNull(units)) {
-        if (units.size() == 1) {
-          IfcUnit ifcUnit = units.get(0);
-          return ifcUnit.getMeasure();
-        } else {
-          logger.debug("More than one unit present, leaving it empty");
-          units.forEach(unit -> logger.debug(unit.toString()));
+            if (Objects.nonNull(unitMeasurePrefix)) {
+                try {
+                    tempMeasure = IfcUnitMeasure.fromResource(unitMeasurePrefix);
+                } catch (IllegalArgumentException e) {
+                    logger.error(e.getMessage());
+                }
+            } else {
+                tempMeasurePrefix = generateMeasurePrefixFromProjectUnits(this.type, projectUnits);
+            }
+            this.measure = tempMeasure;
+            this.measurePrefix = tempMeasurePrefix;
         }
-      }
     }
-    return IfcUnitMeasure.UNKNOWN;
-  }
 
-  public String getName() {
-    return name;
-  }
+    public IfcProperty(String name, String type) {
+        this.name = Utils.convertIFCStringToUtf8(name);
 
-  public IfcPropertyType getType() {
-    return type;
-  }
+        IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
+        try {
+            tempType = IfcPropertyType.fromString(type);
+        } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+        }
 
-  public IfcUnitMeasure getMeasure() {
-    return measure;
-  }
+        this.type = tempType;
+    }
 
-  @Override public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    IfcProperty that = (IfcProperty) o;
-    return Objects.equals(name, that.name) && type == that.type && measure == that.measure;
-  }
+    private static IfcUnitMeasure generateMeasureFromProjectUnits(
+            IfcPropertyType type, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+        if (Objects.nonNull(projectUnits)) {
+            IfcUnitType tempUnitType = type.getUnitType();
+            List<IfcUnit> units = projectUnits.get(tempUnitType);
 
-  @Override public int hashCode() {
-    return Objects.hash(name, type, measure);
-  }
+            if (Objects.nonNull(units)) {
+                if (units.size() == 1) {
+                    IfcUnit ifcUnit = units.get(0);
+                    return ifcUnit.getMeasure();
+                } else {
+                    logger.warn(
+                            "More than one unit present for IfcPropertyType<{}>, leaving it empty",
+                            type);
+                    units.forEach(unit -> logger.debug(unit.toString()));
+                }
+            }
+        }
+        logger.warn("Could not find Unit for IfcPropertyType<{}>", type);
+        logger.warn("within ProjectUnits:");
+        projectUnits.forEach(
+                (key, value) -> {
+                    logger.warn(key.toString());
+                    Objects.requireNonNullElse(value, Collections.emptyList())
+                            .forEach(unit -> logger.warn("\t{}", unit));
+                });
+        return IfcUnitMeasure.UNKNOWN;
+    }
 
-  @Override public String toString() {
-    return "IfcProperty{" + "name='" + name + '\'' + ", type=" + type + ", measure=" + measure
-        + '}';
-  }
+    private static IfcUnitMeasurePrefix generateMeasurePrefixFromProjectUnits(
+            IfcPropertyType type, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+        if (Objects.nonNull(projectUnits)) {
+            IfcUnitType tempUnitType = type.getUnitType();
+            List<IfcUnit> units = projectUnits.get(tempUnitType);
+
+            if (Objects.nonNull(units)) {
+                if (units.size() == 1) {
+                    IfcUnit ifcUnit = units.get(0);
+                    return ifcUnit.getPrefix();
+                } else {
+                    logger.warn(
+                            "More than one unit present for IfcPropertyType<{}>, leaving it empty",
+                            type);
+                    units.forEach(unit -> logger.debug(unit.toString()));
+                }
+            }
+        }
+        return IfcUnitMeasurePrefix.NONE;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public IfcPropertyType getType() {
+        return type;
+    }
+
+    public IfcUnitMeasure getMeasure() {
+        return measure;
+    }
+
+    public IfcUnitMeasurePrefix getMeasurePrefix() {
+        return measurePrefix;
+    }
+
+    public Set<String> getExtractedUniqueValues() {
+        return extractedUniqueValues;
+    }
+
+    public Set<String> getEnumOptionValues() {
+        return enumOptionValues;
+    }
+
+    public void addExtractedValue(String value) {
+        if (extractedUniqueValues == null) {
+            extractedUniqueValues = new HashSet<>();
+        }
+        extractedUniqueValues.add(value);
+    }
+
+    public void addEnumOptionValue(String value) {
+        if (enumOptionValues == null) {
+            enumOptionValues = new HashSet<>();
+        }
+        enumOptionValues.add(value);
+    }
+
+    public void addEnumOptionValue(QuerySolution qs) {
+        Literal enumOptionValue = qs.getLiteral("enumOptionValue");
+        if (enumOptionValue != null) {
+            addEnumOptionValue(Utils.convertIFCStringToUtf8(enumOptionValue.toString()));
+        }
+    }
+
+    public void addExtractedValue(QuerySolution qs) {
+        Literal propValue = qs.getLiteral("propValue");
+        if (propValue != null) {
+            addExtractedValue(Utils.convertIFCStringToUtf8(propValue.toString()));
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        IfcProperty that = (IfcProperty) o;
+        return Objects.equals(name, that.name) && type == that.type && measure == that.measure;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, type, measure);
+    }
+
+    @Override
+    public String toString() {
+        String extractedUniqueValuesString = "NO VALUES";
+        if (!CollectionUtils.isEmpty(extractedUniqueValues)) {
+            extractedUniqueValuesString =
+                    extractedUniqueValues.stream()
+                            .collect(Collectors.joining("\n\t", "{\n\t", "\n}"));
+        }
+        String optionValues = "";
+        if (IfcPropertyType.VALUELIST.equals(type) && !CollectionUtils.isEmpty(enumOptionValues)) {
+            optionValues =
+                    ", optionValues="
+                            + enumOptionValues.stream()
+                                    .collect(Collectors.joining("\n\t", "{\n\t", "\n}"));
+        }
+
+        return "IfcProperty{"
+                + "name='"
+                + name
+                + '\''
+                + ", type="
+                + type
+                + ", measurePrefix="
+                + measurePrefix
+                + ", measure="
+                + measure
+                + ", extractedUniqueValues="
+                + extractedUniqueValuesString
+                + optionValues
+                + '}';
+    }
 }

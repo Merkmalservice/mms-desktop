@@ -1,5 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,37 +19,34 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.util.ResourceBundle;
-
-@Component public class MainController implements Initializable {
+@Component
+public class MainController implements Initializable {
     private static final Logger logger =
-        LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    @Value("classpath:/about.fxml") private Resource aboutResource;
+    @Value("classpath:/about.fxml")
+    private Resource aboutResource;
 
-    @Value("classpath:/convert.fxml") private Resource convertResource;
+    @Value("classpath:/convert.fxml")
+    private Resource convertResource;
 
-    @Value("classpath:/extract.fxml") private Resource extractResource;
+    @Value("classpath:/extract.fxml")
+    private Resource extractResource;
 
     @Value("classpath:/settings.fxml")
     private Resource settingsResource;
 
     private ResourceBundle resourceBundle;
 
-    @FXML
-    private MenuBar menuBar;
+    @FXML private MenuBar menuBar;
 
-    @FXML
-    private BorderPane mainPane;
+    @FXML private BorderPane mainPane;
 
     /**
-     * Handle action related to input (in this case specifically only responds
-     * to keyboard event CTRL-A).
-     * 
-     * @param event
-     *            Input event.
+     * Handle action related to input (in this case specifically only responds to keyboard event
+     * CTRL-A).
+     *
+     * @param event Input event.
      */
     public void handleKeyInput(KeyEvent event) {
         if (event != null && event.isControlDown() && event.getCode() == KeyCode.A) {
@@ -56,9 +56,8 @@ import java.util.ResourceBundle;
 
     /**
      * Handle action related to "About" menu item.
-     * 
-     * @param event
-     *            Event on "About" menu item.
+     *
+     * @param event Event on "About" menu item.
      */
     @FXML
     private void handleAboutAction(final ActionEvent event) {
@@ -67,9 +66,8 @@ import java.util.ResourceBundle;
 
     /**
      * Handle action related to "Exit" menu item.
-     * 
-     * @param event
-     *            Event on "Exit" menu item.
+     *
+     * @param event Event on "Exit" menu item.
      */
     @FXML
     private void handleExitAction(final ActionEvent event) {
@@ -80,9 +78,8 @@ import java.util.ResourceBundle;
 
     /**
      * Handle action related to "Settings" menu item.
-     * 
-     * @param event
-     *            Event on "Settings" menu item.
+     *
+     * @param event Event on "Settings" menu item.
      */
     @FXML
     private void handleSettingsAction(final ActionEvent event) {
@@ -91,9 +88,8 @@ import java.util.ResourceBundle;
 
     /**
      * Handle action related to "Settings" menu item.
-     * 
-     * @param event
-     *            Event on "Settings" menu item.
+     *
+     * @param event Event on "Settings" menu item.
      */
     @FXML
     private void handleExtractAction(final ActionEvent event) {
@@ -102,9 +98,8 @@ import java.util.ResourceBundle;
 
     /**
      * Handle action related to "Settings" menu item.
-     * 
-     * @param event
-     *            Event on "Settings" menu item.
+     *
+     * @param event Event on "Settings" menu item.
      */
     @FXML
     private void handleConvertAction(final ActionEvent event) {
@@ -126,12 +121,12 @@ import java.util.ResourceBundle;
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(resource.getURL());
             fxmlLoader.setResources(resourceBundle); // set Default Locale to
-                                                     // System default
+            // System default
 
             mainPane.setCenter(fxmlLoader.load());
         } catch (IOException e) {
             logger.error(Throwables.getStackTraceAsString(e));
-            //TODO: SHOW ERROR
+            // TODO: SHOW ERROR
         }
     }
 }

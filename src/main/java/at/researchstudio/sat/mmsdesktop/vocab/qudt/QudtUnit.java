@@ -1,15 +1,19 @@
 package at.researchstudio.sat.mmsdesktop.vocab.qudt;
 
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcProperty;
+import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasurePrefix;
+import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.invoke.MethodHandles;
-
 public abstract class QudtUnit {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static final String METRE = "http://qudt.org/vocab/unit/M";
+    public static final String CENTIMETRE = "http://qudt.org/vocab/unit/CentiM";
+    public static final String DECIMETRE = "http://qudt.org/vocab/unit/DeciM";
+
     public static final String SQUARE_METRE = "http://qudt.org/vocab/unit/M2";
     public static final String CUBIC_METRE = "http://qudt.org/vocab/unit/M3";
     public static final String GRAM = "http://qudt.org/vocab/unit/GM";
@@ -26,41 +30,81 @@ public abstract class QudtUnit {
     public static final String PASCAL = "http://qudt.org/vocab/unit/PA";
     public static final String UNITLESS = "http://qudt.org/vocab/unit/UNITLESS";
 
-    public static String getUnitBasedOnIfcUnitMeasureLengthBasedOnName(IfcUnitMeasure measure) {
-        switch (measure) {
+    public static String extractUnitFromProperty(IfcProperty property) {
+        switch (property.getMeasure()) {
             case METRE:
-            return METRE;
+                switch (property.getMeasurePrefix()) {
+                    case DECI:
+                        return DECIMETRE;
+                    case CENTI:
+                        return CENTIMETRE;
+                    case NONE:
+                        return METRE;
+                }
             case SQUARE_METRE:
-            return SQUARE_METRE;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return SQUARE_METRE;
+                }
             case CUBIC_METRE:
-            return CUBIC_METRE;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return CUBIC_METRE;
+                }
             case GRAM:
-            return GRAM;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return GRAM;
+                }
             case SECOND:
-            return SECOND;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return SECOND;
+                }
             case HERTZ:
-            return HERTZ;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return HERTZ;
+                }
             case DEGREE_CELSIUS:
-            return DEGREE_CELSIUS;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return DEGREE_CELSIUS;
+                }
             case AMPERE:
-            return AMPERE;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return AMPERE;
+                }
             case VOLT:
-            return VOLT;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return VOLT;
+                }
             case WATT:
-            return WATT;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return WATT;
+                }
             case NEWTON:
-            return NEWTON;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return NEWTON;
+                }
             case LUX:
-            return LUX;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return LUX;
+                }
             case LUMEN:
-            return LUMEN;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return LUMEN;
+                }
             case CANDELA:
-            return CANDELA;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return CANDELA;
+                }
             case PASCAL:
-            return PASCAL;
-            default:
-            logger.error("Could not find QudtUnit for ifcMeasure: " + measure + ", returning UNITLESS(" + UNITLESS + ")");
-            return UNITLESS;
+                if (IfcUnitMeasurePrefix.NONE.equals(property.getMeasurePrefix())) {
+                    return PASCAL;
+                }
         }
+
+        logger.error(
+                "Could not find QudtUnit for ifcProperty: "
+                        + property
+                        + ", returning UNITLESS("
+                        + UNITLESS
+                        + ")");
+        return UNITLESS;
     }
 }
