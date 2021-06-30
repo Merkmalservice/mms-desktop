@@ -120,15 +120,12 @@ public class IfcProperty {
         }
         logger.warn("Could not find Unit for IfcPropertyType<{}>", type);
         logger.warn("within ProjectUnits:");
-        projectUnits
-                .entrySet()
-                .forEach(
-                        projectUnit -> {
-                            logger.warn(projectUnit.getKey().toString());
-                            Objects.requireNonNullElse(
-                                            projectUnit.getValue(), Collections.emptyList())
-                                    .forEach(unit -> logger.warn("\t{}", unit));
-                        });
+        projectUnits.forEach(
+                (key, value) -> {
+                    logger.warn(key.toString());
+                    Objects.requireNonNullElse(value, Collections.emptyList())
+                            .forEach(unit -> logger.warn("\t{}", unit));
+                });
         return IfcUnitMeasure.UNKNOWN;
     }
 
