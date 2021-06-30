@@ -18,25 +18,23 @@ public class AboutController implements Initializable {
         // TODO: SEE https://github.com/JPro-one/markdown-javafx-renderer for
         // reference
         // centerAboutMarkdown = new MarkdownView("#bla ##blabla");
-        centerAboutMarkdown.setMdString(
-                "# Merkmalservice Desktop App\n"
+        centerAboutMarkdown.setMdString("### Merkmalservice Desktop App\n"
                         + "\n"
-                        + "## Requirements\n"
-                        + "- Java 11 or higher\n"
-                        + "\n"
-                        + "## Architecture\n"
-                        + "- Spring Boot Application\n"
-                        + "- JavaFX UI (Version 16)\n"
-                        + "- Maven\n"
-                        + "- [JFoenix (JFX Component Library)](http://www.jfoenix.com/) \n"
-                        + "\n"
-                        + "## How to Start (for now)\n"
-                        + "1. Checkout Project\n"
-                        + "2. `mvn spring-boot:run`\n"
-                        + "\n"
-                        + "## How to Package as executable jar (for now)\n"
-                        + "1. Checkout Project\n"
-                        + "2. mvn clean install spring-boot:repackage\n"
-                        + "3. execute `target/mms-desktop-spring-boot.jar` directly\n");
+                        + "#### Version\n"
+                        + "- 0.0.1\n"
+                        + "#### Usage\n"
+                        + "##### Extract Features from IFC:\n"
+                        + "- Add to List:\n"
+                        + "    - Select single Files\n"
+                        + "    - Select all Files in a Folder\n"
+                        + "- Optional: Remove all Files again\n"
+                        + "- Parse:\n"
+                        + "    - All Features will be parsed to the output File\n"
+                        + "- Export:\n"
+                        + "    - JSON\n"
+                        + "    - Logfile\n"
+                        + "- Check Log Output\n"
+                        + "#### Support\n"
+                        + " > sat@researchstudio.at");
     }
 }
