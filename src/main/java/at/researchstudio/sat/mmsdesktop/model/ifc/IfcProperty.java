@@ -1,9 +1,9 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasurePrefix;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasure;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasurePrefix;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
@@ -44,8 +44,10 @@ public class IfcProperty {
 
         IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
         try {
-            tempType = IfcPropertyType.fromResource(qs.getResource("propType"));
+            tempType = IfcPropertyType.fromString(qs.getResource("propType").getURI());
         } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+        } catch (NullPointerException e) {
             logger.error(e.getMessage());
         }
 
@@ -65,8 +67,10 @@ public class IfcProperty {
 
             if (Objects.nonNull(unitMeasure)) {
                 try {
-                    tempMeasure = IfcUnitMeasure.fromResource(unitMeasure);
+                    tempMeasure = IfcUnitMeasure.fromString(unitMeasure.getURI());
                 } catch (IllegalArgumentException e) {
+                    logger.error(e.getMessage());
+                } catch (NullPointerException e) {
                     logger.error(e.getMessage());
                 }
             } else {
@@ -75,8 +79,10 @@ public class IfcProperty {
 
             if (Objects.nonNull(unitMeasurePrefix)) {
                 try {
-                    tempMeasure = IfcUnitMeasure.fromResource(unitMeasurePrefix);
+                    tempMeasurePrefix = IfcUnitMeasurePrefix.fromString(unitMeasurePrefix.getURI());
                 } catch (IllegalArgumentException e) {
+                    logger.error(e.getMessage());
+                } catch (NullPointerException e) {
                     logger.error(e.getMessage());
                 }
             } else {

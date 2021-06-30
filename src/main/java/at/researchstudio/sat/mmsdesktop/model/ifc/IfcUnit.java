@@ -1,8 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasurePrefix;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasure;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasurePrefix;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import org.apache.jena.rdf.model.Resource;
@@ -22,20 +22,26 @@ public class IfcUnit {
         IfcUnitMeasurePrefix tempPrefix = IfcUnitMeasurePrefix.NONE;
 
         try {
-            tempType = IfcUnitType.fromResource(type);
+            tempType = IfcUnitType.fromString(type.getURI());
         } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+        } catch (NullPointerException e) {
             logger.error(e.getMessage());
         }
 
         try {
-            tempMeasure = IfcUnitMeasure.fromResource(measure);
+            tempMeasure = IfcUnitMeasure.fromString(measure.getURI());
         } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+        } catch (NullPointerException e) {
             logger.error(e.getMessage());
         }
 
         try {
-            tempPrefix = IfcUnitMeasurePrefix.fromResource(prefix);
+            tempPrefix = IfcUnitMeasurePrefix.fromString(prefix.getURI());
         } catch (IllegalArgumentException e) {
+            logger.error(e.getMessage());
+        } catch (NullPointerException e) {
             logger.error(e.getMessage());
         }
 
