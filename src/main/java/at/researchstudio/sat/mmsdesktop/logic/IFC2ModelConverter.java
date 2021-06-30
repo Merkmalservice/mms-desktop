@@ -47,14 +47,17 @@ public class IFC2ModelConverter {
 
     public static Model readFromFile(File ifcFile, TaskProgressListener taskProgressListener)
             throws IOException {
-        IfcSpfReader r = new IfcSpfReader();
-        r.setup(ifcFile.getAbsolutePath(), taskProgressListener);
+        IfcSpfReader ifcSpfReader = new IfcSpfReader();
+        ifcSpfReader.setup(ifcFile.getAbsolutePath(), taskProgressListener);
+        ifcSpfReader.setUseUuidsForGeneratedResources(true);
+        ifcSpfReader.setAvoidDuplicatePropertyResources(false);
+        ifcSpfReader.setRemoveDuplicates(false);
         SinkToIterator sinkToIterator = new SinkToIterator();
         Thread converterThread =
                 new Thread(
                         () -> {
                             try {
-                                r.convert(
+                                ifcSpfReader.convert(
                                         ifcFile.getAbsolutePath(),
                                         StreamRDFLib.sinkTriples(sinkToIterator),
                                         BASE_URI);
