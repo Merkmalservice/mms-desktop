@@ -591,8 +591,8 @@ public class PropertyExtractor {
                                                     new NumericFeature(
                                                             ifcProperty.getName(),
                                                             QudtQuantityKind
-                                                                    .getQuantityKindLengthBasedOnName(
-                                                                            ifcProperty.getName()),
+                                                                    .extractQuantityKindFromPropertyName(
+                                                                            ifcProperty),
                                                             QudtUnit.extractUnitFromProperty(
                                                                     ifcProperty)))
                                     .collect(Collectors.toList()));

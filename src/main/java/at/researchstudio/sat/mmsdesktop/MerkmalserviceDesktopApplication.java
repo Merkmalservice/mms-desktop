@@ -28,7 +28,7 @@ public class MerkmalserviceDesktopApplication {
                     if (Platform.isFxApplicationThread()) {
                         showDialog.run();
                     } else {
-                        FutureTask<Void> showDialogTask = new FutureTask<Void>(showDialog, null);
+                        FutureTask<Void> showDialogTask = new FutureTask<>(showDialog, null);
                         Platform.runLater(showDialogTask);
                         showDialogTask.get();
                     }
