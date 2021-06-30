@@ -23,6 +23,7 @@ public enum IfcPropertyType {
     AREA_DENSITY_MEASURE(true, "IfcAreaDensityMeasure"),
     VOLUME_MEASURE(true, "IfcVolumeMeasure", "IFCVOLUMEMEASURE"),
     PRESSURE_MEASURE(true, "IfcPressureMeasure", "IFCPRESSUREMEASURE"),
+    POWER_MEASURE(true, "IfcPowerMeasure", "IFCPOWERMEASURE"),
     MASS_MEASURE(true, "IfcMassMeasure", "IFCMASSMEASURE"),
     VOLUMETRIC_FLOW_RATE_MEASURE(true, "IfcVolumetricFlowRateMeasure"),
     RATIO_MEASURE(true, "IfcRatioMeasure"),
@@ -79,6 +80,12 @@ public enum IfcPropertyType {
             case LENGTH_MEASURE:
             case POSITIVE_LENGTH_MEASURE:
                 return IfcUnitType.LENGTHUNIT;
+            case MASS_MEASURE:
+                return IfcUnitType.MASSUNIT;
+            case POWER_MEASURE:
+                return IfcUnitType.POWERUNIT;
+            case PRESSURE_MEASURE:
+                return IfcUnitType.PRESSUREUNIT;
             case AREA_MEASURE:
                 return IfcUnitType.AREAUNIT;
             case VOLUME_MEASURE:

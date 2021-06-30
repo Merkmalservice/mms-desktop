@@ -519,12 +519,8 @@ public class PropertyExtractor {
                                                     new NumericFeature(
                                                             ifcProperty.getName(),
                                                             QudtQuantityKind.VOLUME,
-                                                            QudtUnit
-                                                                    .getUnitBasedOnIfcUnitMeasureLengthBasedOnName(
-                                                                            ifcProperty
-                                                                                    .getMeasurePrefix(),
-                                                                            ifcProperty
-                                                                                    .getMeasure())))
+                                                            QudtUnit.extractUnitFromProperty(
+                                                                    ifcProperty)))
                                     .collect(Collectors.toList()));
                     break;
                 case AREA_MEASURE:
@@ -536,12 +532,8 @@ public class PropertyExtractor {
                                                     new NumericFeature(
                                                             ifcProperty.getName(),
                                                             QudtQuantityKind.AREA,
-                                                            QudtUnit
-                                                                    .getUnitBasedOnIfcUnitMeasureLengthBasedOnName(
-                                                                            ifcProperty
-                                                                                    .getMeasurePrefix(),
-                                                                            ifcProperty
-                                                                                    .getMeasure())))
+                                                            QudtUnit.extractUnitFromProperty(
+                                                                    ifcProperty)))
                                     .collect(Collectors.toList()));
                     break;
                 case DIMENSION_COUNT:
@@ -570,12 +562,8 @@ public class PropertyExtractor {
                                                     new NumericFeature(
                                                             ifcProperty.getName(),
                                                             QudtQuantityKind.ANGLE,
-                                                            QudtUnit
-                                                                    .getUnitBasedOnIfcUnitMeasureLengthBasedOnName(
-                                                                            ifcProperty
-                                                                                    .getMeasurePrefix(),
-                                                                            ifcProperty
-                                                                                    .getMeasure())))
+                                                            QudtUnit.extractUnitFromProperty(
+                                                                    ifcProperty)))
                                     .collect(Collectors.toList()));
                     break;
                 case THERMAL_TRANSMITTANCE_MEASURE:
@@ -590,12 +578,8 @@ public class PropertyExtractor {
                                                             // TODO: Figure out what
                                                             // THERMAL_TRANSMITTANCE_MEASURE is in
                                                             // QUDT.QuantityKind
-                                                            QudtUnit
-                                                                    .getUnitBasedOnIfcUnitMeasureLengthBasedOnName(
-                                                                            ifcProperty
-                                                                                    .getMeasurePrefix(),
-                                                                            ifcProperty
-                                                                                    .getMeasure())))
+                                                            QudtUnit.extractUnitFromProperty(
+                                                                    ifcProperty)))
                                     .collect(Collectors.toList()));
                 case LENGTH_MEASURE:
                 case POSITIVE_LENGTH_MEASURE:
@@ -609,12 +593,8 @@ public class PropertyExtractor {
                                                             QudtQuantityKind
                                                                     .getQuantityKindLengthBasedOnName(
                                                                             ifcProperty.getName()),
-                                                            QudtUnit
-                                                                    .getUnitBasedOnIfcUnitMeasureLengthBasedOnName(
-                                                                            ifcProperty
-                                                                                    .getMeasurePrefix(),
-                                                                            ifcProperty
-                                                                                    .getMeasure())))
+                                                            QudtUnit.extractUnitFromProperty(
+                                                                    ifcProperty)))
                                     .collect(Collectors.toList()));
                     break;
                 case VALUELIST:
