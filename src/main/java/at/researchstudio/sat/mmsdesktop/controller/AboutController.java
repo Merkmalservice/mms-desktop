@@ -18,7 +18,8 @@ public class AboutController implements Initializable {
         // TODO: SEE https://github.com/JPro-one/markdown-javafx-renderer for
         // reference
         // centerAboutMarkdown = new MarkdownView("#bla ##blabla");
-        centerAboutMarkdown.setMdString("### Merkmalservice Desktop App\n"
+        centerAboutMarkdown.setMdString(
+                "### Merkmalservice Desktop App\n"
                         + "\n"
                         + "#### Version\n"
                         + "- 0.0.1\n"
