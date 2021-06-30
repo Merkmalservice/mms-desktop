@@ -1,6 +1,14 @@
 package at.researchstudio.sat.mmsdesktop.vocab.qudt;
 
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcProperty;
+import java.lang.invoke.MethodHandles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class QudtQuantityKind {
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     public static final String AREA = "http://qudt.org/vocab/quantitykind/Area";
     public static final String ANGLE = "http://qudt.org/vocab/quantitykind/Angle";
     public static final String VOLUME = "http://qudt.org/vocab/quantitykind/Volume";
@@ -13,11 +21,11 @@ public abstract class QudtQuantityKind {
     public static final String THICKNESS = "http://qudt.org/vocab/quantitykind/Thickness";
     public static final String DIMENSIONLESS = "http://qudt.org/vocab/quantitykind/Dimensionless";
 
-    public static String getQuantityKindLengthBasedOnName(String featureName) {
+    public static String extractQuantityKindFromPropertyName(IfcProperty property) {
         // TODO: This is really simple and probably not going to be too useful,
         // but it will do the trick
         // for now
-        String lowerCaseName = featureName.toLowerCase();
+        String lowerCaseName = property.getName().toLowerCase();
 
         if (lowerCaseName.contains("höhe") || lowerCaseName.contains("height")) {
             return HEIGHT;
@@ -43,6 +51,13 @@ public abstract class QudtQuantityKind {
         if (lowerCaseName.contains("dicke") || lowerCaseName.contains("stärke")) {
             return THICKNESS;
         }
+
+        logger.error(
+                "Could not find QudtQuantityKind for ifcProperty: "
+                        + property
+                        + ", returning DIMENSIONLESS("
+                        + DIMENSIONLESS
+                        + ")");
         return DIMENSIONLESS;
     }
 }
