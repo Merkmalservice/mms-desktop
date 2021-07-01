@@ -3,6 +3,7 @@ package at.researchstudio.sat.mmsdesktop.model.ifc;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasure;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasurePrefix;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
+import at.researchstudio.sat.mmsdesktop.util.Utils;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import org.apache.jena.rdf.model.Resource;
@@ -17,33 +18,25 @@ public class IfcUnit {
     private final IfcUnitMeasurePrefix prefix;
 
     public IfcUnit(Resource type, Resource measure, Resource prefix) {
-        IfcUnitMeasure tempMeasure = IfcUnitMeasure.UNKNOWN;
-        IfcUnitType tempType = IfcUnitType.UNKNOWN;
-        IfcUnitMeasurePrefix tempPrefix = IfcUnitMeasurePrefix.NONE;
 
-        try {
-            tempType = IfcUnitType.fromString(type.getURI());
-        } catch (IllegalArgumentException e) {
-            logger.error(e.getMessage());
-        } catch (NullPointerException e) {
-            logger.error(e.getMessage());
-        }
-
-        try {
-            tempMeasure = IfcUnitMeasure.fromString(measure.getURI());
-        } catch (IllegalArgumentException e) {
-            logger.error(e.getMessage());
-        } catch (NullPointerException e) {
-            logger.error(e.getMessage());
-        }
-
-        try {
-            tempPrefix = IfcUnitMeasurePrefix.fromString(prefix.getURI());
-        } catch (IllegalArgumentException e) {
-            logger.error(e.getMessage());
-        } catch (NullPointerException e) {
-            logger.error(e.getMessage());
-        }
+        IfcUnitType tempType =
+                Utils.executeOrDefaultOnException(
+                        () -> IfcUnitType.fromString(type.getURI()),
+                        IfcUnitType.UNKNOWN,
+                        NullPointerException.class,
+                        IllegalArgumentException.class);
+        IfcUnitMeasure tempMeasure =
+                Utils.executeOrDefaultOnException(
+                        () -> IfcUnitMeasure.fromString(measure.getURI()),
+                        IfcUnitMeasure.UNKNOWN,
+                        NullPointerException.class,
+                        IllegalArgumentException.class);
+        IfcUnitMeasurePrefix tempPrefix =
+                Utils.executeOrDefaultOnException(
+                        () -> IfcUnitMeasurePrefix.fromString(prefix.getURI()),
+                        IfcUnitMeasurePrefix.NONE,
+                        NullPointerException.class,
+                        IllegalArgumentException.class);
 
         this.type = tempType;
         this.measure = tempMeasure;
