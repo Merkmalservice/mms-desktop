@@ -86,6 +86,11 @@ public class MainController implements Initializable {
         switchCenterPane(settingsResource);
     }
 
+    @FXML
+    private void handleLoginAction(final ActionEvent event) {
+        //TODO: IMPL LOGIN ACTION
+    }
+
     /**
      * Handle action related to "Settings" menu item.
      *

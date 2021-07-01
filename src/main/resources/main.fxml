@@ -19,12 +19,13 @@
         <URL value="@main.css"/>
     </stylesheets>
     <MenuBar fx:id="menuBar" onKeyPressed="#handleKeyInput">
-        <Menu text="App">
+        <Menu text="%label.app">
+            <MenuItem text="%label.login" onAction="#handleLoginAction"/>
             <MenuItem text="%label.settings" onAction="#handleSettingsAction" disable="true"/>
             <SeparatorMenuItem/>
             <MenuItem text="%label.exit" onAction="#handleExitAction"/>
         </Menu>
-        <Menu text="Info">
+        <Menu text="%label.info">
             <MenuItem onAction="#handleAboutAction" text="%label.about"/>
         </Menu>
     </MenuBar>
