@@ -1,9 +1,9 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasure;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitMeasurePrefix;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasure;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasurePrefix;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
@@ -42,14 +42,12 @@ public class IfcProperty {
     public IfcProperty(QuerySolution qs, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
         this.name = Utils.convertIFCStringToUtf8(qs.getLiteral("propName").toString());
 
-        IfcPropertyType tempType = IfcPropertyType.UNKNOWN;
-        try {
-            tempType = IfcPropertyType.fromResource(qs.getResource("propType"));
-        } catch (IllegalArgumentException e) {
-            logger.error(e.getMessage());
-        }
-
-        this.type = tempType;
+        this.type =
+                Utils.executeOrDefaultOnException(
+                        () -> IfcPropertyType.fromString(qs.getResource("propType").getURI()),
+                        IfcPropertyType.UNKNOWN,
+                        NullPointerException.class,
+                        IllegalArgumentException.class);
 
         if (this.type.isMeasureType()) {
             // TODO: update query and add optional propMeasure and propMeasurePrefix to add the ifc
@@ -60,25 +58,27 @@ public class IfcProperty {
             Resource unitMeasure = qs.getResource("propMeasure");
             Resource unitMeasurePrefix = qs.getResource("propMeasurePrefix");
 
-            IfcUnitMeasure tempMeasure = IfcUnitMeasure.UNKNOWN;
-            IfcUnitMeasurePrefix tempMeasurePrefix = IfcUnitMeasurePrefix.NONE;
+            IfcUnitMeasure tempMeasure;
+            IfcUnitMeasurePrefix tempMeasurePrefix;
 
             if (Objects.nonNull(unitMeasure)) {
-                try {
-                    tempMeasure = IfcUnitMeasure.fromResource(unitMeasure);
-                } catch (IllegalArgumentException e) {
-                    logger.error(e.getMessage());
-                }
+                tempMeasure =
+                        Utils.executeOrDefaultOnException(
+                                () -> IfcUnitMeasure.fromString(unitMeasure.getURI()),
+                                IfcUnitMeasure.UNKNOWN,
+                                NullPointerException.class,
+                                IllegalArgumentException.class);
             } else {
                 tempMeasure = generateMeasureFromProjectUnits(this.type, projectUnits);
             }
 
             if (Objects.nonNull(unitMeasurePrefix)) {
-                try {
-                    tempMeasure = IfcUnitMeasure.fromResource(unitMeasurePrefix);
-                } catch (IllegalArgumentException e) {
-                    logger.error(e.getMessage());
-                }
+                tempMeasurePrefix =
+                        Utils.executeOrDefaultOnException(
+                                () -> IfcUnitMeasurePrefix.fromString(unitMeasurePrefix.getURI()),
+                                IfcUnitMeasurePrefix.NONE,
+                                NullPointerException.class,
+                                IllegalArgumentException.class);
             } else {
                 tempMeasurePrefix = generateMeasurePrefixFromProjectUnits(this.type, projectUnits);
             }

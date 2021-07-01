@@ -3,16 +3,17 @@ package at.researchstudio.sat.mmsdesktop.logic;
 import static java.util.stream.Collectors.joining;
 
 import at.researchstudio.sat.merkmalservice.model.*;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
+import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
+import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcProperty;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcVersion;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcPropertyType;
-import at.researchstudio.sat.mmsdesktop.model.ifc.vocab.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
-import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtQuantityKind;
-import at.researchstudio.sat.mmsdesktop.vocab.qudt.QudtUnit;
+import at.researchstudio.sat.mmsdesktop.util.Utils;
 import be.ugent.progress.StatefulTaskProgressListener;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -519,7 +520,7 @@ public class PropertyExtractor {
                                                     new NumericFeature(
                                                             ifcProperty.getName(),
                                                             QudtQuantityKind.VOLUME,
-                                                            QudtUnit.extractUnitFromProperty(
+                                                            Utils.extractQudtUnitFromProperty(
                                                                     ifcProperty)))
                                     .collect(Collectors.toList()));
                     break;
@@ -532,7 +533,7 @@ public class PropertyExtractor {
                                                     new NumericFeature(
                                                             ifcProperty.getName(),
                                                             QudtQuantityKind.AREA,
-                                                            QudtUnit.extractUnitFromProperty(
+                                                            Utils.extractQudtUnitFromProperty(
                                                                     ifcProperty)))
                                     .collect(Collectors.toList()));
                     break;
@@ -562,7 +563,7 @@ public class PropertyExtractor {
                                                     new NumericFeature(
                                                             ifcProperty.getName(),
                                                             QudtQuantityKind.ANGLE,
-                                                            QudtUnit.extractUnitFromProperty(
+                                                            Utils.extractQudtUnitFromProperty(
                                                                     ifcProperty)))
                                     .collect(Collectors.toList()));
                     break;
@@ -578,7 +579,7 @@ public class PropertyExtractor {
                                                             // TODO: Figure out what
                                                             // THERMAL_TRANSMITTANCE_MEASURE is in
                                                             // QUDT.QuantityKind
-                                                            QudtUnit.extractUnitFromProperty(
+                                                            Utils.extractQudtUnitFromProperty(
                                                                     ifcProperty)))
                                     .collect(Collectors.toList()));
                 case LENGTH_MEASURE:
@@ -590,10 +591,10 @@ public class PropertyExtractor {
                                             ifcProperty ->
                                                     new NumericFeature(
                                                             ifcProperty.getName(),
-                                                            QudtQuantityKind
-                                                                    .extractQuantityKindFromPropertyName(
+                                                            Utils
+                                                                    .extractQudtQuantityKindFromProperty(
                                                                             ifcProperty),
-                                                            QudtUnit.extractUnitFromProperty(
+                                                            Utils.extractQudtUnitFromProperty(
                                                                     ifcProperty)))
                                     .collect(Collectors.toList()));
                     break;
