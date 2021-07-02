@@ -18,7 +18,7 @@
             <padding>
                 <Insets bottom="10.0"/>
             </padding>
-            <Label layoutX="14.0" layoutY="14.0" style="-fx-font-weight: bold;" text="%label.about">
+            <Label style="-fx-font-weight: bold;" text="%label.about">
                 <font>
                     <Font size="18.0"/>
                 </font>
