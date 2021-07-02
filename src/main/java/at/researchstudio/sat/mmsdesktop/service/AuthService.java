@@ -1,4 +1,4 @@
-package at.researchstudio.sat.mmsdesktop;
+package at.researchstudio.sat.mmsdesktop.service;
 
 import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;

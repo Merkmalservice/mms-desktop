@@ -1,6 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
-import at.researchstudio.sat.mmsdesktop.AuthService;
+import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;

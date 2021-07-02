@@ -1,6 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
-import at.researchstudio.sat.mmsdesktop.AuthService;
+import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
 import java.lang.invoke.MethodHandles;
