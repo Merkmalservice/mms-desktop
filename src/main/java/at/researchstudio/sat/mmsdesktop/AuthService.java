@@ -26,6 +26,7 @@ public class AuthService {
 
     public AuthService(HostServices hostService) {
         this.keycloak = new JavaFXKeycloakInstalled(hostService);
+        this.keycloak.setLocale(Locale.getDefault());
         this.loginTask = generateLoginTask();
         this.logoutTask = generateLogoutTask();
         loggedIn = new SimpleBooleanProperty(false);
@@ -42,13 +43,9 @@ public class AuthService {
         return new Task<>() {
             @Override
             public UserSession call() throws Exception {
-                keycloak.setLocale(Locale.getDefault());
-
                 try {
                     keycloak.loginDesktop();
-                    userSession = new UserSession(keycloak.getToken());
-
-                    return userSession;
+                    return new UserSession(keycloak.getToken());
                 } catch (InterruptedException e) {
                     logger.warn("Login process cancelled by User");
                 }
@@ -62,12 +59,8 @@ public class AuthService {
         return new Task<>() {
             @Override
             public LogoutResult call() throws Exception {
-                keycloak.setLocale(Locale.getDefault());
-
                 try {
                     keycloak.logout();
-                    userSession = null;
-                    loggedIn.setValue(false);
                 } catch (InterruptedException e) {
                     logger.warn("Logout process cancelled by User");
                 }
@@ -75,6 +68,18 @@ public class AuthService {
                 return new LogoutResult(true);
             }
         };
+    }
+
+    public void setUserSession(UserSession userSession) {
+        if (userSession != null) {
+            this.userSession = userSession;
+            loggedInProperty().setValue(true);
+            userNameProperty().setValue(this.userSession.getUsername());
+        } else {
+            this.userSession = null;
+            loggedInProperty().setValue(false);
+            userNameProperty().setValue("Anonymous");
+        }
     }
 
     public Task<UserSession> getLoginTask() {

@@ -105,23 +105,21 @@ public class MainController implements Initializable {
         loginTask.setOnSucceeded(
                 t -> {
                     switchCenterPane(AboutController.class);
-                    UserSession session = loginTask.getValue();
-                    authService.userNameProperty().setValue(session.getUsername());
-                    authService.loggedInProperty().setValue(true);
+                    authService.setUserSession(loginTask.getValue());
                 });
 
         loginTask.setOnCancelled(
                 t -> {
                     // TODO: Cancelled views
                     switchCenterPane(AboutController.class);
-                    logger.info("Loginprocess Cancelled");
+                    authService.setUserSession(null);
                 });
 
         loginTask.setOnFailed(
                 t -> {
                     // TODO: Error Handling
                     switchCenterPane(AboutController.class);
-                    logger.info("Loginprocess Failed");
+                    authService.setUserSession(null);
                 });
 
         new Thread(loginTask).start();
@@ -133,9 +131,7 @@ public class MainController implements Initializable {
 
         logoutTask.setOnSucceeded(
                 t -> {
-                    LogoutResult r = logoutTask.getValue();
-                    authService.userNameProperty().setValue("Anonymous");
-                    authService.loggedInProperty().setValue(false);
+                    authService.setUserSession(null);
                 });
 
         logoutTask.setOnCancelled(
