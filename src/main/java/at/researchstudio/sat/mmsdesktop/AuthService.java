@@ -1,13 +1,16 @@
 package at.researchstudio.sat.mmsdesktop;
 
-import at.researchstudio.sat.mmsdesktop.model.task.LoginResult;
+import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
 import at.researchstudio.sat.mmsdesktop.util.JavaFXKeycloakInstalled;
 import java.lang.invoke.MethodHandles;
 import java.util.Locale;
 import javafx.application.HostServices;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
-import org.keycloak.representations.AccessToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -17,7 +20,7 @@ public class AuthService {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Task<LoginResult> loginTask;
+    private final Task<UserSession> loginTask;
     private final Task<LogoutResult> logoutTask;
     private final JavaFXKeycloakInstalled keycloak;
 
@@ -25,28 +28,32 @@ public class AuthService {
         this.keycloak = new JavaFXKeycloakInstalled(hostService);
         this.loginTask = generateLoginTask();
         this.logoutTask = generateLogoutTask();
+        loggedIn = new SimpleBooleanProperty(false);
+        userName = new SimpleStringProperty("Anonymous");
     }
 
-    private Task<LoginResult> generateLoginTask() {
+    private UserSession userSession;
+
+    private final BooleanProperty loggedIn;
+    private final StringProperty userName;
+
+    private Task<UserSession> generateLoginTask() {
 
         return new Task<>() {
             @Override
-            public LoginResult call() throws Exception {
+            public UserSession call() throws Exception {
                 keycloak.setLocale(Locale.getDefault());
 
                 try {
                     keycloak.loginDesktop();
+                    userSession = new UserSession(keycloak.getToken());
 
-                    AccessToken token = keycloak.getToken();
-                    logger.info("Logged in...");
-                    logger.info("Token: " + token.getSubject());
-                    logger.info("Username: " + token.getPreferredUsername());
-                    logger.info("AccessToken: " + keycloak.getTokenString());
+                    return userSession;
                 } catch (InterruptedException e) {
                     logger.warn("Login process cancelled by User");
                 }
 
-                return new LoginResult(keycloak.getToken());
+                return null;
             }
         };
     }
@@ -59,6 +66,8 @@ public class AuthService {
 
                 try {
                     keycloak.logout();
+                    userSession = null;
+                    loggedIn.setValue(false);
                 } catch (InterruptedException e) {
                     logger.warn("Logout process cancelled by User");
                 }
@@ -68,7 +77,35 @@ public class AuthService {
         };
     }
 
-    public Task<LoginResult> getLoginTask() {
+    public Task<UserSession> getLoginTask() {
         return loginTask;
+    }
+
+    public Task<LogoutResult> getLogoutTask() {
+        return logoutTask;
+    }
+
+    public UserSession getUserSession() {
+        return userSession;
+    }
+
+    public boolean isLoggedIn() {
+        return loggedIn.get();
+    }
+
+    public BooleanProperty loggedInProperty() {
+        return loggedIn;
+    }
+
+    public String getUserName() {
+        return userName.get();
+    }
+
+    public StringProperty userNameProperty() {
+        return userName;
+    }
+
+    public boolean isSignedIn() {
+        return userSession != null;
     }
 }

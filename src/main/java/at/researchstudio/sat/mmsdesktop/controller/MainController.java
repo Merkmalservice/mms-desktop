@@ -1,7 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
 import at.researchstudio.sat.mmsdesktop.AuthService;
-import at.researchstudio.sat.mmsdesktop.model.task.LoginResult;
+import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
+import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
 import java.lang.invoke.MethodHandles;
 import java.util.ResourceBundle;
 import javafx.concurrent.Task;
@@ -9,6 +10,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -28,6 +30,8 @@ public class MainController implements Initializable {
     private ResourceBundle resourceBundle;
 
     @FXML private MenuBar menuBar;
+    @FXML private MenuItem menuBarLogin;
+    @FXML private MenuItem menuBarLogout;
 
     @FXML private BorderPane mainPane;
 
@@ -38,6 +42,15 @@ public class MainController implements Initializable {
     public MainController(AuthService authService, FxWeaver fxWeaver) {
         this.authService = authService;
         this.fxWeaver = fxWeaver;
+    }
+
+    @Override
+    public void initialize(java.net.URL arg0, ResourceBundle resources) {
+        this.resourceBundle = resources;
+        menuBar.setFocusTraversable(true);
+
+        menuBarLogin.visibleProperty().bind(authService.loggedInProperty().not());
+        menuBarLogout.visibleProperty().bind(authService.loggedInProperty());
     }
 
     /**
@@ -86,14 +99,15 @@ public class MainController implements Initializable {
 
     @FXML
     private void handleLoginAction(final ActionEvent event) {
-        Task<LoginResult> loginTask = authService.getLoginTask();
+        Task<UserSession> loginTask = authService.getLoginTask();
         switchCenterPane(LoginController.class);
 
         loginTask.setOnSucceeded(
                 t -> {
                     switchCenterPane(AboutController.class);
-                    LoginResult r = loginTask.getValue();
-                    // TODO: Login Process Success
+                    UserSession session = loginTask.getValue();
+                    authService.userNameProperty().setValue(session.getUsername());
+                    authService.loggedInProperty().setValue(true);
                 });
 
         loginTask.setOnCancelled(
@@ -111,6 +125,32 @@ public class MainController implements Initializable {
                 });
 
         new Thread(loginTask).start();
+    }
+
+    @FXML
+    private void handleLogoutAction(final ActionEvent event) {
+        Task<LogoutResult> logoutTask = authService.getLogoutTask();
+
+        logoutTask.setOnSucceeded(
+                t -> {
+                    LogoutResult r = logoutTask.getValue();
+                    authService.userNameProperty().setValue("Anonymous");
+                    authService.loggedInProperty().setValue(false);
+                });
+
+        logoutTask.setOnCancelled(
+                t -> {
+                    // TODO: Cancelled views
+                    logger.info("Logoutprocess Cancelled");
+                });
+
+        logoutTask.setOnFailed(
+                t -> {
+                    // TODO: Error Handling
+                    switchCenterPane(AboutController.class);
+                });
+
+        new Thread(logoutTask).start();
     }
 
     /**
@@ -136,12 +176,6 @@ public class MainController implements Initializable {
     /** Perform functionality associated with "About" menu selection or CTRL-A. */
     private void provideAboutFunctionality() {
         switchCenterPane(AboutController.class);
-    }
-
-    @Override
-    public void initialize(java.net.URL arg0, ResourceBundle resources) {
-        this.resourceBundle = resources;
-        menuBar.setFocusTraversable(true);
     }
 
     private void switchCenterPane(Class controllerClass) {

@@ -20,7 +20,8 @@
     </stylesheets>
     <MenuBar fx:id="menuBar" onKeyPressed="#handleKeyInput">
         <Menu text="%label.app">
-            <MenuItem text="%label.login" onAction="#handleLoginAction"/>
+            <MenuItem fx:id="menuBarLogin" text="%label.login" onAction="#handleLoginAction"/>
+            <MenuItem fx:id="menuBarLogout" text="%label.logout" onAction="#handleLogoutAction"/>
             <MenuItem text="%label.settings" onAction="#handleSettingsAction" disable="true"/>
             <SeparatorMenuItem/>
             <MenuItem text="%label.exit" onAction="#handleExitAction"/>
@@ -36,6 +37,7 @@
         <left>
             <ToolBar orientation="VERTICAL" BorderPane.alignment="CENTER"
                      style="-fx-background-color: #455A6F;">
+                <fx:include source="components/userComponent.fxml" />
                 <JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
                            graphicTextGap="15.0"
                            onAction="#handleExtractAction"

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:id="parentPane"
+      fx:controller="at.researchstudio.sat.mmsdesktop.controller.components.UserComponentController"
+      spacing="10">
+
+        <padding>
+            <Insets bottom="10.0"/>
+        </padding>
+        <Label fx:id="userLabel" textFill="#c1fff9" >
+            <font>
+                <Font size="16.0"/>
+            </font>
+        </Label>
+</VBox>
