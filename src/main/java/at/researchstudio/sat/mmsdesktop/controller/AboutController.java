@@ -6,9 +6,11 @@ import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.BorderPane;
+import net.rgielen.fxweaver.core.FxmlView;
 import org.springframework.stereotype.Component;
 
 @Component
+@FxmlView("about.fxml")
 public class AboutController implements Initializable {
     @FXML private BorderPane parentPane;
     @FXML private MarkdownView centerAboutMarkdown;

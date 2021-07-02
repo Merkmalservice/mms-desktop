@@ -1,13 +1,13 @@
 package at.researchstudio.sat.mmsdesktop;
 
 import at.researchstudio.sat.mmsdesktop.UIApplication.StageReadyEvent;
-import java.io.IOException;
+import at.researchstudio.sat.mmsdesktop.controller.MainController;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import net.rgielen.fxweaver.core.FxWeaver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StageInitializer implements ApplicationListener<StageReadyEvent> {
-    @Value("classpath:/main.fxml")
+    @Value("classpath:/at/researchstudio/sat/mmsdesktop/controller/main.fxml")
     private Resource mainResource;
 
     private final String applicationTitle;
@@ -31,21 +31,15 @@ public class StageInitializer implements ApplicationListener<StageReadyEvent> {
 
     @Override
     public void onApplicationEvent(StageReadyEvent stageReadyEvent) {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(mainResource.getURL());
-            fxmlLoader.setResources(
-                    ResourceBundle.getBundle(
-                            "messages",
-                            Locale.getDefault())); // set Default Locale to System default
-            fxmlLoader.setControllerFactory(applicationContext::getBean);
-            Parent parent = fxmlLoader.load();
+        FxWeaver fxWeaver = applicationContext.getBean(FxWeaver.class);
 
-            Stage stage = stageReadyEvent.getStage();
-            stage.setScene(new Scene(parent, 800, 600));
-            stage.setTitle(applicationTitle);
-            stage.show();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        Parent parent =
+                fxWeaver.loadView(
+                        MainController.class,
+                        ResourceBundle.getBundle("messages", Locale.getDefault()));
+        Stage stage = stageReadyEvent.getStage();
+        stage.setScene(new Scene(parent, 800, 600));
+        stage.setTitle(applicationTitle);
+        stage.show();
     }
 }

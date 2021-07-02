@@ -1,12 +1,16 @@
 package at.researchstudio.sat.mmsdesktop;
 
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UIApplication extends Application {
     private ConfigurableApplicationContext applicationContext;
 
@@ -14,6 +18,11 @@ public class UIApplication extends Application {
     public void init() throws Exception {
         applicationContext =
                 new SpringApplicationBuilder(MerkmalserviceDesktopApplication.class).run();
+    }
+
+    @Bean
+    public HostServices getHostService() {
+        return getHostServices();
     }
 
     @Override
