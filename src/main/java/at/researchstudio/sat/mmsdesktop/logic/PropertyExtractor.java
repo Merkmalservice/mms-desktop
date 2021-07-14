@@ -313,6 +313,10 @@ public class PropertyExtractor {
                                                 public void doNotifyFinished(String s) {
                                                     // ignore
                                                 }
+
+                                                @Override public void doNotifyFailed(String task) {
+                                                    // ignore
+                                                }
                                             }));
                             hdtDataCount++;
                             models.put(ifcFile.getIfcVersion(), updatedList);
