@@ -314,7 +314,8 @@ public class PropertyExtractor {
                                                     // ignore
                                                 }
 
-                                                @Override public void doNotifyFailed(String task) {
+                                                @Override
+                                                public void doNotifyFailed(String task) {
                                                     // ignore
                                                 }
                                             }));
