@@ -1,15 +1,20 @@
 package at.researchstudio.sat.mmsdesktop.logic;
 
 import be.ugent.IfcSpfReader;
+import be.ugent.progress.AbortSignal;
+import be.ugent.progress.StatefulTaskProgressListener;
 import be.ugent.progress.TaskProgressListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.lang.management.*;
+import java.nio.file.FileSystems;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.management.NotificationEmitter;
 import org.apache.jena.atlas.lib.Sink;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.apache.jena.ext.com.google.common.collect.Streams;
@@ -44,64 +49,155 @@ public class IFC2ModelConverter {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final String BASE_URI = "https://researchstudio.at/";
+    private static final double TENURED_GEN_MEMORY_THRESHOLD = 0.95;
 
     public static Model readFromFile(File ifcFile, TaskProgressListener taskProgressListener)
             throws IOException {
+        AbortSignal abortSignal = new AbortSignal();
         IfcSpfReader ifcSpfReader = new IfcSpfReader();
-        ifcSpfReader.setup(ifcFile.getAbsolutePath(), taskProgressListener);
+        ifcSpfReader.setup(ifcFile.getAbsolutePath(), taskProgressListener, abortSignal);
         ifcSpfReader.setUseUuidsForGeneratedResources(true);
         ifcSpfReader.setAvoidDuplicatePropertyResources(false);
         ifcSpfReader.setRemoveDuplicates(false);
         SinkToIterator sinkToIterator = new SinkToIterator();
-        Thread converterThread =
-                new Thread(
-                        () -> {
-                            try {
-                                ifcSpfReader.convert(
-                                        ifcFile.getAbsolutePath(),
-                                        StreamRDFLib.sinkTriples(sinkToIterator),
-                                        BASE_URI);
-                            } catch (IOException e) {
-                                throw new RuntimeException(
-                                        "Error converting IFC to RDF: " + e.getMessage(), e);
-                            } finally {
-                                sinkToIterator.close();
-                            }
-                            logger.info("Finished extracting triples");
-                        },
-                        "IFC2RDF");
         AtomicReference<Model> modelRef = new AtomicReference<>();
-        Thread modelGeneratorThread =
-                new Thread(
-                        () -> {
-                            File tempDirectory =
-                                    new File("c:/tmp/ifc2hdt/" + System.currentTimeMillis());
-                            tempDirectory.mkdirs();
-                            tempDirectory.deleteOnExit();
-                            // Model model = collectAsHdtModel(taskProgressListener, sinkToIterator,
-                            //                tempDirectory);
-                            // Model model = collectAsOrdinaryModel(taskProgressListener,
-                            // sinkToIterator);
-                            Model model =
-                                    collectAsHdtModel(
-                                            taskProgressListener, sinkToIterator, tempDirectory);
-                            modelRef.set(model);
-                            logger.info("Finished generating HDT");
-                        },
-                        "RDF Model Generator");
-        modelGeneratorThread.start();
-        converterThread.start();
-        try {
-            converterThread.join();
-            modelGeneratorThread.join();
-        } catch (InterruptedException e) {
-            throw new CancellationException("Cancelled while waiting for converter thread");
-        }
+        int attempt = 0;
+        setupLowMemoryChecker(abortSignal);
+        do {
+            attempt++;
+            abortSignal.reset();
+            sinkToIterator.reset();
+            Thread ifcReaderThread = createIfcReaderThread(ifcFile, ifcSpfReader, sinkToIterator);
+            Thread modelGeneratorThread = null;
+            if (attempt == 1) {
+                modelGeneratorThread =
+                        createModelGeneratorThreadForOrdinaryModel(
+                                taskProgressListener, abortSignal, sinkToIterator, modelRef);
+            } else if (attempt == 2) {
+                ((StatefulTaskProgressListener) taskProgressListener).reset();
+                taskProgressListener.notifyProgress(
+                        "Reading IFC into plain RDF model",
+                        "failed due to insufficient memory, retrying map-reduce HDT generation",
+                        0);
+                modelGeneratorThread =
+                        createModelGeneratorThreadForHdtModelUsingMapReduce(
+                                taskProgressListener, abortSignal, sinkToIterator, modelRef);
+            }
+            modelGeneratorThread.start();
+            ifcReaderThread.start();
+            try {
+                ifcReaderThread.join();
+                modelGeneratorThread.join();
+            } catch (InterruptedException e) {
+                throw new CancellationException("Cancelled while waiting for converter thread");
+            }
+        } while (modelRef.get() == null && attempt <= 1);
+
         return modelRef.get();
     }
 
+    private static void setupLowMemoryChecker(AbortSignal abortSignal) {
+        MemoryPoolMXBean tenuredGen =
+                ManagementFactory.getMemoryPoolMXBeans().stream()
+                        .filter(pool -> pool.getType() == MemoryType.HEAP)
+                        .filter(MemoryPoolMXBean::isUsageThresholdSupported)
+                        .findFirst()
+                        .orElseThrow(
+                                () ->
+                                        new IllegalStateException(
+                                                "Can't find tenured generation MemoryPoolMXBean"));
+        MemoryUsage usage = tenuredGen.getUsage();
+        tenuredGen.setCollectionUsageThreshold(
+                (int) Math.floor(usage.getMax() * TENURED_GEN_MEMORY_THRESHOLD));
+        NotificationEmitter notificationEmitter =
+                (NotificationEmitter) ManagementFactory.getMemoryMXBean();
+        notificationEmitter.addNotificationListener(
+                (notification, handback) -> {
+                    if (MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED.equals(
+                            notification.getType())) {
+                        // Log, send an alert or whatever makes sense in your situation
+                        System.err.println(
+                                "Running low on memory, aborting IFC to Model generation");
+                        abortSignal.abort();
+                    }
+                },
+                null,
+                null);
+    }
+
+    private static Thread createModelGeneratorThreadForOrdinaryModel(
+            TaskProgressListener taskProgressListener,
+            AbortSignal abortSignal,
+            SinkToIterator sinkToIterator,
+            AtomicReference<Model> modelRef) {
+        return new Thread(
+                () -> {
+                    Model model =
+                            collectAsOrdinaryModel(
+                                    taskProgressListener, sinkToIterator, abortSignal);
+                    if (model != null) {
+                        // model is null if the computation was aborted
+                        modelRef.set(model);
+                        logger.info("Finished loading ordinary model");
+                        return;
+                    }
+                },
+                "RDF Model Generator");
+    }
+
+    private static Thread createModelGeneratorThreadForHdtModelUsingMapReduce(
+            TaskProgressListener taskProgressListener,
+            AbortSignal abortSignal,
+            SinkToIterator sinkToIterator,
+            AtomicReference<Model> modelRef) {
+        return new Thread(
+                () -> {
+                    String tmpdir = System.getProperty("java.io.tmpdir");
+                    File tempDirectory =
+                            new File(
+                                    tmpdir
+                                            + FileSystems.getDefault().getSeparator()
+                                            + System.currentTimeMillis());
+                    tempDirectory.mkdirs();
+                    tempDirectory.deleteOnExit();
+                    Model model =
+                            collectAsHdtModelMapReduce(
+                                    taskProgressListener,
+                                    sinkToIterator,
+                                    tempDirectory,
+                                    abortSignal);
+                    if (model != null) {
+                        modelRef.set(model);
+                        logger.info("Finished generating HDT via map-reduce");
+                    }
+                },
+                "RDF Model Generator");
+    }
+
+    private static Thread createIfcReaderThread(
+            File ifcFile, IfcSpfReader ifcSpfReader, SinkToIterator sinkToIterator) {
+        return new Thread(
+                () -> {
+                    try {
+                        ifcSpfReader.convert(
+                                ifcFile.getAbsolutePath(),
+                                StreamRDFLib.sinkTriples(sinkToIterator),
+                                BASE_URI);
+                    } catch (IOException e) {
+                        throw new RuntimeException(
+                                "Error converting IFC to RDF: " + e.getMessage(), e);
+                    } finally {
+                        sinkToIterator.close();
+                    }
+                    logger.info("Finished extracting triples");
+                },
+                "IFC2RDF");
+    }
+
     private static Model collectAsOrdinaryModel(
-            TaskProgressListener taskProgressListener, SinkToIterator sinkToIterator) {
+            TaskProgressListener taskProgressListener,
+            SinkToIterator sinkToIterator,
+            AbortSignal abortSignal) {
         Iterator<Triple> it = sinkToIterator.iterator();
         Graph graph = GraphFactory.createGraphMem();
         int i = 0;
@@ -112,6 +208,10 @@ public class IFC2ModelConverter {
             }
             graph.add(it.next());
         }
+        if (abortSignal.isAborted()) {
+            taskProgressListener.notifyFailed("Collecting triples");
+            return null;
+        }
         taskProgressListener.notifyFinished("Collecting triples");
         return ModelFactory.createModelForGraph(graph);
     }
@@ -119,7 +219,8 @@ public class IFC2ModelConverter {
     private static Model collectAsHdtModel(
             TaskProgressListener taskProgressListener,
             SinkToIterator sinkToIterator,
-            File tempDirectory) {
+            File tempDirectory,
+            AbortSignal abortSignal) {
         String collectTaskName = "Collecting triples for HDT model";
         String compressTaskName = "Compressing HDT model";
         try {
@@ -148,8 +249,13 @@ public class IFC2ModelConverter {
                             (level, message) ->
                                     taskProgressListener.notifyProgress(
                                             collectTaskName, message, level));
-            taskProgressListener.notifyFinished(compressTaskName);
             String createModelTaskName = "Creating model";
+            if (abortSignal.isAborted()) {
+                taskProgressListener.notifyFailed(collectTaskName);
+                taskProgressListener.notifyFailed(compressTaskName);
+                return null;
+            }
+            taskProgressListener.notifyFinished(compressTaskName);
             taskProgressListener.notifyProgress(createModelTaskName, "started", 0);
             Model model = toModel(hdt);
             taskProgressListener.notifyFinished(createModelTaskName);
@@ -162,19 +268,21 @@ public class IFC2ModelConverter {
     private static Model collectAsHdtModelMapReduce(
             TaskProgressListener taskProgressListener,
             SinkToIterator sinkToIterator,
-            File tempDirectory) {
+            File tempDirectory,
+            AbortSignal abortSignal) {
         try {
-            StreamToHdt streamToHdt = new StreamToHdt(taskProgressListener);
-            Streams.stream(sinkToIterator.iterator())
-                    // .parallel()
-                    .forEach(streamToHdt::addTriple);
+            StreamToHdt streamToHdt = new StreamToHdt(taskProgressListener, abortSignal);
+            Streams.stream(sinkToIterator.iterator()).parallel().forEach(streamToHdt::addTriple);
             streamToHdt.finishAllChunks();
+            if (abortSignal.isAborted()) {
+                return null;
+            }
             AtomicInteger reduceSteps = new AtomicInteger(0);
             Set<HdtChunkWriter> chunks = streamToHdt.getFinishedChunks();
             int totalReduceSteps = chunks.size() - 1;
             Optional<HDT> resultOpt =
                     chunks.stream()
-                            // .parallel()
+                            .parallel()
                             .map(HdtChunkWriter::getHdt)
                             .reduce(
                                     (left, right) -> {
@@ -195,8 +303,12 @@ public class IFC2ModelConverter {
                                                                         / (float) totalReduceSteps;
                                                         if (taskProgressListener != null) {
                                                             taskProgressListener.notifyProgress(
-                                                                    "Reduce step " + reducerStep,
-                                                                    message,
+                                                                    "Combining HDT chunks",
+                                                                    String.format(
+                                                                            "step %d/%d: %s",
+                                                                            reducerStep,
+                                                                            totalReduceSteps,
+                                                                            message),
                                                                     reduceLevel);
                                                         }
                                                     };
@@ -214,11 +326,12 @@ public class IFC2ModelConverter {
                                             left.close();
                                             right.close();
                                             return merged;
-                                        } catch (Exception e) {
+                                        } catch (Throwable e) {
                                             throw new RuntimeException(
                                                     "Error combining chunks ", e);
                                         }
                                     });
+            taskProgressListener.notifyProgress("Combining HDT chunks", "finished", 1f);
             HDT result = resultOpt.orElse(null);
             return toModel(result);
         } catch (Exception e) {
@@ -246,6 +359,11 @@ public class IFC2ModelConverter {
             } catch (InterruptedException e) {
                 throw new RuntimeException("Interrupted while waiting for queue space", e);
             }
+        }
+
+        public void reset() {
+            this.queue.clear();
+            this.closed.set(false);
         }
 
         @Override
@@ -351,9 +469,14 @@ public class IFC2ModelConverter {
         private TempDictionary dictionary;
         private TempTriples triples;
         private final ProgressListener listener;
+        private final AbortSignal abortSignal;
 
         public HdtChunkWriter(
-                long maxSize, String baseUri, ProgressListener listener, int chunkIndex)
+                long maxSize,
+                String baseUri,
+                ProgressListener listener,
+                int chunkIndex,
+                AbortSignal abortSignal)
                 throws IOException {
             this.maxSize = maxSize;
             this.num = 0;
@@ -361,6 +484,7 @@ public class IFC2ModelConverter {
             this.baseUri = baseUri;
             this.listener = listener;
             this.chunkIndex = chunkIndex;
+            this.abortSignal = abortSignal;
             init();
         }
 
@@ -397,13 +521,24 @@ public class IFC2ModelConverter {
 
             modHDT.close();
             modHDT = null;
+            triples.clear();
+            triples = null;
+            dictionary.clear();
+            dictionary.close();
+            dictionary = null;
         }
 
         public HDT getHdt() {
+            if (abortSignal.isAborted()) {
+                return null;
+            }
             return hdt;
         }
 
         public void addTriple(Triple triple) throws IOException {
+            if (abortSignal.isAborted()) {
+                return;
+            }
             TripleString ts = toTripleString(triple);
             triples.insert(
                     dictionary.insert(ts.getSubject(), TripleComponentRole.SUBJECT),
@@ -431,21 +566,25 @@ public class IFC2ModelConverter {
     }
 
     private static class StreamToHdt {
-        private static final long MAX_CHUNK_SIZE = 10000000;
-        // Map<Thread, HdtChunkWriter> writerMap;
-        HdtChunkWriter writer;
+        private static final long MAX_CHUNK_SIZE = 100000000;
+        Map<Thread, HdtChunkWriter> writerMap;
         final Set<HdtChunkWriter> finishedChunks;
         private final AtomicInteger chunks;
         private final TaskProgressListener taskProgressListener;
+        private final AbortSignal abortSignal;
 
-        public StreamToHdt(TaskProgressListener taskProgressListener) {
+        public StreamToHdt(TaskProgressListener taskProgressListener, AbortSignal abortSignal) {
             this.taskProgressListener = taskProgressListener;
-            // this.writerMap = new ConcurrentHashMap<>();
+            this.writerMap = new ConcurrentHashMap<>();
             this.finishedChunks = Collections.synchronizedSet(new HashSet<>());
             this.chunks = new AtomicInteger(0);
+            this.abortSignal = abortSignal;
         }
 
         public void addTriple(Triple triple) {
+            if (abortSignal.isAborted()) {
+                return;
+            }
             try {
                 HdtChunkWriter writer = getChunkWriterAndPossiblySwapForNew();
                 writer.addTriple(triple);
@@ -455,65 +594,71 @@ public class IFC2ModelConverter {
         }
 
         private HdtChunkWriter getChunkWriterAndPossiblySwapForNew() throws Exception {
-            /*HdtChunkWriter writer = writerMap.computeIfAbsent(Thread.currentThread(),  t -> {
-                try {
-                    int chunkIndex = chunks.incrementAndGet();
-                    return new HdtChunkWriter(MAX_CHUNK_SIZE, BASE_URI, new ProgressListener() {
-                        @Override public void notifyProgress(float level, String message) {
-                            if (taskProgressListener != null){
-                                taskProgressListener.notifyProgress("HDT chunk " + chunkIndex, message, level);
-                            }
-                        }
-                    }, chunkIndex);
-                } catch (Exception e) {
-                    throw new RuntimeException("Cannot create temporary hdt file", e);
-                }
-            });
-            */
+            HdtChunkWriter writer =
+                    writerMap.computeIfAbsent(
+                            Thread.currentThread(),
+                            t -> {
+                                try {
+                                    int chunkIndex = chunks.incrementAndGet();
+                                    return new HdtChunkWriter(
+                                            MAX_CHUNK_SIZE,
+                                            BASE_URI,
+                                            new ProgressListener() {
+                                                @Override
+                                                public void notifyProgress(
+                                                        float level, String message) {
+                                                    if (taskProgressListener != null) {
+                                                        taskProgressListener.notifyProgress(
+                                                                "Generating HDT chunks",
+                                                                String.format(
+                                                                        "Status of chunk %d: %s",
+                                                                        chunkIndex, message),
+                                                                0f);
+                                                    }
+                                                }
+                                            },
+                                            chunkIndex,
+                                            abortSignal);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(
+                                            "Cannot create temporary hdt file", e);
+                                }
+                            });
             if (writer != null) {
                 if (writer.isMaxChunkSizeReached()) {
                     writer.close();
                     finishedChunks.add(writer);
+                    taskProgressListener.notifyProgress(
+                            "Generating HDT chunks",
+                            String.format("Status of chunk %d: finished", writer.chunkIndex),
+                            0f);
                     writer = null;
-                    // writerMap.remove(Thread.currentThread());
+                    writerMap.remove(Thread.currentThread());
                     return getChunkWriterAndPossiblySwapForNew();
                 }
                 return writer;
             }
-            int chunkIndex = chunks.incrementAndGet();
-            writer =
-                    new HdtChunkWriter(
-                            MAX_CHUNK_SIZE,
-                            BASE_URI,
-                            (level, message) -> {
-                                if (taskProgressListener != null) {
-                                    taskProgressListener.notifyProgress(
-                                            "HDT chunk " + chunkIndex, message, level);
-                                }
-                            },
-                            chunkIndex);
-            return writer;
+            return null;
         }
 
         public void finishAllChunks() {
-            /*this.writerMap.values().forEach(hdtChunkWriter -> {
-                try {
-                    hdtChunkWriter.close();
-                    finishedChunks.add(hdtChunkWriter);
-                } catch (Exception e) {
-                    throw new RuntimeException("Error closing chunk writer", e);
-                }
-            });
-
-             */
-            try {
-                writer.close();
-            } catch (IOException e) {
-                throw new RuntimeException("Error closing chunk writer", e);
+            if (abortSignal.isAborted()) {
+                taskProgressListener.notifyFailed("Generating HDT chunks");
+                this.writerMap.clear();
             }
-            finishedChunks.add(writer);
-            writer = null;
-            // this.writerMap.clear();
+            this.writerMap
+                    .values()
+                    .forEach(
+                            hdtChunkWriter -> {
+                                try {
+                                    hdtChunkWriter.close();
+                                    finishedChunks.add(hdtChunkWriter);
+                                } catch (Exception e) {
+                                    throw new RuntimeException("Error closing chunk writer", e);
+                                }
+                            });
+            taskProgressListener.notifyProgress("Generating HDT chunks", "finished", 1f);
+            this.writerMap.clear();
         }
 
         public Set<HdtChunkWriter> getFinishedChunks() {
@@ -521,8 +666,7 @@ public class IFC2ModelConverter {
         }
 
         public void clear() {
-            // this.writerMap = null;
-            this.writer = null;
+            this.writerMap = null;
         }
     }
 }
