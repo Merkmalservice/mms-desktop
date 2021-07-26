@@ -505,7 +505,14 @@ public class PropertyExtractor {
                     fullLog.append(logString).append(System.getProperty("line.separator"));
                     extractedFeatures.addAll(
                             entry.getValue().stream()
-                                    .map(ifcProperty -> new BooleanFeature(ifcProperty.getName()))
+                                    .map(
+                                            ifcProperty -> {
+                                                BooleanFeature f =
+                                                        new BooleanFeature(ifcProperty.getName());
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 case TEXT:
@@ -513,7 +520,14 @@ public class PropertyExtractor {
                     fullLog.append(logString).append(System.getProperty("line.separator"));
                     extractedFeatures.addAll(
                             entry.getValue().stream()
-                                    .map(ifcProperty -> new StringFeature(ifcProperty.getName()))
+                                    .map(
+                                            ifcProperty -> {
+                                                StringFeature f =
+                                                        new StringFeature(ifcProperty.getName());
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 case VOLUME_MEASURE:
@@ -521,12 +535,17 @@ public class PropertyExtractor {
                     extractedFeatures.addAll(
                             entry.getValue().stream()
                                     .map(
-                                            ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            QudtQuantityKind.VOLUME,
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                            ifcProperty -> {
+                                                NumericFeature f =
+                                                        new NumericFeature(
+                                                                ifcProperty.getName(),
+                                                                QudtQuantityKind.VOLUME,
+                                                                Utils.extractQudtUnitFromProperty(
+                                                                        ifcProperty));
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 case AREA_MEASURE:
@@ -534,12 +553,17 @@ public class PropertyExtractor {
                     extractedFeatures.addAll(
                             entry.getValue().stream()
                                     .map(
-                                            ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            QudtQuantityKind.AREA,
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                            ifcProperty -> {
+                                                NumericFeature f =
+                                                        new NumericFeature(
+                                                                ifcProperty.getName(),
+                                                                QudtQuantityKind.AREA,
+                                                                Utils.extractQudtUnitFromProperty(
+                                                                        ifcProperty));
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 case DIMENSION_COUNT:
@@ -552,11 +576,16 @@ public class PropertyExtractor {
                     extractedFeatures.addAll(
                             entry.getValue().stream()
                                     .map(
-                                            ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            QudtQuantityKind.DIMENSIONLESS,
-                                                            QudtUnit.UNITLESS))
+                                            ifcProperty -> {
+                                                NumericFeature f =
+                                                        new NumericFeature(
+                                                                ifcProperty.getName(),
+                                                                QudtQuantityKind.DIMENSIONLESS,
+                                                                QudtUnit.UNITLESS);
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 case PLANE_ANGLE_MEASURE:
@@ -564,12 +593,17 @@ public class PropertyExtractor {
                     extractedFeatures.addAll(
                             entry.getValue().stream()
                                     .map(
-                                            ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            QudtQuantityKind.ANGLE,
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                            ifcProperty -> {
+                                                NumericFeature f =
+                                                        new NumericFeature(
+                                                                ifcProperty.getName(),
+                                                                QudtQuantityKind.ANGLE,
+                                                                Utils.extractQudtUnitFromProperty(
+                                                                        ifcProperty));
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 case THERMAL_TRANSMITTANCE_MEASURE:
@@ -577,15 +611,21 @@ public class PropertyExtractor {
                     extractedFeatures.addAll(
                             entry.getValue().stream()
                                     .map(
-                                            ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            QudtQuantityKind.DIMENSIONLESS,
-                                                            // TODO: Figure out what
-                                                            // THERMAL_TRANSMITTANCE_MEASURE is in
-                                                            // QUDT.QuantityKind
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                            ifcProperty -> {
+                                                NumericFeature f =
+                                                        new NumericFeature(
+                                                                ifcProperty.getName(),
+                                                                QudtQuantityKind.DIMENSIONLESS,
+                                                                // TODO: Figure out what
+                                                                // THERMAL_TRANSMITTANCE_MEASURE is
+                                                                // in
+                                                                // QUDT.QuantityKind
+                                                                Utils.extractQudtUnitFromProperty(
+                                                                        ifcProperty));
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                 case LENGTH_MEASURE:
                 case POSITIVE_LENGTH_MEASURE:
@@ -593,14 +633,19 @@ public class PropertyExtractor {
                     extractedFeatures.addAll(
                             entry.getValue().stream()
                                     .map(
-                                            ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            Utils
-                                                                    .extractQudtQuantityKindFromProperty(
-                                                                            ifcProperty),
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                            ifcProperty -> {
+                                                NumericFeature f =
+                                                        new NumericFeature(
+                                                                ifcProperty.getName(),
+                                                                Utils
+                                                                        .extractQudtQuantityKindFromProperty(
+                                                                                ifcProperty),
+                                                                Utils.extractQudtUnitFromProperty(
+                                                                        ifcProperty));
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 case VALUELIST:
@@ -608,20 +653,27 @@ public class PropertyExtractor {
                     extractedFeatures.addAll(
                             entry.getValue().stream()
                                     .map(
-                                            ifcProperty ->
-                                                    new EnumFeature(
-                                                            ifcProperty.getName(),
-                                                            ifcProperty
-                                                                    .getEnumOptionValues()
-                                                                    .stream()
-                                                                    .map(
-                                                                            option ->
-                                                                                    new EnumFeature
-                                                                                            .MEStringValue(
-                                                                                            option,
-                                                                                            null))
-                                                                    .collect(Collectors.toList()),
-                                                            false))
+                                            ifcProperty -> {
+                                                EnumFeature f =
+                                                        new EnumFeature(
+                                                                ifcProperty.getName(),
+                                                                ifcProperty
+                                                                        .getEnumOptionValues()
+                                                                        .stream()
+                                                                        .map(
+                                                                                option ->
+                                                                                        new EnumFeature
+                                                                                                .MEStringValue(
+                                                                                                option,
+                                                                                                null))
+                                                                        .collect(
+                                                                                Collectors
+                                                                                        .toList()),
+                                                                false);
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 default:

@@ -1,5 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.merkmalservice.model.*;
+import at.researchstudio.sat.merkmalservice.utils.ExcludeDescriptionStrategy;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
@@ -20,18 +22,24 @@ import java.nio.file.NotDirectoryException;
 import java.util.*;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
 import javafx.util.Duration;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.apache.jena.ext.com.google.common.base.Throwables;
@@ -52,7 +60,7 @@ public class ExtractController implements Initializable {
     @FXML private JFXProgressBar centerProgressProgressBar;
     @FXML private JFXTextArea centerProgressLog;
     @FXML private Label centerProgressProgressInfo;
-    @FXML private JFXTextArea centerResultFeatures;
+    @FXML private JFXTextArea centerResultFeaturesJson;
     @FXML private JFXTextArea centerResultLog;
 
     // BorderPane Elements
@@ -63,6 +71,10 @@ public class ExtractController implements Initializable {
     @FXML private TableView centerPickFiles;
     @FXML private BorderPane centerProgress;
     @FXML private JFXTabPane centerResults;
+    @FXML private JFXToggleButton centerResultUniqueValuesToggle;
+    @FXML private TableColumn centerResultFeaturesTableTypeColumn;
+    @FXML private JFXTextField centerResultFeaturesSearch;
+    @FXML private TableView centerResultFeaturesTable;
 
     @FXML private HBox bottomResults;
     @FXML private HBox bottomPickFiles;
@@ -72,6 +84,9 @@ public class ExtractController implements Initializable {
     private FileChooser fileChooser;
     private DirectoryChooser directoryChooser;
     private ObservableList<IfcFileWrapper> selectedIfcFiles;
+    private ObservableList<Feature> extractedFeatures;
+    private FilteredList<Feature> filteredExtractedFeatures;
+    private SortedList<Feature> sortedExtractedFeatures;
 
     private JFXSnackbar snackbar;
 
@@ -101,6 +116,75 @@ public class ExtractController implements Initializable {
 
         directoryChooser = new DirectoryChooser();
         selectedIfcFiles = FXCollections.observableArrayList();
+        extractedFeatures = FXCollections.observableArrayList();
+        filteredExtractedFeatures = new FilteredList<>(extractedFeatures);
+        sortedExtractedFeatures = new SortedList<>(filteredExtractedFeatures);
+
+        sortedExtractedFeatures
+                .comparatorProperty()
+                .bind(centerResultFeaturesTable.comparatorProperty());
+
+        centerResultFeaturesSearch
+                .textProperty()
+                .addListener(
+                        (observable, oldValue, searchText) ->
+                                filteredExtractedFeatures.setPredicate(
+                                        feature -> {
+                                            if (searchText == null || searchText.isEmpty())
+                                                return true;
+                                            return (feature.getName()
+                                                            .toLowerCase()
+                                                            .contains(searchText.toLowerCase()))
+                                                    || (feature.getDescription()
+                                                            .toLowerCase()
+                                                            .contains(searchText.toLowerCase()));
+                                        }));
+
+        centerResultFeaturesTableTypeColumn.setCellValueFactory(
+                new Callback<
+                        TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>() {
+                    @Override
+                    public ObservableValue<String> call(
+                            TableColumn.CellDataFeatures<Feature, String> p) {
+                        if (p.getValue() != null) {
+                            Feature f = p.getValue();
+
+                            if (f instanceof StringFeature) {
+                                return new SimpleStringProperty("TEXT");
+                            } else if (f instanceof EnumFeature) {
+                                return new SimpleStringProperty("ENUM");
+                            } else if (f instanceof ReferenceFeature) {
+                                return new SimpleStringProperty("REFERENCE");
+                            } else if (f instanceof BooleanFeature) {
+                                return new SimpleStringProperty("BOOLE");
+                            } else if (f instanceof NumericFeature) {
+                                return new SimpleStringProperty("NUMERIC");
+                            }
+                        }
+
+                        return new SimpleStringProperty("<no valid type>");
+                    }
+                });
+
+        centerResultUniqueValuesToggle
+                .selectedProperty()
+                .addListener(
+                        (observable, oldValue, newValue) -> {
+                            if (newValue) {
+                                Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
+                                centerResultFeaturesJson.setText(
+                                        gson.toJson(extractResult.getExtractedFeatures()));
+                            } else {
+                                Gson gson =
+                                        (new GsonBuilder())
+                                                .setExclusionStrategies(
+                                                        new ExcludeDescriptionStrategy())
+                                                .setPrettyPrinting()
+                                                .create();
+                                centerResultFeaturesJson.setText(
+                                        gson.toJson(extractResult.getExtractedFeatures()));
+                            }
+                        });
 
         snackbar = new JFXSnackbar(parentPane);
     }
@@ -145,7 +229,10 @@ public class ExtractController implements Initializable {
 
         if (Objects.nonNull(file)) {
             try {
-                Utils.writeToJson(file.getAbsolutePath(), extractResult.getExtractedFeatures());
+                Utils.writeToJson(
+                        file.getAbsolutePath(),
+                        extractResult.getExtractedFeatures(),
+                        centerResultUniqueValuesToggle.selectedProperty().getValue());
                 final String message =
                         MessageUtils.getKeyWithParameters(
                                 resourceBundle,
@@ -218,7 +305,7 @@ public class ExtractController implements Initializable {
         centerProgress.setVisible(false);
         centerProgress.setManaged(false);
 
-        centerResultFeatures.setText("");
+        centerResultFeaturesJson.setText("");
         centerResultLog.setText("");
         centerResults.setVisible(false);
         centerResults.setManaged(false);
@@ -256,8 +343,12 @@ public class ExtractController implements Initializable {
 
                     centerProgress.setVisible(false);
                     centerProgress.setManaged(false);
+
+                    extractedFeatures.setAll(extractResult.getExtractedFeatures());
+
                     Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-                    centerResultFeatures.setText(gson.toJson(extractResult.getExtractedFeatures()));
+                    centerResultFeaturesJson.setText(gson.toJson(extractedFeatures));
+
                     centerResultLog.setText(extractResult.getLogOutput());
                     centerResults.setVisible(true);
                     centerResults.setManaged(true);
@@ -274,7 +365,7 @@ public class ExtractController implements Initializable {
 
                     centerProgress.setVisible(false);
                     centerProgress.setManaged(false);
-                    centerResultFeatures.setText("[]");
+                    centerResultFeaturesJson.setText("[]");
                     centerResultLog.setText(Throwables.getStackTraceAsString(task.getException()));
                     centerResults.setVisible(true);
                     centerResults.setManaged(true);
@@ -296,5 +387,13 @@ public class ExtractController implements Initializable {
 
     public void setSelectedIfcFiles(ObservableList<IfcFileWrapper> selectedIfcFiles) {
         this.selectedIfcFiles = selectedIfcFiles;
+    }
+
+    public SortedList<Feature> getSortedExtractedFeatures() {
+        return sortedExtractedFeatures;
+    }
+
+    public void setSortedExtractedFeatures(SortedList<Feature> sortedExtractedFeatures) {
+        this.sortedExtractedFeatures = sortedExtractedFeatures;
     }
 }
