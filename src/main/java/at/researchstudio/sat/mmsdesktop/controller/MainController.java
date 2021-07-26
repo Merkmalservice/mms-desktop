@@ -129,10 +129,7 @@ public class MainController implements Initializable {
     private void handleLogoutAction(final ActionEvent event) {
         Task<LogoutResult> logoutTask = authService.getLogoutTask();
 
-        logoutTask.setOnSucceeded(
-                t -> {
-                    authService.setUserSession(null);
-                });
+        logoutTask.setOnSucceeded(t -> authService.setUserSession(null));
 
         logoutTask.setOnCancelled(
                 t -> {

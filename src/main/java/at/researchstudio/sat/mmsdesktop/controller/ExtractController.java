@@ -141,30 +141,26 @@ public class ExtractController implements Initializable {
                                         }));
 
         centerResultFeaturesTableTypeColumn.setCellValueFactory(
-                new Callback<
-                        TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>() {
-                    @Override
-                    public ObservableValue<String> call(
-                            TableColumn.CellDataFeatures<Feature, String> p) {
-                        if (p.getValue() != null) {
-                            Feature f = p.getValue();
+                (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
+                        p -> {
+                            if (p.getValue() != null) {
+                                Feature f = p.getValue();
 
-                            if (f instanceof StringFeature) {
-                                return new SimpleStringProperty("TEXT");
-                            } else if (f instanceof EnumFeature) {
-                                return new SimpleStringProperty("ENUM");
-                            } else if (f instanceof ReferenceFeature) {
-                                return new SimpleStringProperty("REFERENCE");
-                            } else if (f instanceof BooleanFeature) {
-                                return new SimpleStringProperty("BOOLE");
-                            } else if (f instanceof NumericFeature) {
-                                return new SimpleStringProperty("NUMERIC");
+                                if (f instanceof StringFeature) {
+                                    return new SimpleStringProperty("TEXT");
+                                } else if (f instanceof EnumFeature) {
+                                    return new SimpleStringProperty("ENUM");
+                                } else if (f instanceof ReferenceFeature) {
+                                    return new SimpleStringProperty("REFERENCE");
+                                } else if (f instanceof BooleanFeature) {
+                                    return new SimpleStringProperty("BOOLE");
+                                } else if (f instanceof NumericFeature) {
+                                    return new SimpleStringProperty("NUMERIC");
+                                }
                             }
-                        }
 
-                        return new SimpleStringProperty("<no valid type>");
-                    }
-                });
+                            return new SimpleStringProperty("<no valid type>");
+                        });
 
         centerResultUniqueValuesToggle
                 .selectedProperty()
