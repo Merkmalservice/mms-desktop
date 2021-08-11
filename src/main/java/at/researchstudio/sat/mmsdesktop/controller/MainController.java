@@ -27,16 +27,13 @@ import org.springframework.stereotype.Component;
 public class MainController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final AuthService authService;
+    private final FxWeaver fxWeaver;
     private ResourceBundle resourceBundle;
-
     @FXML private MenuBar menuBar;
     @FXML private MenuItem menuBarLogin;
     @FXML private MenuItem menuBarLogout;
-
     @FXML private BorderPane mainPane;
-
-    private final AuthService authService;
-    private final FxWeaver fxWeaver;
 
     @Autowired
     public MainController(AuthService authService, FxWeaver fxWeaver) {
@@ -106,6 +103,7 @@ public class MainController implements Initializable {
                 t -> {
                     switchCenterPane(AboutController.class);
                     authService.setUserSession(loginTask.getValue());
+                    authService.resetLoginTask();
                 });
 
         loginTask.setOnCancelled(
@@ -113,6 +111,7 @@ public class MainController implements Initializable {
                     // TODO: Cancelled views
                     switchCenterPane(AboutController.class);
                     authService.setUserSession(null);
+                    authService.resetLoginTask();
                 });
 
         loginTask.setOnFailed(
@@ -120,6 +119,7 @@ public class MainController implements Initializable {
                     // TODO: Error Handling
                     switchCenterPane(AboutController.class);
                     authService.setUserSession(null);
+                    authService.resetLoginTask();
                 });
 
         new Thread(loginTask).start();
@@ -129,18 +129,25 @@ public class MainController implements Initializable {
     private void handleLogoutAction(final ActionEvent event) {
         Task<LogoutResult> logoutTask = authService.getLogoutTask();
 
-        logoutTask.setOnSucceeded(t -> authService.setUserSession(null));
+        logoutTask.setOnSucceeded(
+                t -> {
+                    switchCenterPane(AboutController.class);
+                    authService.setUserSession(null);
+                    authService.resetLogoutTask();
+                });
 
         logoutTask.setOnCancelled(
                 t -> {
                     // TODO: Cancelled views
-                    logger.info("Logoutprocess Cancelled");
+                    switchCenterPane(AboutController.class);
+                    authService.resetLogoutTask();
                 });
 
         logoutTask.setOnFailed(
                 t -> {
                     // TODO: Error Handling
                     switchCenterPane(AboutController.class);
+                    authService.resetLogoutTask();
                 });
 
         new Thread(logoutTask).start();

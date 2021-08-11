@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -20,8 +21,8 @@ public class AuthService {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final Task<UserSession> loginTask;
-    private final Task<LogoutResult> logoutTask;
+    private Task<UserSession> loginTask;
+    private Task<LogoutResult> logoutTask;
     private final JavaFXKeycloakInstalled keycloak;
 
     public AuthService(HostServices hostService) {
@@ -30,16 +31,17 @@ public class AuthService {
         this.loginTask = generateLoginTask();
         this.logoutTask = generateLogoutTask();
         loggedIn = new SimpleBooleanProperty(false);
-        userName = new SimpleStringProperty("Anonymous");
+        fullName = new SimpleStringProperty("Anonymous");
+        userInitials = new SimpleStringProperty("AN");
     }
 
     private UserSession userSession;
 
     private final BooleanProperty loggedIn;
-    private final StringProperty userName;
+    private final StringProperty fullName;
+    private final StringProperty userInitials;
 
     private Task<UserSession> generateLoginTask() {
-
         return new Task<>() {
             @Override
             public UserSession call() throws Exception {
@@ -53,6 +55,14 @@ public class AuthService {
                 return null;
             }
         };
+    }
+
+    public void resetLoginTask() {
+        this.loginTask = generateLoginTask();
+    }
+
+    public void resetLogoutTask() {
+        this.logoutTask = generateLogoutTask();
     }
 
     private Task<LogoutResult> generateLogoutTask() {
@@ -74,11 +84,13 @@ public class AuthService {
         if (userSession != null) {
             this.userSession = userSession;
             loggedInProperty().setValue(true);
-            userNameProperty().setValue(this.userSession.getUsername());
+            fullNameProperty().setValue(StringUtils.abbreviate(this.userSession.getFullName(), 18));
+            userInitialsProperty().setValue(this.userSession.getInitials());
         } else {
             this.userSession = null;
             loggedInProperty().setValue(false);
-            userNameProperty().setValue("Anonymous");
+            fullNameProperty().setValue("Anonymous");
+            userInitialsProperty().setValue("AN");
         }
     }
 
@@ -102,15 +114,23 @@ public class AuthService {
         return loggedIn;
     }
 
-    public String getUserName() {
-        return userName.get();
+    public String getFullName() {
+        return fullName.get();
     }
 
-    public StringProperty userNameProperty() {
-        return userName;
+    public StringProperty fullNameProperty() {
+        return fullName;
     }
 
     public boolean isSignedIn() {
         return userSession != null;
+    }
+
+    public String getUserInitials() {
+        return userInitials.get();
+    }
+
+    public StringProperty userInitialsProperty() {
+        return userInitials;
     }
 }

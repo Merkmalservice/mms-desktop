@@ -5,6 +5,7 @@ import at.researchstudio.sat.merkmalservice.utils.ExcludeDescriptionStrategy;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
+import at.researchstudio.sat.mmsdesktop.service.ExtractService;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
@@ -22,6 +23,8 @@ import java.nio.file.NotDirectoryException;
 import java.util.*;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -34,6 +37,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -45,6 +49,7 @@ import net.rgielen.fxweaver.core.FxmlView;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -79,6 +84,8 @@ public class ExtractController implements Initializable {
     @FXML private HBox bottomResults;
     @FXML private HBox bottomPickFiles;
 
+    @FXML private BorderPane selectedFeaturePreview;
+
     private FileChooser saveFileChooser;
     private FileChooser saveLogFileChooser;
     private FileChooser fileChooser;
@@ -90,13 +97,57 @@ public class ExtractController implements Initializable {
 
     private JFXSnackbar snackbar;
 
-    private ExtractResult extractResult;
-
     private ResourceBundle resourceBundle;
+
+    private BooleanProperty showInitial = new SimpleBooleanProperty(true);
+    private BooleanProperty showExtractProcess = new SimpleBooleanProperty(false);
+    private BooleanProperty showExtracted = new SimpleBooleanProperty(false);
+
+    private ExtractService extractService;
+
+    @Autowired
+    public ExtractController(ExtractService extractService) {
+        this.extractService = extractService;
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        topPickFiles.visibleProperty().bind(showInitial);
+        topPickFiles.managedProperty().bind(showInitial);
+        centerPickFiles.visibleProperty().bind(showInitial);
+        centerPickFiles.managedProperty().bind(showInitial);
+        bottomPickFiles.visibleProperty().bind(showInitial);
+        bottomPickFiles.managedProperty().bind(showInitial);
+
+        centerProgress.visibleProperty().bind(showExtractProcess);
+        centerProgress.managedProperty().bind(showExtractProcess);
+
+        centerResults.visibleProperty().bind(showExtracted);
+        centerResults.managedProperty().bind(showExtracted);
+        bottomResults.visibleProperty().bind(showExtracted);
+        bottomResults.managedProperty().bind(showExtracted);
+
         this.resourceBundle = resourceBundle;
+
+        if (extractService.getExtractResult() != null) {
+            showInitial.setValue(false);
+            showExtractProcess.setValue(false);
+            showExtracted.setValue(true);
+
+            extractedFeatures.setAll(extractService.getExtractResult().getExtractedFeatures());
+
+            Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
+            centerResultFeaturesJson.setText(gson.toJson(extractedFeatures));
+
+            centerResultLog.setText(extractService.getExtractResult().getLogOutput());
+        } else {
+            showInitial.setValue(true);
+            showExtractProcess.setValue(false);
+            showExtracted.setValue(false);
+
+            extractedFeatures = FXCollections.observableArrayList();
+        }
+
         fileChooser = new FileChooser();
         fileChooser
                 .getExtensionFilters()
@@ -116,7 +167,7 @@ public class ExtractController implements Initializable {
 
         directoryChooser = new DirectoryChooser();
         selectedIfcFiles = FXCollections.observableArrayList();
-        extractedFeatures = FXCollections.observableArrayList();
+
         filteredExtractedFeatures = new FilteredList<>(extractedFeatures);
         sortedExtractedFeatures = new SortedList<>(filteredExtractedFeatures);
 
@@ -169,7 +220,10 @@ public class ExtractController implements Initializable {
                             if (newValue) {
                                 Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
                                 centerResultFeaturesJson.setText(
-                                        gson.toJson(extractResult.getExtractedFeatures()));
+                                        gson.toJson(
+                                                extractService
+                                                        .getExtractResult()
+                                                        .getExtractedFeatures()));
                             } else {
                                 Gson gson =
                                         (new GsonBuilder())
@@ -178,9 +232,28 @@ public class ExtractController implements Initializable {
                                                 .setPrettyPrinting()
                                                 .create();
                                 centerResultFeaturesJson.setText(
-                                        gson.toJson(extractResult.getExtractedFeatures()));
+                                        gson.toJson(
+                                                extractService
+                                                        .getExtractResult()
+                                                        .getExtractedFeatures()));
                             }
                         });
+
+        centerResultFeaturesTable.setRowFactory(
+                tv -> {
+                    TableRow<Feature> row = new TableRow<>();
+                    row.setOnMouseClicked(
+                            event -> {
+                                if (!row.isEmpty()) {
+                                    Feature rowData = row.getItem();
+
+                                    extractService.setSelectedFeature(rowData);
+                                    selectedFeaturePreview.setVisible(true);
+                                    selectedFeaturePreview.setManaged(true);
+                                }
+                            });
+                    return row;
+                });
 
         snackbar = new JFXSnackbar(parentPane);
     }
@@ -227,7 +300,7 @@ public class ExtractController implements Initializable {
             try {
                 Utils.writeToJson(
                         file.getAbsolutePath(),
-                        extractResult.getExtractedFeatures(),
+                        extractService.getExtractResult().getExtractedFeatures(),
                         centerResultUniqueValuesToggle.selectedProperty().getValue());
                 final String message =
                         MessageUtils.getKeyWithParameters(
@@ -257,7 +330,9 @@ public class ExtractController implements Initializable {
         if (Objects.nonNull(file)) {
             try {
                 Files.writeString(
-                        file.toPath(), extractResult.getLogOutput(), StandardCharsets.UTF_8);
+                        file.toPath(),
+                        extractService.getExtractResult().getLogOutput(),
+                        StandardCharsets.UTF_8);
                 final String message =
                         MessageUtils.getKeyWithParameters(
                                 resourceBundle,
@@ -289,29 +364,19 @@ public class ExtractController implements Initializable {
     @FXML
     public void handleResetAction(ActionEvent actionEvent) {
         handleClearListAction(actionEvent);
-        extractResult = null;
+        extractService.resetExtractResults();
 
-        bottomPickFiles.setVisible(true);
-        bottomPickFiles.setManaged(true);
-
-        topPickFiles.setVisible(true);
-        topPickFiles.setManaged(true);
-        centerPickFiles.setVisible(true);
-
-        centerProgress.setVisible(false);
-        centerProgress.setManaged(false);
+        showInitial.setValue(true);
+        showExtractProcess.setValue(false);
 
         centerResultFeaturesJson.setText("");
         centerResultLog.setText("");
-        centerResults.setVisible(false);
-        centerResults.setManaged(false);
 
         centerProgressProgressBar.progressProperty().unbind();
         centerProgressProgressInfo.textProperty().unbind();
         centerProgressLog.textProperty().unbind();
 
-        bottomResults.setVisible(false);
-        bottomResults.setManaged(false);
+        showExtracted.setValue(false);
     }
 
     /*
@@ -320,54 +385,40 @@ public class ExtractController implements Initializable {
 
     @FXML
     public void handleConvertAction(ActionEvent actionEvent) {
-        bottomPickFiles.setVisible(false);
-        bottomPickFiles.setManaged(false);
+        showInitial.setValue(false);
 
-        topPickFiles.setVisible(false);
-        topPickFiles.setManaged(false);
-        centerPickFiles.setVisible(false);
-
-        centerProgress.setVisible(true);
-        centerProgress.setManaged(true);
+        showExtractProcess.setValue(true);
 
         Task<ExtractResult> task =
                 PropertyExtractor.generateIfcFileToJsonTask(selectedIfcFiles, resourceBundle);
 
         task.setOnSucceeded(
                 t -> {
-                    extractResult = task.getValue();
+                    extractService.setExtractResult(task.getValue());
 
-                    centerProgress.setVisible(false);
-                    centerProgress.setManaged(false);
+                    showExtractProcess.setValue(false);
 
-                    extractedFeatures.setAll(extractResult.getExtractedFeatures());
+                    extractedFeatures.setAll(
+                            extractService.getExtractResult().getExtractedFeatures());
 
                     Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
                     centerResultFeaturesJson.setText(gson.toJson(extractedFeatures));
 
-                    centerResultLog.setText(extractResult.getLogOutput());
-                    centerResults.setVisible(true);
-                    centerResults.setManaged(true);
-
-                    bottomResults.setVisible(true);
-                    bottomResults.setManaged(true);
+                    centerResultLog.setText(extractService.getExtractResult().getLogOutput());
+                    showExtracted.setValue(true);
                 });
 
         task.setOnFailed(
                 event -> {
                     // TODO: MAYBE SHOW DIALOG INSTEAD
 
-                    extractResult = task.getValue();
+                    extractService.setExtractResult(task.getValue());
 
-                    centerProgress.setVisible(false);
-                    centerProgress.setManaged(false);
+                    showExtractProcess.setValue(false);
+
                     centerResultFeaturesJson.setText("[]");
                     centerResultLog.setText(Throwables.getStackTraceAsString(task.getException()));
-                    centerResults.setVisible(true);
-                    centerResults.setManaged(true);
-
-                    bottomResults.setVisible(true);
-                    bottomResults.setManaged(true);
+                    showExtracted.setValue(true);
                 });
 
         centerProgressProgressBar.progressProperty().bind(task.progressProperty());

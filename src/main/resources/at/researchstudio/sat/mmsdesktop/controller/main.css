@@ -10,6 +10,13 @@
     -fx-text-fill: #ff4081;
 }
 
+.table-row-cell:selected {
+    -fx-background-color: #5bbad5;
+}
+.table-row-cell:selected .text {
+    -fx-fill: #c1fff9 ;
+}
+
 /* mdfx styling -> markdown viewer, extracted from /com/sandec/mdfx/mdfx-default.css (in lib)*/
 * {
     -mdfx-font-color: black;

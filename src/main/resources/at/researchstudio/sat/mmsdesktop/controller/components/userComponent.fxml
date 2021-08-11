@@ -1,22 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
-
-<?import javafx.scene.control.Label?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:id="parentPane"
-      fx:controller="at.researchstudio.sat.mmsdesktop.controller.components.UserComponentController"
-      spacing="10">
+<?import javafx.scene.text.Text?>
 
-        <padding>
-            <Insets bottom="10.0"/>
-        </padding>
-        <Label fx:id="userLabel" textFill="#c1fff9" >
+<HBox fx:id="parentPane" alignment="CENTER_LEFT" prefHeight="52.0" prefWidth="96.0" spacing="10"
+      xmlns="http://javafx.com/javafx/16"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="at.researchstudio.sat.mmsdesktop.controller.components.UserComponentController">
+    <padding>
+        <Insets bottom="15.0" top="5.0" left="5.0" right="5.0"/>
+    </padding>
+    <StackPane>
+        <Circle centerX="100" centerY="100" fill="#5bbad5" stroke="#5bbad5" strokeWidth="50.0"/>
+        <Text fx:id="userIconText" boundsType="VISUAL" fill="white" text="XY">
             <font>
-                <Font size="16.0"/>
+                <Font name="System Bold" size="24.0"/>
             </font>
-        </Label>
-</VBox>
+        </Text>
+        <opaqueInsets>
+            <Insets/>
+        </opaqueInsets>
+    </StackPane>
+    <Label fx:id="userLabel" alignment="CENTER" text="login" textFill="#c1fff9">
+        <font>
+            <Font name="System Bold" size="16.0"/>
+        </font>
+    </Label>
+    <opaqueInsets>
+        <Insets/>
+    </opaqueInsets>
+</HBox>
