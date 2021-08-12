@@ -7,6 +7,9 @@
 <?import javafx.scene.text.Font?>
 <?import com.sandec.mdfx.MarkdownView?>
 <?import com.jfoenix.controls.JFXTextArea?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:id="parentPane"
@@ -17,16 +20,48 @@
     <padding>
         <Insets bottom="10.0"/>
     </padding>
-    <Label fx:id="featureName">
-        <font>
-            <Font size="16.0"/>
-        </font>
-    </Label>
     <Label fx:id="featureType">
         <font>
             <Font size="16.0"/>
         </font>
     </Label>
+    <Label fx:id="featureName">
+        <font>
+            <Font size="16.0"/>
+        </font>
+    </Label>
+    <GridPane fx:id="featureNumericType">
+        <Label text="%label.feature.quantitykind" GridPane.columnIndex="0">
+            <font>
+                <Font name="System Bold" size="16.0"/>
+            </font>
+        </Label>
+        <Label fx:id="featureQuantityKind" GridPane.columnIndex="1">
+            <font>
+                <Font size="16.0"/>
+            </font>
+        </Label>
+        <Label text="%label.feature.unit" GridPane.columnIndex="2">
+            <font>
+                <Font name="System Bold" size="16.0"/>
+            </font>
+        </Label>
+        <Label fx:id="featureUnit" GridPane.columnIndex="3">
+            <font>
+                <Font size="16.0"/>
+            </font>
+        </Label>
+    </GridPane>
+    <TableView items="${controller.featureOptionValues}" fx:id="featureEnumType">
+        <columns>
+            <TableColumn editable="false" prefWidth="100.0"
+                         sortType="DESCENDING" text="%label.feature.options">
+                <cellValueFactory>
+                    <PropertyValueFactory property="value"/>
+                </cellValueFactory>
+            </TableColumn>
+        </columns>
+    </TableView>
     <MarkdownView fx:id="featureDescriptionMarkdown"/>
     <JFXTextArea fx:id="featureJson" editable="false"
                  style="-fx-background-color: white; -fx-font-family: Consolas,monaco,monospace;"/>
