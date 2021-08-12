@@ -168,12 +168,12 @@
                                                             <PropertyValueFactory property="name"/>
                                                         </cellValueFactory>
                                                     </TableColumn>
-                                                    <TableColumn editable="false" prefWidth="250.0"
-                                                                 text="%label.feature.description">
-                                                        <cellValueFactory>
-                                                            <PropertyValueFactory property="description"/>
-                                                        </cellValueFactory>
-                                                    </TableColumn>
+                                                    <TableColumn editable="false" prefWidth="50.0"
+                                                                 text="%label.feature.quantitykind"
+                                                                 fx:id="centerResultFeaturesTableQuantityKindColumn"/>
+                                                    <TableColumn editable="false" prefWidth="100.0"
+                                                                 text="%label.feature.unit"
+                                                                 fx:id="centerResultFeaturesTableUnitColumn"/>
                                                 </columns>
                                                 <sortOrder>
                                                     <fx:reference source="sortedExtractedFeaturesNameColumn"/>

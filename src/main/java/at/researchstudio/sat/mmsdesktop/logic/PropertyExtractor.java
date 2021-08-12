@@ -509,6 +509,8 @@ public class PropertyExtractor {
                                             ifcProperty -> {
                                                 BooleanFeature f =
                                                         new BooleanFeature(ifcProperty.getName());
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 return f;
@@ -524,6 +526,8 @@ public class PropertyExtractor {
                                             ifcProperty -> {
                                                 StringFeature f =
                                                         new StringFeature(ifcProperty.getName());
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 return f;
@@ -542,6 +546,8 @@ public class PropertyExtractor {
                                                                 QudtQuantityKind.VOLUME,
                                                                 Utils.extractQudtUnitFromProperty(
                                                                         ifcProperty));
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 return f;
@@ -560,6 +566,8 @@ public class PropertyExtractor {
                                                                 QudtQuantityKind.AREA,
                                                                 Utils.extractQudtUnitFromProperty(
                                                                         ifcProperty));
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 return f;
@@ -582,6 +590,8 @@ public class PropertyExtractor {
                                                                 ifcProperty.getName(),
                                                                 QudtQuantityKind.DIMENSIONLESS,
                                                                 QudtUnit.UNITLESS);
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 return f;
@@ -600,6 +610,8 @@ public class PropertyExtractor {
                                                                 QudtQuantityKind.ANGLE,
                                                                 Utils.extractQudtUnitFromProperty(
                                                                         ifcProperty));
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 return f;
@@ -622,6 +634,8 @@ public class PropertyExtractor {
                                                                 // QUDT.QuantityKind
                                                                 Utils.extractQudtUnitFromProperty(
                                                                         ifcProperty));
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 return f;
@@ -642,6 +656,8 @@ public class PropertyExtractor {
                                                                                 ifcProperty),
                                                                 Utils.extractQudtUnitFromProperty(
                                                                         ifcProperty));
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 return f;
@@ -670,6 +686,8 @@ public class PropertyExtractor {
                                                                                 Collectors
                                                                                         .toList()),
                                                                 false);
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 return f;

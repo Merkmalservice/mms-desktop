@@ -119,7 +119,7 @@
         <dependency>
             <groupId>at.researchstudio.sat</groupId>
             <artifactId>merkmalservice-utils</artifactId>
-            <version>0.2.3</version>
+            <version>0.3.1</version>
         </dependency>
         <dependency>
             <groupId>com.sandec</groupId>

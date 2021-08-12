@@ -198,7 +198,7 @@ public class IfcProperty {
     public void addExtractedValue(QuerySolution qs) {
         Literal propValue = qs.getLiteral("propValue");
         if (propValue != null) {
-            addExtractedValue(Utils.convertIFCStringToUtf8(propValue.toString()));
+            addExtractedValue(Utils.convertIFCStringToUtf8(propValue.getValue().toString()));
         }
     }
 

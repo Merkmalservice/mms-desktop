@@ -66,6 +66,8 @@ public class ExtractController implements Initializable {
     @FXML private BorderPane centerResults;
     @FXML private JFXToggleButton centerResultUniqueValuesToggle;
     @FXML private TableColumn centerResultFeaturesTableTypeColumn;
+    @FXML private TableColumn centerResultFeaturesTableQuantityKindColumn;
+    @FXML private TableColumn centerResultFeaturesTableUnitColumn;
     @FXML private JFXTextField centerResultFeaturesSearch;
     @FXML private TableView centerResultFeaturesTable;
     @FXML private HBox bottomResults;
@@ -217,6 +219,39 @@ public class ExtractController implements Initializable {
                             }
 
                             return new SimpleStringProperty("<no valid type>");
+                        });
+        centerResultFeaturesTableUnitColumn.setCellValueFactory(
+                (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
+                        p -> {
+                            if (p.getValue() != null) {
+                                Feature f = p.getValue();
+
+                                if (f instanceof NumericFeature) {
+                                    return new SimpleStringProperty(
+                                            MessageUtils.getKeyForUnit(
+                                                    resourceBundle,
+                                                    ((NumericFeature) f).getUnit()));
+                                }
+                            }
+
+                            return new SimpleStringProperty("");
+                        });
+
+        centerResultFeaturesTableQuantityKindColumn.setCellValueFactory(
+                (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
+                        p -> {
+                            if (p.getValue() != null) {
+                                Feature f = p.getValue();
+
+                                if (f instanceof NumericFeature) {
+                                    return new SimpleStringProperty(
+                                            MessageUtils.getKeyForQuantityKind(
+                                                    resourceBundle,
+                                                    ((NumericFeature) f).getQuantityKind()));
+                                }
+                            }
+
+                            return new SimpleStringProperty("");
                         });
 
         centerResultUniqueValuesToggle
