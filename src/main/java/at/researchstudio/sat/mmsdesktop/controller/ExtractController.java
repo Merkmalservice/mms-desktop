@@ -1,16 +1,14 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
 import at.researchstudio.sat.merkmalservice.model.*;
-import at.researchstudio.sat.merkmalservice.utils.ExcludeDescriptionStrategy;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.service.ExtractService;
+import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.jfoenix.controls.*;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,15 +19,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.util.*;
-import java.util.stream.Collectors;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -57,95 +50,99 @@ import org.springframework.stereotype.Component;
 public class ExtractController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
+    private final ExtractService extractService;
+    private final ReactiveStateService stateService;
     // @FXML private JFXButton bRemoveSelectedEntry;
     @FXML private JFXButton topPickFilesClearList;
     @FXML private JFXButton bottomPickFilesExtract;
-
     @FXML private JFXProgressBar centerProgressProgressBar;
     @FXML private JFXTextArea centerProgressLog;
     @FXML private Label centerProgressProgressInfo;
     @FXML private JFXTextArea centerResultFeaturesJson;
     @FXML private JFXTextArea centerResultLog;
-
     // BorderPane Elements
     @FXML private BorderPane parentPane;
-
     @FXML private HBox topPickFiles;
-
     @FXML private TableView centerPickFiles;
     @FXML private BorderPane centerProgress;
-    @FXML private JFXTabPane centerResults;
+    @FXML private BorderPane centerResults;
     @FXML private JFXToggleButton centerResultUniqueValuesToggle;
     @FXML private TableColumn centerResultFeaturesTableTypeColumn;
     @FXML private JFXTextField centerResultFeaturesSearch;
     @FXML private TableView centerResultFeaturesTable;
-
     @FXML private HBox bottomResults;
     @FXML private HBox bottomPickFiles;
-
     @FXML private BorderPane selectedFeaturePreview;
-
     private FileChooser saveFileChooser;
     private FileChooser saveLogFileChooser;
     private FileChooser fileChooser;
     private DirectoryChooser directoryChooser;
-    private ObservableList<IfcFileWrapper> selectedIfcFiles;
-    private ObservableList<Feature> extractedFeatures;
-    private FilteredList<Feature> filteredExtractedFeatures;
-    private SortedList<Feature> sortedExtractedFeatures;
-
     private JFXSnackbar snackbar;
-
     private ResourceBundle resourceBundle;
 
-    private BooleanProperty showInitial = new SimpleBooleanProperty(true);
-    private BooleanProperty showExtractProcess = new SimpleBooleanProperty(false);
-    private BooleanProperty showExtracted = new SimpleBooleanProperty(false);
-
-    private ExtractService extractService;
-
     @Autowired
-    public ExtractController(ExtractService extractService) {
+    public ExtractController(ExtractService extractService, ReactiveStateService stateService) {
         this.extractService = extractService;
+        this.stateService = stateService;
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        topPickFiles.visibleProperty().bind(showInitial);
-        topPickFiles.managedProperty().bind(showInitial);
-        centerPickFiles.visibleProperty().bind(showInitial);
-        centerPickFiles.managedProperty().bind(showInitial);
-        bottomPickFiles.visibleProperty().bind(showInitial);
-        bottomPickFiles.managedProperty().bind(showInitial);
+        topPickFiles.visibleProperty().bind(stateService.getExtractState().showInitialProperty());
+        topPickFiles.managedProperty().bind(stateService.getExtractState().showInitialProperty());
+        centerPickFiles
+                .visibleProperty()
+                .bind(stateService.getExtractState().showInitialProperty());
+        centerPickFiles
+                .managedProperty()
+                .bind(stateService.getExtractState().showInitialProperty());
+        bottomPickFiles
+                .visibleProperty()
+                .bind(stateService.getExtractState().showInitialProperty());
+        bottomPickFiles
+                .managedProperty()
+                .bind(stateService.getExtractState().showInitialProperty());
 
-        centerProgress.visibleProperty().bind(showExtractProcess);
-        centerProgress.managedProperty().bind(showExtractProcess);
+        centerProgress
+                .visibleProperty()
+                .bind(stateService.getExtractState().showExtractProcessProperty());
+        centerProgress
+                .managedProperty()
+                .bind(stateService.getExtractState().showExtractProcessProperty());
 
-        centerResults.visibleProperty().bind(showExtracted);
-        centerResults.managedProperty().bind(showExtracted);
-        bottomResults.visibleProperty().bind(showExtracted);
-        bottomResults.managedProperty().bind(showExtracted);
+        centerResults
+                .visibleProperty()
+                .bind(stateService.getExtractState().showExtractedProperty());
+        centerResults
+                .managedProperty()
+                .bind(stateService.getExtractState().showExtractedProperty());
+        bottomResults
+                .visibleProperty()
+                .bind(stateService.getExtractState().showExtractedProperty());
+        bottomResults
+                .managedProperty()
+                .bind(stateService.getExtractState().showExtractedProperty());
+
+        topPickFilesClearList
+                .disableProperty()
+                .bind(stateService.getExtractState().selectedIfcFilesPresentProperty().not());
+        bottomPickFilesExtract
+                .disableProperty()
+                .bind(stateService.getExtractState().selectedIfcFilesPresentProperty().not());
+
+        centerResultLog
+                .textProperty()
+                .bind(stateService.getExtractState().extractLogOutputProperty());
+        centerResultFeaturesJson
+                .textProperty()
+                .bind(stateService.getExtractState().extractJsonOutput());
 
         this.resourceBundle = resourceBundle;
 
-        if (extractService.getExtractResult() != null) {
-            showInitial.setValue(false);
-            showExtractProcess.setValue(false);
-            showExtracted.setValue(true);
-
-            extractedFeatures.setAll(extractService.getExtractResult().getExtractedFeatures());
-
-            Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-            centerResultFeaturesJson.setText(gson.toJson(extractedFeatures));
-
-            centerResultLog.setText(extractService.getExtractResult().getLogOutput());
+        if (stateService.getExtractState().getExtractedFeatures().size() > 0) {
+            stateService.getExtractState().showExtractedView();
         } else {
-            showInitial.setValue(true);
-            showExtractProcess.setValue(false);
-            showExtracted.setValue(false);
-
-            extractedFeatures = FXCollections.observableArrayList();
+            stateService.getExtractState().showInitialView();
         }
 
         fileChooser = new FileChooser();
@@ -166,12 +163,10 @@ public class ExtractController implements Initializable {
                 .addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
 
         directoryChooser = new DirectoryChooser();
-        selectedIfcFiles = FXCollections.observableArrayList();
 
-        filteredExtractedFeatures = new FilteredList<>(extractedFeatures);
-        sortedExtractedFeatures = new SortedList<>(filteredExtractedFeatures);
-
-        sortedExtractedFeatures
+        stateService
+                .getExtractState()
+                .getSortedExtractedFeatures()
                 .comparatorProperty()
                 .bind(centerResultFeaturesTable.comparatorProperty());
 
@@ -179,17 +174,24 @@ public class ExtractController implements Initializable {
                 .textProperty()
                 .addListener(
                         (observable, oldValue, searchText) ->
-                                filteredExtractedFeatures.setPredicate(
-                                        feature -> {
-                                            if (searchText == null || searchText.isEmpty())
-                                                return true;
-                                            return (feature.getName()
-                                                            .toLowerCase()
-                                                            .contains(searchText.toLowerCase()))
-                                                    || (feature.getDescription()
-                                                            .toLowerCase()
-                                                            .contains(searchText.toLowerCase()));
-                                        }));
+                                stateService
+                                        .getExtractState()
+                                        .getFilteredExtractedFeatures()
+                                        .setPredicate(
+                                                feature -> {
+                                                    if (searchText == null || searchText.isEmpty())
+                                                        return true;
+                                                    return (feature.getName()
+                                                                    .toLowerCase()
+                                                                    .contains(
+                                                                            searchText
+                                                                                    .toLowerCase()))
+                                                            || (feature.getDescription()
+                                                                    .toLowerCase()
+                                                                    .contains(
+                                                                            searchText
+                                                                                    .toLowerCase()));
+                                                }));
 
         centerResultFeaturesTableTypeColumn.setCellValueFactory(
                 (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
@@ -216,28 +218,7 @@ public class ExtractController implements Initializable {
         centerResultUniqueValuesToggle
                 .selectedProperty()
                 .addListener(
-                        (observable, oldValue, newValue) -> {
-                            if (newValue) {
-                                Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-                                centerResultFeaturesJson.setText(
-                                        gson.toJson(
-                                                extractService
-                                                        .getExtractResult()
-                                                        .getExtractedFeatures()));
-                            } else {
-                                Gson gson =
-                                        (new GsonBuilder())
-                                                .setExclusionStrategies(
-                                                        new ExcludeDescriptionStrategy())
-                                                .setPrettyPrinting()
-                                                .create();
-                                centerResultFeaturesJson.setText(
-                                        gson.toJson(
-                                                extractService
-                                                        .getExtractResult()
-                                                        .getExtractedFeatures()));
-                            }
-                        });
+                        (observable, oldValue, newValue) -> stateService.getExtractState().includeDescriptionInJsonOutput(newValue));
 
         centerResultFeaturesTable.setRowFactory(
                 tv -> {
@@ -262,17 +243,9 @@ public class ExtractController implements Initializable {
     public void handlePickDirectoryAction(ActionEvent actionEvent) {
         File selectedDirectory = directoryChooser.showDialog(parentPane.getScene().getWindow());
         try {
-            List<File> selectedFiles = FileUtils.getIfcFilesFromDirectory(selectedDirectory);
-            if (selectedFiles.size() > 0) {
-                Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<>(selectedIfcFiles);
-                selectedIfcFileSet.addAll(
-                        selectedFiles.stream()
-                                .map(IfcFileWrapper::new)
-                                .collect(Collectors.toList()));
-                selectedIfcFiles.setAll(selectedIfcFileSet);
-                topPickFilesClearList.setDisable(false);
-                bottomPickFilesExtract.setDisable(false);
-            }
+            stateService
+                    .getExtractState()
+                    .setSelectedIfcFiles(FileUtils.getIfcFilesFromDirectory(selectedDirectory));
         } catch (FileNotFoundException | NotDirectoryException e) {
             logger.warn("No Valid Directory selected");
         }
@@ -280,16 +253,10 @@ public class ExtractController implements Initializable {
 
     @FXML
     public void handlePickFileAction(ActionEvent actionEvent) {
-        List<File> selectedFiles =
-                fileChooser.showOpenMultipleDialog(parentPane.getScene().getWindow());
-        if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
-            Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<>(selectedIfcFiles);
-            selectedIfcFileSet.addAll(
-                    selectedFiles.stream().map(IfcFileWrapper::new).collect(Collectors.toList()));
-            selectedIfcFiles.setAll(selectedIfcFileSet);
-            topPickFilesClearList.setDisable(false);
-            bottomPickFilesExtract.setDisable(false);
-        }
+        stateService
+                .getExtractState()
+                .setSelectedIfcFiles(
+                        fileChooser.showOpenMultipleDialog(parentPane.getScene().getWindow()));
     }
 
     @FXML
@@ -300,8 +267,9 @@ public class ExtractController implements Initializable {
             try {
                 Utils.writeToJson(
                         file.getAbsolutePath(),
-                        extractService.getExtractResult().getExtractedFeatures(),
+                        stateService.getExtractState().getExtractedFeatures(),
                         centerResultUniqueValuesToggle.selectedProperty().getValue());
+
                 final String message =
                         MessageUtils.getKeyWithParameters(
                                 resourceBundle,
@@ -331,7 +299,7 @@ public class ExtractController implements Initializable {
             try {
                 Files.writeString(
                         file.toPath(),
-                        extractService.getExtractResult().getLogOutput(),
+                        stateService.getExtractState().extractLogOutputProperty().getValue(),
                         StandardCharsets.UTF_8);
                 final String message =
                         MessageUtils.getKeyWithParameters(
@@ -356,27 +324,18 @@ public class ExtractController implements Initializable {
 
     @FXML
     public void handleClearListAction(ActionEvent actionEvent) {
-        selectedIfcFiles.clear();
-        topPickFilesClearList.setDisable(true);
-        bottomPickFilesExtract.setDisable(true);
+        stateService.getExtractState().resetSelectedIfcFiles();
     }
 
     @FXML
     public void handleResetAction(ActionEvent actionEvent) {
         handleClearListAction(actionEvent);
-        extractService.resetExtractResults();
-
-        showInitial.setValue(true);
-        showExtractProcess.setValue(false);
-
-        centerResultFeaturesJson.setText("");
-        centerResultLog.setText("");
+        stateService.getExtractState().resetExtractResults();
+        stateService.getExtractState().showInitialView();
 
         centerProgressProgressBar.progressProperty().unbind();
         centerProgressProgressInfo.textProperty().unbind();
         centerProgressLog.textProperty().unbind();
-
-        showExtracted.setValue(false);
     }
 
     /*
@@ -385,40 +344,23 @@ public class ExtractController implements Initializable {
 
     @FXML
     public void handleConvertAction(ActionEvent actionEvent) {
-        showInitial.setValue(false);
-
-        showExtractProcess.setValue(true);
+        stateService.getExtractState().showProcessView();
 
         Task<ExtractResult> task =
-                PropertyExtractor.generateIfcFileToJsonTask(selectedIfcFiles, resourceBundle);
+                PropertyExtractor.generateIfcFileToJsonTask(
+                        stateService.getExtractState().getSelectedIfcFiles(), resourceBundle);
 
         task.setOnSucceeded(
                 t -> {
-                    extractService.setExtractResult(task.getValue());
-
-                    showExtractProcess.setValue(false);
-
-                    extractedFeatures.setAll(
-                            extractService.getExtractResult().getExtractedFeatures());
-
-                    Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-                    centerResultFeaturesJson.setText(gson.toJson(extractedFeatures));
-
-                    centerResultLog.setText(extractService.getExtractResult().getLogOutput());
-                    showExtracted.setValue(true);
+                    stateService.getExtractState().setExtractResult(task);
+                    stateService.getExtractState().showExtractedView();
                 });
 
         task.setOnFailed(
                 event -> {
                     // TODO: MAYBE SHOW DIALOG INSTEAD
-
-                    extractService.setExtractResult(task.getValue());
-
-                    showExtractProcess.setValue(false);
-
-                    centerResultFeaturesJson.setText("[]");
-                    centerResultLog.setText(Throwables.getStackTraceAsString(task.getException()));
-                    showExtracted.setValue(true);
+                    stateService.getExtractState().setExtractResult(task);
+                    stateService.getExtractState().showExtractedView();
                 });
 
         centerProgressProgressBar.progressProperty().bind(task.progressProperty());
@@ -429,18 +371,10 @@ public class ExtractController implements Initializable {
     }
 
     public ObservableList<IfcFileWrapper> getSelectedIfcFiles() {
-        return selectedIfcFiles;
-    }
-
-    public void setSelectedIfcFiles(ObservableList<IfcFileWrapper> selectedIfcFiles) {
-        this.selectedIfcFiles = selectedIfcFiles;
+        return stateService.getExtractState().getSelectedIfcFiles();
     }
 
     public SortedList<Feature> getSortedExtractedFeatures() {
-        return sortedExtractedFeatures;
-    }
-
-    public void setSortedExtractedFeatures(SortedList<Feature> sortedExtractedFeatures) {
-        this.sortedExtractedFeatures = sortedExtractedFeatures;
+        return stateService.getExtractState().getSortedExtractedFeatures();
     }
 }

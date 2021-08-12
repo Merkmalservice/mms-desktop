@@ -129,82 +129,93 @@
                     </AnchorPane>
                 </center>
             </BorderPane>
-            <JFXTabPane fx:id="centerResults" visible="false" managed="false"
+            <BorderPane fx:id="centerResults" visible="false" managed="false"
                         AnchorPane.topAnchor="0.0"
                         AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
                         AnchorPane.leftAnchor="0.0">
-                <Tab text="%label.extractedFeatures">
-                    <BorderPane>
-                        <top>
-                            <JFXTextField fx:id="centerResultFeaturesSearch" focusColor="#ffc107"
-                                          prefHeight="40.0" promptText="%label.extract.filter"
-                                          unFocusColor="#c5c5c5">
-                                <font>
-                                    <Font name="Exo Regular" size="18.0"/>
-                                </font>
-                            </JFXTextField>
-                        </top>
-                        <center>
-                            <AnchorPane>
-
-                                <TableView fx:id="centerResultFeaturesTable"
-                                           items="${controller.sortedExtractedFeatures}"
-                                           AnchorPane.topAnchor="0.0"
-                                           AnchorPane.rightAnchor="0.0"
-                                           AnchorPane.bottomAnchor="0.0"
-                                           AnchorPane.leftAnchor="0.0">
-                                    <columns>
-                                        <TableColumn editable="false" prefWidth="50.0"
-                                                     text="%label.feature.type"
-                                                     fx:id="centerResultFeaturesTableTypeColumn"/>
-                                        <TableColumn fx:id="sortedExtractedFeaturesNameColumn"
-                                                     editable="false" prefWidth="250.0"
-                                                     text="%label.feature.name">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="name"/>
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                        <TableColumn editable="false" prefWidth="250.0"
-                                                     text="%label.feature.description">
-                                            <cellValueFactory>
-                                                <PropertyValueFactory property="description"/>
-                                            </cellValueFactory>
-                                        </TableColumn>
-                                    </columns>
-                                    <sortOrder>
-                                        <fx:reference source="sortedExtractedFeaturesNameColumn"/>
-                                    </sortOrder>
-                                </TableView>
-                            </AnchorPane>
-                        </center>
-                        <right>
-                            <BorderPane fx:id="selectedFeaturePreview" visible="false" managed="false">
-                                <center>
-                                    <fx:include source="components/featureComponent.fxml"/>
-                                </center>
-                            </BorderPane>
-                        </right>
-                        <bottom>
-                            <VBox>
-                                <JFXTextArea fx:id="centerResultFeaturesJson" editable="false"
-                                             style="-fx-background-color: white; -fx-font-family: Consolas,monaco,monospace;"/>
-                                <JFXToggleButton fx:id="centerResultUniqueValuesToggle"
-                                                 text="%label.extract.includeValues" selected="true"/>
-                            </VBox>
-                        </bottom>
-                    </BorderPane>
-
-                </Tab>
-                <Tab text="%label.extractLogOutput">
+                <center>
                     <AnchorPane>
-                        <JFXTextArea fx:id="centerResultLog" AnchorPane.topAnchor="0.0"
-                                     AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                                     AnchorPane.leftAnchor="0.0"
-                                     editable="false"
-                                     style="-fx-background-color: black; -fx-font-family: Consolas,monaco,monospace; -fx-text-fill: greenyellow;"/>
+                        <JFXTabPane AnchorPane.topAnchor="0.0"
+                                    AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                                    AnchorPane.leftAnchor="0.0">
+                            <Tab text="%label.extractedFeatures">
+                                <BorderPane>
+                                    <top>
+                                        <JFXTextField fx:id="centerResultFeaturesSearch" focusColor="#ffc107"
+                                                      prefHeight="40.0" promptText="%label.extract.filter"
+                                                      unFocusColor="#c5c5c5">
+                                            <font>
+                                                <Font name="Exo Regular" size="18.0"/>
+                                            </font>
+                                        </JFXTextField>
+                                    </top>
+                                    <center>
+                                        <AnchorPane>
+                                            <TableView fx:id="centerResultFeaturesTable"
+                                                       items="${controller.sortedExtractedFeatures}"
+                                                       AnchorPane.topAnchor="0.0"
+                                                       AnchorPane.rightAnchor="0.0"
+                                                       AnchorPane.bottomAnchor="0.0"
+                                                       AnchorPane.leftAnchor="0.0">
+                                                <columns>
+                                                    <TableColumn editable="false" prefWidth="50.0"
+                                                                 text="%label.feature.type"
+                                                                 fx:id="centerResultFeaturesTableTypeColumn"/>
+                                                    <TableColumn fx:id="sortedExtractedFeaturesNameColumn"
+                                                                 editable="false" prefWidth="250.0"
+                                                                 text="%label.feature.name">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="name"/>
+                                                        </cellValueFactory>
+                                                    </TableColumn>
+                                                    <TableColumn editable="false" prefWidth="250.0"
+                                                                 text="%label.feature.description">
+                                                        <cellValueFactory>
+                                                            <PropertyValueFactory property="description"/>
+                                                        </cellValueFactory>
+                                                    </TableColumn>
+                                                </columns>
+                                                <sortOrder>
+                                                    <fx:reference source="sortedExtractedFeaturesNameColumn"/>
+                                                </sortOrder>
+                                            </TableView>
+                                        </AnchorPane>
+                                    </center>
+                                    <right>
+                                        <BorderPane fx:id="selectedFeaturePreview" visible="false"
+                                                    managed="false">
+                                            <center>
+                                                <fx:include source="components/featureComponent.fxml"/>
+                                            </center>
+                                        </BorderPane>
+                                    </right>
+                                </BorderPane>
+                            </Tab>
+                            <Tab text="%label.extractedFeaturesJson">
+                                <AnchorPane>
+                                    <JFXTextArea fx:id="centerResultFeaturesJson" AnchorPane.topAnchor="0.0"
+                                                 AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0" editable="false"
+                                                 style="-fx-background-color: white; -fx-font-family: Consolas,monaco,monospace;"/>
+                                </AnchorPane>
+                            </Tab>
+                            <Tab text="%label.extractLogOutput">
+                                <AnchorPane>
+                                    <JFXTextArea fx:id="centerResultLog" AnchorPane.topAnchor="0.0"
+                                                 AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0"
+                                                 editable="false"
+                                                 style="-fx-background-color: black; -fx-font-family: Consolas,monaco,monospace; -fx-text-fill: greenyellow;"/>
+                                </AnchorPane>
+                            </Tab>
+                        </JFXTabPane>
                     </AnchorPane>
-                </Tab>
-            </JFXTabPane>
+                </center>
+                <bottom>
+                    <JFXToggleButton fx:id="centerResultUniqueValuesToggle"
+                                     text="%label.extract.includeValues" selected="true"/>
+                </bottom>
+            </BorderPane>
         </AnchorPane>
     </center>
     <bottom>
