@@ -5,18 +5,29 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
+<?import com.sandec.mdfx.MarkdownView?>
+<?import com.jfoenix.controls.JFXTextArea?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:id="parentPane"
       fx:controller="at.researchstudio.sat.mmsdesktop.controller.components.FeatureComponentController"
-      spacing="10">
-
-        <padding>
-            <Insets bottom="10.0"/>
-        </padding>
-        <Label fx:id="featureName" text="${controller.featureName}">
-            <font>
-                <Font size="16.0"/>
-            </font>
-        </Label>
+      spacing="10"
+      maxWidth="350"
+      minWidth="350">
+    <padding>
+        <Insets bottom="10.0"/>
+    </padding>
+    <Label fx:id="featureName">
+        <font>
+            <Font size="16.0"/>
+        </font>
+    </Label>
+    <Label fx:id="featureType">
+        <font>
+            <Font size="16.0"/>
+        </font>
+    </Label>
+    <MarkdownView fx:id="featureDescriptionMarkdown"/>
+    <JFXTextArea fx:id="featureJson" editable="false"
+                 style="-fx-background-color: white; -fx-font-family: Consolas,monaco,monospace;"/>
 </VBox>

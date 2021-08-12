@@ -20,7 +20,8 @@ public class ViewState {
         this.resourceBundle = ResourceBundle.getBundle("messages", Locale.getDefault());
 
         visibleCenterPaneProperty =
-            new SimpleObjectProperty<>(fxWeaver.loadView(AboutController.class, resourceBundle));
+                new SimpleObjectProperty<>(
+                        fxWeaver.loadView(AboutController.class, resourceBundle));
     }
 
     public Node getVisibleCenterPaneProperty() {

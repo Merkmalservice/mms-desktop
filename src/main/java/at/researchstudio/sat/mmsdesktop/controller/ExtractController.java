@@ -4,7 +4,6 @@ import at.researchstudio.sat.merkmalservice.model.*;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
-import at.researchstudio.sat.mmsdesktop.service.ExtractService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
@@ -50,7 +49,6 @@ import org.springframework.stereotype.Component;
 public class ExtractController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private final ExtractService extractService;
     private final ReactiveStateService stateService;
     // @FXML private JFXButton bRemoveSelectedEntry;
     @FXML private JFXButton topPickFilesClearList;
@@ -81,8 +79,7 @@ public class ExtractController implements Initializable {
     private ResourceBundle resourceBundle;
 
     @Autowired
-    public ExtractController(ExtractService extractService, ReactiveStateService stateService) {
-        this.extractService = extractService;
+    public ExtractController(ReactiveStateService stateService) {
         this.stateService = stateService;
     }
 
@@ -136,6 +133,13 @@ public class ExtractController implements Initializable {
         centerResultFeaturesJson
                 .textProperty()
                 .bind(stateService.getExtractState().extractJsonOutput());
+
+        selectedFeaturePreview
+                .visibleProperty()
+                .bind(stateService.getSelectedFeatureState().showSelectedFeatureProperty());
+        selectedFeaturePreview
+                .managedProperty()
+                .bind(stateService.getSelectedFeatureState().showSelectedFeatureProperty());
 
         this.resourceBundle = resourceBundle;
 
@@ -218,7 +222,10 @@ public class ExtractController implements Initializable {
         centerResultUniqueValuesToggle
                 .selectedProperty()
                 .addListener(
-                        (observable, oldValue, newValue) -> stateService.getExtractState().includeDescriptionInJsonOutput(newValue));
+                        (observable, oldValue, newValue) ->
+                                stateService
+                                        .getExtractState()
+                                        .includeDescriptionInJsonOutput(newValue));
 
         centerResultFeaturesTable.setRowFactory(
                 tv -> {
@@ -227,10 +234,9 @@ public class ExtractController implements Initializable {
                             event -> {
                                 if (!row.isEmpty()) {
                                     Feature rowData = row.getItem();
-
-                                    extractService.setSelectedFeature(rowData);
-                                    selectedFeaturePreview.setVisible(true);
-                                    selectedFeaturePreview.setManaged(true);
+                                    stateService
+                                            .getSelectedFeatureState()
+                                            .setSelectedFeature(row.getItem());
                                 }
                             });
                     return row;
