@@ -25,7 +25,6 @@ public class FeatureComponentController implements Initializable {
     @FXML public FontIcon featureTypeIcon;
     @FXML private VBox parentPane;
     @FXML private Label featureName;
-    @FXML private Label featureType;
     @FXML private MarkdownView featureDescriptionMarkdown;
     @FXML private JFXTextArea featureJson;
 
@@ -43,9 +42,6 @@ public class FeatureComponentController implements Initializable {
         this.featureName
                 .textProperty()
                 .bind(stateService.getSelectedFeatureState().featureNameProperty());
-        this.featureType
-                .textProperty()
-                .bind(stateService.getSelectedFeatureState().featureTypeProperty());
         this.featureDescriptionMarkdown
                 .mdStringProperty()
                 .bind(stateService.getSelectedFeatureState().featureDescriptionProperty());

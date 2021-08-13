@@ -23,7 +23,6 @@ public class SelectedFeatureState {
     private final BooleanProperty featureIsNumeric;
     private final BooleanProperty featureIsEnumeration;
     private final SimpleStringProperty featureName;
-    private final SimpleStringProperty featureType;
     private final SimpleStringProperty featureDescription;
     private final SimpleStringProperty featureUnit;
     private final SimpleStringProperty featureQuantityKind;
@@ -39,7 +38,6 @@ public class SelectedFeatureState {
         this.featureIsNumeric = new SimpleBooleanProperty(false);
         this.featureIsEnumeration = new SimpleBooleanProperty(false);
         this.featureName = new SimpleStringProperty("");
-        this.featureType = new SimpleStringProperty("");
         this.featureDescription = new SimpleStringProperty("");
         this.featureJson = new SimpleStringProperty("");
         this.featureUnit = new SimpleStringProperty("");
@@ -61,29 +59,24 @@ public class SelectedFeatureState {
         this.featureName.setValue(Utils.executeOrDefaultOnException(feature::getName, ""));
         this.featureDescription.setValue(
                 Utils.executeOrDefaultOnException(feature::getDescription, ""));
-        this.featureType.setValue(
+        this.featureTypeIcon.setValue(
                 Utils.executeOrDefaultOnException(
                         () -> {
                             this.featureIsNumeric.setValue(false);
                             this.featureIsEnumeration.setValue(false);
                             this.featureOptionValues.clear();
                             if (feature instanceof StringFeature) {
-                                this.featureTypeIcon.setValue(BootstrapIcons.FILE_TEXT);
-                                return "TEXT";
+                                return BootstrapIcons.FILE_TEXT;
                             } else if (feature instanceof EnumFeature) {
-                                this.featureTypeIcon.setValue(BootstrapIcons.UI_RADIOS);
                                 this.featureIsEnumeration.setValue(true);
                                 this.featureOptionValues.setAll(
                                         ((EnumFeature) feature).getOptions());
-                                return "ENUM";
+                                return BootstrapIcons.UI_RADIOS;
                             } else if (feature instanceof ReferenceFeature) {
-                                this.featureTypeIcon.setValue(BootstrapIcons.LINK_45DEG);
-                                return "REFERENCE";
+                                return BootstrapIcons.LINK_45DEG;
                             } else if (feature instanceof BooleanFeature) {
-                                this.featureTypeIcon.setValue(BootstrapIcons.TOGGLES);
-                                return "BOOLE";
+                                return BootstrapIcons.TOGGLES;
                             } else if (feature instanceof NumericFeature) {
-                                this.featureTypeIcon.setValue(BootstrapIcons.CALCULATOR);
                                 this.featureIsNumeric.setValue(true);
                                 this.featureQuantityKind.setValue(
                                         MessageUtils.getKeyForQuantityKind(
@@ -93,12 +86,12 @@ public class SelectedFeatureState {
                                         MessageUtils.getKeyForUnit(
                                                 resourceBundle,
                                                 ((NumericFeature) feature).getUnit()));
-                                return "NUMERIC";
+                                return BootstrapIcons.CALCULATOR;
                             } else {
-                                return "<no valid type>";
+                                return BootstrapIcons.QUESTION_CIRCLE;
                             }
                         },
-                        ""));
+                        BootstrapIcons.QUESTION_CIRCLE));
         this.featureJson.setValue(
                 Utils.executeOrDefaultOnException(
                         () -> {
@@ -110,10 +103,6 @@ public class SelectedFeatureState {
 
     public SimpleStringProperty featureNameProperty() {
         return featureName;
-    }
-
-    public SimpleStringProperty featureTypeProperty() {
-        return featureType;
     }
 
     public SimpleStringProperty featureDescriptionProperty() {

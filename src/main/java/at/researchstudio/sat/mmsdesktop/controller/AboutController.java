@@ -24,7 +24,7 @@ public class AboutController implements Initializable {
                 "### Merkmalservice Desktop App\n"
                         + "\n"
                         + "#### Version\n"
-                        + "- 0.0.1\n"
+                        + "- 0.0.2\n"
                         + "#### Usage\n"
                         + "##### Extract Features from IFC:\n"
                         + "- Add to List:\n"
