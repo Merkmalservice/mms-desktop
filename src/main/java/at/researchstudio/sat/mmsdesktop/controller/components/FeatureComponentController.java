@@ -14,6 +14,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import net.rgielen.fxweaver.core.FxmlView;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 public class FeatureComponentController implements Initializable {
     @FXML public GridPane featureNumericType;
     @FXML public TableView featureEnumType;
+    @FXML public FontIcon featureTypeIcon;
     @FXML private VBox parentPane;
     @FXML private Label featureName;
     @FXML private Label featureType;
@@ -71,6 +73,10 @@ public class FeatureComponentController implements Initializable {
         this.featureEnumType
                 .visibleProperty()
                 .bind(stateService.getSelectedFeatureState().featureIsEnumerationProperty());
+
+        this.featureTypeIcon
+                .iconCodeProperty()
+                .bind(stateService.getSelectedFeatureState().featureTypeIconProperty());
     }
 
     public ObservableList<EnumFeature.OptionValue> getFeatureOptionValues() {

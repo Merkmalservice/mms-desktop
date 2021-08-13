@@ -10,6 +10,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:id="parentPane"
@@ -18,7 +19,7 @@
       maxWidth="350"
       minWidth="350">
     <padding>
-        <Insets bottom="10.0"/>
+        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
     </padding>
     <Label fx:id="featureType">
         <font>
@@ -26,6 +27,9 @@
         </font>
     </Label>
     <Label fx:id="featureName">
+        <graphic>
+            <FontIcon fx:id="featureTypeIcon" iconSize="32"/>
+        </graphic>
         <font>
             <Font size="16.0"/>
         </font>
@@ -62,6 +66,11 @@
             </TableColumn>
         </columns>
     </TableView>
+    <Label text="%label.feature.description">
+        <font>
+            <Font name="System Bold" size="16.0"/>
+        </font>
+    </Label>
     <MarkdownView fx:id="featureDescriptionMarkdown"/>
     <JFXTextArea fx:id="featureJson" editable="false"
                  style="-fx-background-color: white; -fx-font-family: Consolas,monaco,monospace;"/>

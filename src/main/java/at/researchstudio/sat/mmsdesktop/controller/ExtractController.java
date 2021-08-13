@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.controller;
 
 import at.researchstudio.sat.merkmalservice.model.*;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
+import at.researchstudio.sat.mmsdesktop.controller.components.IconLabelTableCell;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
@@ -19,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.util.*;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -27,10 +29,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
@@ -199,27 +198,21 @@ public class ExtractController implements Initializable {
                                                                                     .toLowerCase()));
                                                 }));
 
+        centerResultFeaturesTableTypeColumn.setCellFactory(
+                c -> new IconLabelTableCell<>(resourceBundle));
         centerResultFeaturesTableTypeColumn.setCellValueFactory(
-                (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
+                (Callback<
+                                TableColumn.CellDataFeatures<Feature, String>,
+                                SimpleObjectProperty<Feature>>)
                         p -> {
                             if (p.getValue() != null) {
                                 Feature f = p.getValue();
-
-                                if (f instanceof StringFeature) {
-                                    return new SimpleStringProperty("TEXT");
-                                } else if (f instanceof EnumFeature) {
-                                    return new SimpleStringProperty("ENUM");
-                                } else if (f instanceof ReferenceFeature) {
-                                    return new SimpleStringProperty("REFERENCE");
-                                } else if (f instanceof BooleanFeature) {
-                                    return new SimpleStringProperty("BOOLE");
-                                } else if (f instanceof NumericFeature) {
-                                    return new SimpleStringProperty("NUMERIC");
-                                }
+                                return new SimpleObjectProperty<>(f);
+                            } else {
+                                return new SimpleObjectProperty<>();
                             }
-
-                            return new SimpleStringProperty("<no valid type>");
                         });
+
         centerResultFeaturesTableUnitColumn.setCellValueFactory(
                 (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
                         p -> {

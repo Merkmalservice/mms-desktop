@@ -8,11 +8,11 @@ import com.google.gson.GsonBuilder;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.kordamp.ikonli.Ikon;
+import org.kordamp.ikonli.bootstrapicons.BootstrapIcons;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -31,6 +31,8 @@ public class SelectedFeatureState {
 
     private final ObservableList<EnumFeature.OptionValue> featureOptionValues;
 
+    private final ObjectProperty<Ikon> featureTypeIcon;
+
     public SelectedFeatureState() {
         this.resourceBundle = ResourceBundle.getBundle("messages", Locale.getDefault());
         this.showSelectedFeature = new SimpleBooleanProperty(false);
@@ -43,6 +45,7 @@ public class SelectedFeatureState {
         this.featureUnit = new SimpleStringProperty("");
         this.featureQuantityKind = new SimpleStringProperty("");
         this.featureOptionValues = FXCollections.observableArrayList();
+        this.featureTypeIcon = new SimpleObjectProperty<Ikon>(BootstrapIcons.FILE_TEXT);
     }
 
     public BooleanProperty showSelectedFeatureProperty() {
@@ -65,17 +68,22 @@ public class SelectedFeatureState {
                             this.featureIsEnumeration.setValue(false);
                             this.featureOptionValues.clear();
                             if (feature instanceof StringFeature) {
+                                this.featureTypeIcon.setValue(BootstrapIcons.FILE_TEXT);
                                 return "TEXT";
                             } else if (feature instanceof EnumFeature) {
+                                this.featureTypeIcon.setValue(BootstrapIcons.UI_RADIOS);
                                 this.featureIsEnumeration.setValue(true);
                                 this.featureOptionValues.setAll(
                                         ((EnumFeature) feature).getOptions());
                                 return "ENUM";
                             } else if (feature instanceof ReferenceFeature) {
+                                this.featureTypeIcon.setValue(BootstrapIcons.LINK_45DEG);
                                 return "REFERENCE";
                             } else if (feature instanceof BooleanFeature) {
+                                this.featureTypeIcon.setValue(BootstrapIcons.TOGGLES);
                                 return "BOOLE";
                             } else if (feature instanceof NumericFeature) {
+                                this.featureTypeIcon.setValue(BootstrapIcons.CALCULATOR);
                                 this.featureIsNumeric.setValue(true);
                                 this.featureQuantityKind.setValue(
                                         MessageUtils.getKeyForQuantityKind(
@@ -134,5 +142,9 @@ public class SelectedFeatureState {
 
     public SimpleStringProperty featureJsonProperty() {
         return featureJson;
+    }
+
+    public ObjectProperty<Ikon> featureTypeIconProperty() {
+        return featureTypeIcon;
     }
 }
