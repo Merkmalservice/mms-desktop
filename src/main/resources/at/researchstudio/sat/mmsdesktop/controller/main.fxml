@@ -40,9 +40,21 @@
                 <fx:include source="components/userComponent.fxml" />
                 <JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
                            graphicTextGap="15.0"
-                           onAction="#handleExtractAction"
+                           onAction="#handleExtractFromIfcAction"
                            prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
                            text="%label.sidebar.extractfromifc" textFill="#c1fff9" style="-fx-cursor: hand;">
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </JFXButton>
+                <JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
+                           graphicTextGap="15.0"
+                           onAction="#handleExtractFromJsonAction"
+                           prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
+                           text="%label.sidebar.extractfromjson" textFill="#c1fff9" style="-fx-cursor: hand;">
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
                     </padding>

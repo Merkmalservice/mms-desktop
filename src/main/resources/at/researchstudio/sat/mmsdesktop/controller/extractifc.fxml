@@ -10,7 +10,7 @@
 <BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractController">
+            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractFromIfcController">
     <BorderPane.margin>
         <Insets bottom="10.0" left="25.0" right="25.0" top="10.0"/>
     </BorderPane.margin>
@@ -162,38 +162,7 @@
                                         </JFXTextField>
                                     </top>
                                     <center>
-                                        <AnchorPane>
-                                            <TableView fx:id="centerResultFeaturesTable"
-                                                       items="${controller.sortedExtractedFeatures}"
-                                                       AnchorPane.topAnchor="0.0"
-                                                       AnchorPane.rightAnchor="0.0"
-                                                       AnchorPane.bottomAnchor="0.0"
-                                                       AnchorPane.leftAnchor="0.0">
-                                                <columns>
-                                                    <TableColumn editable="false" prefWidth="100.0"
-                                                                 text="%label.feature.type"
-                                                                 fx:id="centerResultFeaturesTableTypeColumn"/>
-                                                    <TableColumn
-                                                            fx:id="sortedExtractedFeaturesNameColumn"
-                                                            editable="false" prefWidth="250.0"
-                                                            text="%label.feature.name">
-                                                        <cellValueFactory>
-                                                            <PropertyValueFactory property="name"/>
-                                                        </cellValueFactory>
-                                                    </TableColumn>
-                                                    <TableColumn editable="false" prefWidth="75.0"
-                                                                 text="%label.feature.quantitykind"
-                                                                 fx:id="centerResultFeaturesTableQuantityKindColumn"/>
-                                                    <TableColumn editable="false" prefWidth="100.0"
-                                                                 text="%label.feature.unit"
-                                                                 fx:id="centerResultFeaturesTableUnitColumn"/>
-                                                </columns>
-                                                <sortOrder>
-                                                    <fx:reference
-                                                            source="sortedExtractedFeaturesNameColumn"/>
-                                                </sortOrder>
-                                            </TableView>
-                                        </AnchorPane>
+                                        <fx:include source="components/featureTableComponent.fxml" />
                                     </center>
                                     <right>
                                         <BorderPane fx:id="selectedFeaturePreview" visible="false"

@@ -5,55 +5,24 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IfcFileWrapper {
+public class IfcFileWrapper extends FileWrapper {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final File file;
-    private final String name;
-    private final String path;
     private final IfcVersion ifcVersion;
 
     public IfcFileWrapper(File file) {
-        this.file = file;
-        this.name = file.getName();
-        this.path = file.getAbsolutePath();
+        super(file);
         this.ifcVersion = extractIFCVersionFromFile(file);
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getPath() {
-        return path;
     }
 
     public IfcVersion getIfcVersion() {
         return ifcVersion;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        IfcFileWrapper that = (IfcFileWrapper) o;
-        return Objects.equals(name, that.name) && Objects.equals(path, that.path);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, path);
     }
 
     private IfcVersion extractIFCVersionFromFile(File file) {

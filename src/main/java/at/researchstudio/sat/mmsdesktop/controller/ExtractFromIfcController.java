@@ -1,8 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
-import at.researchstudio.sat.merkmalservice.model.*;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
-import at.researchstudio.sat.mmsdesktop.controller.components.IconLabelTableCell;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
@@ -20,11 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.NotDirectoryException;
 import java.util.*;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,7 +28,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-import javafx.util.Callback;
 import javafx.util.Duration;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.apache.jena.ext.com.google.common.base.Throwables;
@@ -44,8 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-@FxmlView("extract.fxml")
-public class ExtractController implements Initializable {
+@FxmlView("extractifc.fxml")
+public class ExtractFromIfcController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ReactiveStateService stateService;
@@ -64,11 +57,8 @@ public class ExtractController implements Initializable {
     @FXML private BorderPane centerProgress;
     @FXML private BorderPane centerResults;
     @FXML private JFXToggleButton centerResultUniqueValuesToggle;
-    @FXML private TableColumn centerResultFeaturesTableTypeColumn;
-    @FXML private TableColumn centerResultFeaturesTableQuantityKindColumn;
-    @FXML private TableColumn centerResultFeaturesTableUnitColumn;
+
     @FXML private JFXTextField centerResultFeaturesSearch;
-    @FXML private TableView centerResultFeaturesTable;
     @FXML private HBox bottomResults;
     @FXML private HBox bottomPickFiles;
     @FXML private BorderPane selectedFeaturePreview;
@@ -80,7 +70,7 @@ public class ExtractController implements Initializable {
     private ResourceBundle resourceBundle;
 
     @Autowired
-    public ExtractController(ReactiveStateService stateService) {
+    public ExtractFromIfcController(ReactiveStateService stateService) {
         this.stateService = stateService;
     }
 
@@ -169,12 +159,6 @@ public class ExtractController implements Initializable {
 
         directoryChooser = new DirectoryChooser();
 
-        stateService
-                .getExtractState()
-                .getSortedExtractedFeatures()
-                .comparatorProperty()
-                .bind(centerResultFeaturesTable.comparatorProperty());
-
         centerResultFeaturesSearch
                 .textProperty()
                 .addListener(
@@ -198,55 +182,6 @@ public class ExtractController implements Initializable {
                                                                                     .toLowerCase()));
                                                 }));
 
-        centerResultFeaturesTableTypeColumn.setCellFactory(
-                c -> new IconLabelTableCell<>(resourceBundle));
-        centerResultFeaturesTableTypeColumn.setCellValueFactory(
-                (Callback<
-                                TableColumn.CellDataFeatures<Feature, String>,
-                                SimpleObjectProperty<Feature>>)
-                        p -> {
-                            if (p.getValue() != null) {
-                                Feature f = p.getValue();
-                                return new SimpleObjectProperty<>(f);
-                            } else {
-                                return new SimpleObjectProperty<>();
-                            }
-                        });
-
-        centerResultFeaturesTableUnitColumn.setCellValueFactory(
-                (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
-                        p -> {
-                            if (p.getValue() != null) {
-                                Feature f = p.getValue();
-
-                                if (f instanceof NumericFeature) {
-                                    return new SimpleStringProperty(
-                                            MessageUtils.getKeyForUnit(
-                                                    resourceBundle,
-                                                    ((NumericFeature) f).getUnit()));
-                                }
-                            }
-
-                            return new SimpleStringProperty("");
-                        });
-
-        centerResultFeaturesTableQuantityKindColumn.setCellValueFactory(
-                (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
-                        p -> {
-                            if (p.getValue() != null) {
-                                Feature f = p.getValue();
-
-                                if (f instanceof NumericFeature) {
-                                    return new SimpleStringProperty(
-                                            MessageUtils.getKeyForQuantityKind(
-                                                    resourceBundle,
-                                                    ((NumericFeature) f).getQuantityKind()));
-                                }
-                            }
-
-                            return new SimpleStringProperty("");
-                        });
-
         centerResultUniqueValuesToggle
                 .selectedProperty()
                 .addListener(
@@ -254,21 +189,6 @@ public class ExtractController implements Initializable {
                                 stateService
                                         .getExtractState()
                                         .includeDescriptionInJsonOutput(newValue));
-
-        centerResultFeaturesTable.setRowFactory(
-                tv -> {
-                    TableRow<Feature> row = new TableRow<>();
-                    row.setOnMouseClicked(
-                            event -> {
-                                if (!row.isEmpty()) {
-                                    Feature rowData = row.getItem();
-                                    stateService
-                                            .getSelectedFeatureState()
-                                            .setSelectedFeature(row.getItem());
-                                }
-                            });
-                    return row;
-                });
 
         snackbar = new JFXSnackbar(parentPane);
     }
@@ -381,7 +301,7 @@ public class ExtractController implements Initializable {
         stateService.getExtractState().showProcessView();
 
         Task<ExtractResult> task =
-                PropertyExtractor.generateIfcFileToJsonTask(
+                PropertyExtractor.generateIfcFilesToJsonTask(
                         stateService.getExtractState().getSelectedIfcFiles(), resourceBundle);
 
         task.setOnSucceeded(
@@ -406,9 +326,5 @@ public class ExtractController implements Initializable {
 
     public ObservableList<IfcFileWrapper> getSelectedIfcFiles() {
         return stateService.getExtractState().getSelectedIfcFiles();
-    }
-
-    public SortedList<Feature> getSortedExtractedFeatures() {
-        return stateService.getExtractState().getSortedExtractedFeatures();
     }
 }

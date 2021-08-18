@@ -11,14 +11,9 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.IfcProperty;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcVersion;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
-import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
-import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
-import at.researchstudio.sat.mmsdesktop.util.Utils;
+import at.researchstudio.sat.mmsdesktop.util.*;
 import be.ugent.progress.StatefulTaskProgressListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -42,7 +37,43 @@ import org.springframework.util.StopWatch;
 public class PropertyExtractor {
     private static final boolean USE_NEWEXTRACTION = false;
 
-    public static Task<ExtractResult> generateIfcFileToJsonTask(
+    public static Task<ExtractResult> generateJsonFilesToJsonTask(
+            List<FileWrapper> jsonFiles, final ResourceBundle resourceBundle) {
+        return new Task<>() {
+            @Override
+            protected ExtractResult call() throws Exception {
+                StringBuilder logOutput = new StringBuilder();
+                List<Feature> extractedFeatures = new ArrayList<>();
+
+                final int max = jsonFiles.size();
+
+                updateTitle(
+                        MessageUtils.getKeyWithParameters(
+                                resourceBundle, "label.extract.process.start"));
+
+                for (FileWrapper jsonFile : jsonFiles) {
+                    int i = 0;
+                    extractedFeatures.addAll(
+                            at.researchstudio.sat.merkmalservice.utils.Utils.readFromJson(
+                                    jsonFile.getFile()));
+                    logOutput
+                            .append("Reading ")
+                            .append(++i)
+                            .append("/")
+                            .append(jsonFiles.size())
+                            .append(" Files to Lines")
+                            .append(System.lineSeparator());
+                    updateMessage(logOutput.toString());
+                    updateProgress(i, max);
+                }
+
+                // TODO: DO STUFF
+                return new ExtractResult(extractedFeatures, logOutput.toString());
+            }
+        };
+    }
+
+    public static Task<ExtractResult> generateIfcFilesToJsonTask(
             List<IfcFileWrapper> ifcFiles, final ResourceBundle resourceBundle) {
         return new Task<>() {
             @Override
@@ -432,7 +463,6 @@ public class PropertyExtractor {
     private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(
             Model model, IfcVersion ifcVersion) throws IOException {
         ResourceLoader resourceLoader = new DefaultResourceLoader();
-        String query;
         Resource resource =
                 resourceLoader.getResource(ifcVersion.getProjectUnitQueryResourceString());
         InputStream inputStream = resource.getInputStream();

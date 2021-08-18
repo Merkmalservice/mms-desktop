@@ -154,14 +154,14 @@ public class MainController implements Initializable {
         new Thread(logoutTask).start();
     }
 
-    /**
-     * Handle action related to "Settings" menu item.
-     *
-     * @param event Event on "Settings" menu item.
-     */
     @FXML
-    private void handleExtractAction(final ActionEvent event) {
-        stateService.getViewState().switchCenterPane(ExtractController.class);
+    private void handleExtractFromIfcAction(final ActionEvent event) {
+        stateService.getViewState().switchCenterPane(ExtractFromIfcController.class);
+    }
+
+    @FXML
+    private void handleExtractFromJsonAction(final ActionEvent event) {
+        stateService.getViewState().switchCenterPane(ExtractFromJsonController.class);
     }
 
     /**
