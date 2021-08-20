@@ -3,11 +3,14 @@ package at.researchstudio.sat.mmsdesktop.logic;
 import static java.util.stream.Collectors.joining;
 
 import at.researchstudio.sat.merkmalservice.model.*;
-import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
-import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcDerivedUnit;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcSIUnit;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.*;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
-import at.researchstudio.sat.mmsdesktop.model.ifc.*;
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcVersion;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.*;
 import be.ugent.progress.StatefulTaskProgressListener;
@@ -26,6 +29,7 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -472,11 +476,7 @@ public class PropertyExtractor {
             List<IfcSIUnit> extractedUnits = new ArrayList<>();
             while (rs.hasNext()) {
                 QuerySolution qs = rs.next();
-                extractedUnits.add(
-                        new IfcSIUnit(
-                                qs.getResource("unitType"),
-                                qs.getResource("unitMeasure"),
-                                qs.getResource("unitPrefix")));
+                extractedUnits.add(new IfcSIUnitBuilder(qs).build());
             }
             projectUnits = extractedUnits.stream().collect(Collectors.groupingBy(IfcUnit::getType));
         }
@@ -492,9 +492,9 @@ public class PropertyExtractor {
             Set<IfcDerivedUnit> derivedUnits = new HashSet<>();
             while (rs.hasNext()) {
                 QuerySolution qs = rs.next();
-                IfcDerivedUnit tempDerivedUnit =
-                        new IfcDerivedUnit(
-                                qs.getResource("unitType"), qs.getLiteral("userDefinedTypeLabel"));
+
+                IfcDerivedUnit tempDerivedUnit = new IfcDerivedUnitBuilder(qs).build();
+
                 IfcDerivedUnit derivedUnit =
                         derivedUnits.stream()
                                 .filter(tempDerivedUnit::equals)
@@ -504,9 +504,30 @@ public class PropertyExtractor {
 
                 derivedUnit.addDerivedUnitElement(
                         new IfcSIUnit(
-                                qs.getResource("derivedUnitElType"),
-                                qs.getResource("derivedUnitElMeasure"),
-                                qs.getResource("derivedUnitElPrefix")),
+                                Utils.executeOrDefaultOnException(
+                                        () ->
+                                                IfcUnitType.fromString(
+                                                        qs.getResource("derivedUnitElType")
+                                                                .getURI()),
+                                        IfcUnitType.UNKNOWN,
+                                        NullPointerException.class,
+                                        IllegalArgumentException.class),
+                                Utils.executeOrDefaultOnException(
+                                        () ->
+                                                IfcUnitMeasure.fromString(
+                                                        qs.getResource("derivedUnitElMeasure")
+                                                                .getURI()),
+                                        IfcUnitMeasure.UNKNOWN,
+                                        NullPointerException.class,
+                                        IllegalArgumentException.class),
+                                Utils.executeOrDefaultOnException(
+                                        () ->
+                                                IfcUnitMeasurePrefix.fromString(
+                                                        qs.getResource("derivedUnitElPrefix")
+                                                                .getURI()),
+                                        IfcUnitMeasurePrefix.NONE,
+                                        NullPointerException.class,
+                                        IllegalArgumentException.class)),
                         qs.getLiteral("exponentValue").getInt());
             }
 
@@ -538,7 +559,7 @@ public class PropertyExtractor {
             Set<IfcProperty> extractedProperties = new HashSet<>();
             while (rs.hasNext()) {
                 QuerySolution qs = rs.next();
-                IfcProperty tempProp = new IfcProperty(qs, projectUnits);
+                IfcProperty tempProp = new IfcPropertyBuilder(qs, projectUnits).build();
                 IfcProperty prop =
                         extractedProperties.stream()
                                 .filter(tempProp::equals)
@@ -546,9 +567,16 @@ public class PropertyExtractor {
                                 .orElse(tempProp);
                 extractedProperties.add(prop);
 
-                prop.addExtractedValue(qs);
+                Literal propValue = qs.getLiteral("propValue");
+                if (propValue != null) {
+                    prop.addExtractedValue(propValue.getValue().toString());
+                }
+
                 if (IfcPropertyType.VALUELIST.equals(prop.getType())) {
-                    prop.addEnumOptionValue(qs);
+                    Literal enumOptionValue = qs.getLiteral("enumOptionValue");
+                    if (enumOptionValue != null) {
+                        prop.addEnumOptionValue(enumOptionValue.toString());
+                    }
                 }
             }
             return extractedProperties.stream()
