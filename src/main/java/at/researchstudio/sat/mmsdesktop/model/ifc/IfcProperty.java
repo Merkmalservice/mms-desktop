@@ -10,7 +10,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -22,8 +21,7 @@ public class IfcProperty {
     private final String name;
     private final IfcPropertyType type;
 
-    private IfcUnitMeasure measure;
-    private IfcUnitMeasurePrefix measurePrefix;
+    private IfcUnit unit;
 
     private Set<String> extractedUniqueValues;
 
@@ -34,8 +32,7 @@ public class IfcProperty {
         this.type = ifc.type;
 
         if (this.type.isMeasureType()) {
-            this.measure = generateMeasureFromProjectUnits(ifc.type, projectUnits);
-            this.measurePrefix = generateMeasurePrefixFromProjectUnits(ifc.type, projectUnits);
+            this.unit = getIfcUnitFromProjectUnits(ifc.type, projectUnits);
         }
     }
 
@@ -55,35 +52,10 @@ public class IfcProperty {
             // output
             // (not yet possible since our ifc-files do not have a specific unit attached to the
             // properties)
-            Resource unitMeasure = qs.getResource("propMeasure");
-            Resource unitMeasurePrefix = qs.getResource("propMeasurePrefix");
+            // Resource unitMeasure = qs.getResource("propMeasure");
+            // Resource unitMeasurePrefix = qs.getResource("propMeasurePrefix");
 
-            IfcUnitMeasure tempMeasure;
-            IfcUnitMeasurePrefix tempMeasurePrefix;
-
-            if (Objects.nonNull(unitMeasure)) {
-                tempMeasure =
-                        Utils.executeOrDefaultOnException(
-                                () -> IfcUnitMeasure.fromString(unitMeasure.getURI()),
-                                IfcUnitMeasure.UNKNOWN,
-                                NullPointerException.class,
-                                IllegalArgumentException.class);
-            } else {
-                tempMeasure = generateMeasureFromProjectUnits(this.type, projectUnits);
-            }
-
-            if (Objects.nonNull(unitMeasurePrefix)) {
-                tempMeasurePrefix =
-                        Utils.executeOrDefaultOnException(
-                                () -> IfcUnitMeasurePrefix.fromString(unitMeasurePrefix.getURI()),
-                                IfcUnitMeasurePrefix.NONE,
-                                NullPointerException.class,
-                                IllegalArgumentException.class);
-            } else {
-                tempMeasurePrefix = generateMeasurePrefixFromProjectUnits(this.type, projectUnits);
-            }
-            this.measure = tempMeasure;
-            this.measurePrefix = tempMeasurePrefix;
+            this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
         }
     }
 
@@ -100,7 +72,7 @@ public class IfcProperty {
         this.type = tempType;
     }
 
-    private static IfcUnitMeasure generateMeasureFromProjectUnits(
+    private static IfcUnit getIfcUnitFromProjectUnits(
             IfcPropertyType type, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
         if (Objects.nonNull(projectUnits)) {
             IfcUnitType tempUnitType = type.getUnitType();
@@ -109,7 +81,7 @@ public class IfcProperty {
             if (Objects.nonNull(units)) {
                 if (units.size() == 1) {
                     IfcUnit ifcUnit = units.get(0);
-                    return ifcUnit.getMeasure();
+                    return ifcUnit;
                 } else {
                     logger.warn(
                             "More than one unit present for IfcPropertyType<{}>, leaving it empty",
@@ -126,28 +98,7 @@ public class IfcProperty {
                     Objects.requireNonNullElse(value, Collections.emptyList())
                             .forEach(unit -> logger.warn("\t{}", unit));
                 });
-        return IfcUnitMeasure.UNKNOWN;
-    }
-
-    private static IfcUnitMeasurePrefix generateMeasurePrefixFromProjectUnits(
-            IfcPropertyType type, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
-        if (Objects.nonNull(projectUnits)) {
-            IfcUnitType tempUnitType = type.getUnitType();
-            List<IfcUnit> units = projectUnits.get(tempUnitType);
-
-            if (Objects.nonNull(units)) {
-                if (units.size() == 1) {
-                    IfcUnit ifcUnit = units.get(0);
-                    return ifcUnit.getPrefix();
-                } else {
-                    logger.warn(
-                            "More than one unit present for IfcPropertyType<{}>, leaving it empty",
-                            type);
-                    units.forEach(unit -> logger.debug(unit.toString()));
-                }
-            }
-        }
-        return IfcUnitMeasurePrefix.NONE;
+        return null;
     }
 
     public String getName() {
@@ -159,11 +110,25 @@ public class IfcProperty {
     }
 
     public IfcUnitMeasure getMeasure() {
-        return measure;
+        if (Objects.nonNull(unit)) {
+            if (unit instanceof IfcSIUnit) {
+                return ((IfcSIUnit) unit).getMeasure();
+            } else {
+                logger.warn("unit not IfcSIUnit, leaving it empty", type);
+            }
+        }
+        return IfcUnitMeasure.UNKNOWN;
     }
 
     public IfcUnitMeasurePrefix getMeasurePrefix() {
-        return measurePrefix;
+        if (Objects.nonNull(unit)) {
+            if (unit instanceof IfcSIUnit) {
+                return ((IfcSIUnit) unit).getPrefix();
+            } else {
+                logger.warn("unit not IfcSIUnit, leaving it empty", type);
+            }
+        }
+        return IfcUnitMeasurePrefix.NONE;
     }
 
     public Set<String> getExtractedUniqueValues() {
@@ -207,12 +172,12 @@ public class IfcProperty {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         IfcProperty that = (IfcProperty) o;
-        return Objects.equals(name, that.name) && type == that.type && measure == that.measure;
+        return Objects.equals(name, that.name) && type == that.type && unit == that.unit;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, type, measure);
+        return Objects.hash(name, type, unit);
     }
 
     @Override
@@ -237,10 +202,8 @@ public class IfcProperty {
                 + '\''
                 + ", type="
                 + type
-                + ", measurePrefix="
-                + measurePrefix
-                + ", measure="
-                + measure
+                + ", ifcUnit="
+                + unit
                 + ", extractedUniqueValues="
                 + extractedUniqueValuesString
                 + optionValues

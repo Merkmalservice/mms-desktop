@@ -1,0 +1,20 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ifc: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>
+PREFIX express: <https://w3id.org/express#>
+SELECT DISTINCT ?projectUri ?unitAssignmentUri ?unitUri ?unitType ?userDefinedTypeLabel ?derivedUnitElementUri ?exponentValue ?derivedUnitElMeasure ?derivedUnitElPrefix ?derivedUnitElType
+WHERE {
+      ?projectUri a ifc:IfcProject .
+      ?projectUri ifc:unitsInContext_IfcProject ?unitAssignmentUri .
+      ?unitAssignmentUri ifc:units_IfcUnitAssignment ?unitUri .
+      ?unitUri a ifc:IfcDerivedUnit .
+      ?unitUri ifc:unitType_IfcDerivedUnit ?unitType .
+      OPTIONAL { ?unitUri ifc:userDefinedType_IfcDerivedUnit ?userDefinedTypeUri .
+                 ?userDefinedTypeUri express:hasString ?userDefinedTypeLabel .}
+      ?unitUri ifc:elements_IfcDerivedUnit ?derivedUnitElementUri .
+      ?derivedUnitElementUri ifc:exponent_IfcDerivedUnitElement ?exponentUri .
+      ?derivedUnitElementUri ifc:unit_IfcDerivedUnitElement ?derivedUnitElUri .
+      ?exponentUri express:hasInteger ?exponentValue .
+      ?derivedUnitElUri ifc:name_IfcSIUnit ?derivedUnitElMeasure .
+      ?derivedUnitElUri ifc:unitType_IfcNamedUnit ?derivedUnitElType.
+      OPTIONAL { ?derivedUnitElUri ifc:prefix_IfcSIUnit ?derivedUnitElPrefix . }
+      }

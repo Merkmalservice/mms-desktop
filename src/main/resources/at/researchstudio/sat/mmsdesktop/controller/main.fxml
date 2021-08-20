@@ -50,7 +50,7 @@
                         <Font size="16.0"/>
                     </font>
                 </JFXButton>
-                <JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
+                <!-- JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
                            graphicTextGap="15.0"
                            onAction="#handleExtractFromJsonAction"
                            prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
@@ -61,7 +61,7 @@
                     <font>
                         <Font size="16.0"/>
                     </font>
-                </JFXButton>
+                </JFXButton -->
                 <JFXButton disable="true" alignment="BASELINE_LEFT" focusTraversable="false"
                            onAction="#handleConvertAction"
                            graphicTextGap="15.0" layoutX="10.0" layoutY="10.0" prefHeight="32.0"

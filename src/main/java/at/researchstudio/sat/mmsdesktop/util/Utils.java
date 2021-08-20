@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.util;
 
+import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcProperty;
@@ -107,5 +108,23 @@ public class Utils {
             }
             throw e;
         }
+    }
+
+    public static NumericFeature parseNumericFeature(
+            IfcProperty ifcProperty, String quantityKind, String unit) {
+        NumericFeature f = new NumericFeature(ifcProperty.getName(), quantityKind, unit);
+        f.setUniqueValues(ifcProperty.getExtractedUniqueValues());
+        f.setDescriptionFromUniqueValues(ifcProperty.getExtractedUniqueValues());
+        return f;
+    }
+
+    public static NumericFeature parseNumericFeature(IfcProperty ifcProperty, String quantityKind) {
+        return parseNumericFeature(
+                ifcProperty, quantityKind, Utils.extractQudtUnitFromProperty(ifcProperty));
+    }
+
+    public static NumericFeature parseNumericFeature(IfcProperty ifcProperty) {
+        return parseNumericFeature(
+                ifcProperty, Utils.extractQudtQuantityKindFromProperty(ifcProperty));
     }
 }
