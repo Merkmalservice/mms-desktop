@@ -11,7 +11,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -31,8 +30,8 @@ public class MainController implements Initializable {
     private final ReactiveStateService stateService;
 
     @FXML private MenuBar menuBar;
-    @FXML private MenuItem menuBarLogin;
-    @FXML private MenuItem menuBarLogout;
+    // @FXML private MenuItem menuBarLogin;
+    // @FXML private MenuItem menuBarLogout;
     @FXML private BorderPane mainPane;
 
     @Autowired
@@ -45,8 +44,8 @@ public class MainController implements Initializable {
     public void initialize(java.net.URL arg0, ResourceBundle resources) {
         menuBar.setFocusTraversable(true);
 
-        menuBarLogin.visibleProperty().bind(stateService.getLoginState().loggedInProperty().not());
-        menuBarLogout.visibleProperty().bind(stateService.getLoginState().loggedInProperty());
+        // menuBarLogin.visibleProperty().bind(stateService.getLoginState().loggedInProperty().not());
+        // menuBarLogout.visibleProperty().bind(stateService.getLoginState().loggedInProperty());
         mainPane.centerProperty()
                 .bind(stateService.getViewState().visibleCenterPanePropertyProperty());
     }

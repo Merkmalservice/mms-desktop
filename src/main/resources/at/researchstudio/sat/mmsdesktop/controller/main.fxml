@@ -20,8 +20,8 @@
     </stylesheets>
     <MenuBar fx:id="menuBar" onKeyPressed="#handleKeyInput">
         <Menu text="%label.app">
-            <MenuItem fx:id="menuBarLogin" text="%label.login" onAction="#handleLoginAction"/>
-            <MenuItem fx:id="menuBarLogout" text="%label.logout" onAction="#handleLogoutAction"/>
+            <!-- MenuItem fx:id="menuBarLogin" text="%label.login" onAction="#handleLoginAction"/>
+            <MenuItem fx:id="menuBarLogout" text="%label.logout" onAction="#handleLogoutAction"/-->
             <MenuItem text="%label.settings" onAction="#handleSettingsAction" disable="true"/>
             <SeparatorMenuItem/>
             <MenuItem text="%label.exit" onAction="#handleExitAction"/>
