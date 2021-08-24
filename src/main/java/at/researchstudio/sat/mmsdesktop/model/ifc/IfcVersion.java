@@ -12,6 +12,7 @@ public enum IfcVersion {
     private final String ifcOntologyUri;
     private final String propertyQueryResourceString;
     private final String projectUnitQueryResourceString;
+    private final String derivedUnitQueryResourceString;
 
     IfcVersion(String ifcVersion) {
         this.ifcVersion = ifcVersion;
@@ -21,6 +22,8 @@ public enum IfcVersion {
         propertyQueryResourceString = "classpath:extract_properties_" + ifcToRdfVersion + ".rq";
         projectUnitQueryResourceString =
                 "classpath:extract_projectunits_" + ifcToRdfVersion + ".rq";
+        derivedUnitQueryResourceString =
+                "classpath:extract_derivedunits_" + ifcToRdfVersion + ".rq";
     }
 
     private static String generateIfcToRdfVersion(String ifcVersion) {
@@ -75,5 +78,9 @@ public enum IfcVersion {
 
     public String getProjectUnitQueryResourceString() {
         return projectUnitQueryResourceString;
+    }
+
+    public String getDerivedUnitQueryResourceString() {
+        return derivedUnitQueryResourceString;
     }
 }

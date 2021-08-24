@@ -1,0 +1,11 @@
+{
+  "realm": "merkmalservice",
+  "auth-server-url": "https://keycloak.researchstudio.at/auth",
+  "ssl-required": "external",
+  "resource": "merkmalservice-frontend",
+  "public-client": true,
+  "use-resource-role-mappings": true,
+  "enable-pkce": true,
+
+  "disable-trust-manager": true
+}

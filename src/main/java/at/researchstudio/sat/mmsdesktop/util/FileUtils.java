@@ -26,6 +26,33 @@ public class FileUtils {
      */
     public static List<File> getIfcFilesFromDirectory(File directory)
             throws FileNotFoundException, NotDirectoryException {
+        return getFilesFromDirectory(directory, ".ifc");
+    }
+
+    /**
+     * Extracts all JSON Files from a given Directory
+     *
+     * @param directory specified Directory
+     * @return All JSON-Files within the given directory
+     * @throws FileNotFoundException when directory is null or does not exist
+     * @throws NotDirectoryException when directory is not a directory
+     */
+    public static List<File> getJsonFilesFromDirectory(File directory)
+            throws FileNotFoundException, NotDirectoryException {
+        return getFilesFromDirectory(directory, ".json");
+    }
+
+    /**
+     * Extracts all Files from a given Directory
+     *
+     * @param directory specified Directory
+     * @param suffix specified file such as ".ifc"
+     * @return All Files within the given directory that have a certain suffix
+     * @throws FileNotFoundException when directory is null or does not exist
+     * @throws NotDirectoryException when directory is not a directory
+     */
+    private static List<File> getFilesFromDirectory(File directory, String suffix)
+            throws FileNotFoundException, NotDirectoryException {
         if (directory == null) {
             throw new FileNotFoundException("Directory does not exist");
         }
@@ -43,7 +70,7 @@ public class FileUtils {
                         "Searching for IFC Files within Directory: " + directory.getAbsolutePath());
                 return Arrays.asList(
                         Objects.requireNonNull(
-                                directory.listFiles((FileFilter) new SuffixFileFilter(".ifc"))));
+                                directory.listFiles((FileFilter) new SuffixFileFilter(suffix))));
             }
         } else {
             logger.error("Specified Directory '" + directory.getName() + "' does not exist");

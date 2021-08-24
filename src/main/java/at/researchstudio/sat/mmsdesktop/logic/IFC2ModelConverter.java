@@ -603,18 +603,14 @@ public class IFC2ModelConverter {
                                     return new HdtChunkWriter(
                                             MAX_CHUNK_SIZE,
                                             BASE_URI,
-                                            new ProgressListener() {
-                                                @Override
-                                                public void notifyProgress(
-                                                        float level, String message) {
-                                                    if (taskProgressListener != null) {
-                                                        taskProgressListener.notifyProgress(
-                                                                "Generating HDT chunks",
-                                                                String.format(
-                                                                        "Status of chunk %d: %s",
-                                                                        chunkIndex, message),
-                                                                0f);
-                                                    }
+                                            (level, message) -> {
+                                                if (taskProgressListener != null) {
+                                                    taskProgressListener.notifyProgress(
+                                                            "Generating HDT chunks",
+                                                            String.format(
+                                                                    "Status of chunk %d: %s",
+                                                                    chunkIndex, message),
+                                                            0f);
                                                 }
                                             },
                                             chunkIndex,

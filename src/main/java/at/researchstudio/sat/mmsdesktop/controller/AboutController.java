@@ -6,9 +6,11 @@ import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.BorderPane;
+import net.rgielen.fxweaver.core.FxmlView;
 import org.springframework.stereotype.Component;
 
 @Component
+@FxmlView("about.fxml")
 public class AboutController implements Initializable {
     @FXML private BorderPane parentPane;
     @FXML private MarkdownView centerAboutMarkdown;
@@ -22,7 +24,7 @@ public class AboutController implements Initializable {
                 "### Merkmalservice Desktop App\n"
                         + "\n"
                         + "#### Version\n"
-                        + "- 0.0.1\n"
+                        + "- 0.0.2\n"
                         + "#### Usage\n"
                         + "##### Extract Features from IFC:\n"
                         + "- Add to List:\n"
@@ -32,9 +34,12 @@ public class AboutController implements Initializable {
                         + "- Parse:\n"
                         + "    - All Features will be parsed to the output File\n"
                         + "- Export:\n"
-                        + "    - JSON\n"
+                        + "    - JSON (with or without Unique Values in Description)\n"
                         + "    - Logfile\n"
                         + "- Check Log Output\n"
+                        + "##### View Extracted Features from IFC:\n"
+                        + "- View Features in Table\n"
+                        + "- View Specific Features and all unique extracted Values\n"
                         + "#### Support\n"
                         + " > sat@researchstudio.at");
     }

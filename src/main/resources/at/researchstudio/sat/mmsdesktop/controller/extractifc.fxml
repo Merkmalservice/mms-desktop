@@ -6,10 +6,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 <BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractController">
+            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractFromIfcController">
     <BorderPane.margin>
         <Insets bottom="10.0" left="25.0" right="25.0" top="10.0"/>
     </BorderPane.margin>
@@ -32,6 +33,10 @@
                            text="%label.select.file"
                            textFill="#c1fff9"
                            HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-file-earmark"
+                                  iconSize="24"/>
+                    </graphic>
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
                     </padding>
@@ -42,6 +47,10 @@
                            style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
                            text="%label.select.directory"
                            textFill="#c1fff9" HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-folder"
+                                  iconSize="24"/>
+                    </graphic>
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
                     </padding>
@@ -129,29 +138,73 @@
                     </AnchorPane>
                 </center>
             </BorderPane>
-            <JFXTabPane fx:id="centerResults" visible="false" managed="false"
+            <BorderPane fx:id="centerResults" visible="false" managed="false"
                         AnchorPane.topAnchor="0.0"
                         AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
                         AnchorPane.leftAnchor="0.0">
-                <Tab text="%label.extractedFeatures">
+                <center>
                     <AnchorPane>
-                        <JFXTextArea fx:id="centerResultFeatures" AnchorPane.topAnchor="0.0"
-                                     AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                                     AnchorPane.leftAnchor="0.0"
-                                     editable="false"
-                                     style="-fx-background-color: white; -fx-font-family: Consolas,monaco,monospace;"/>
+                        <JFXTabPane AnchorPane.topAnchor="0.0"
+                                    AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                                    AnchorPane.leftAnchor="0.0"
+                                    style="-fx-cursor: hand;">
+                            <Tab text="%label.extractedFeatures">
+                                <BorderPane>
+                                    <top>
+                                        <JFXTextField fx:id="centerResultFeaturesSearch"
+                                                      focusColor="#ffc107"
+                                                      prefHeight="40.0"
+                                                      promptText="%label.extract.filter"
+                                                      unFocusColor="#c5c5c5">
+                                            <font>
+                                                <Font name="Exo Regular" size="18.0"/>
+                                            </font>
+                                        </JFXTextField>
+                                    </top>
+                                    <center>
+                                        <fx:include source="components/featureTableComponent.fxml" />
+                                    </center>
+                                    <right>
+                                        <BorderPane fx:id="selectedFeaturePreview" visible="false"
+                                                    managed="false">
+                                            <center>
+                                                <ScrollPane>
+                                                <fx:include
+                                                        source="components/featureComponent.fxml"/>
+                                                </ScrollPane>
+                                            </center>
+                                        </BorderPane>
+                                    </right>
+                                </BorderPane>
+                            </Tab>
+                            <Tab text="%label.extractedFeaturesJson">
+                                <AnchorPane>
+                                    <JFXTextArea fx:id="centerResultFeaturesJson"
+                                                 AnchorPane.topAnchor="0.0"
+                                                 AnchorPane.rightAnchor="0.0"
+                                                 AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0" editable="false"
+                                                 style="-fx-background-color: white; -fx-font-family: Consolas,monaco,monospace;"/>
+                                </AnchorPane>
+                            </Tab>
+                            <Tab text="%label.extractLogOutput">
+                                <AnchorPane>
+                                    <JFXTextArea fx:id="centerResultLog" AnchorPane.topAnchor="0.0"
+                                                 AnchorPane.rightAnchor="0.0"
+                                                 AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0"
+                                                 editable="false"
+                                                 style="-fx-background-color: black; -fx-font-family: Consolas,monaco,monospace; -fx-text-fill: greenyellow;"/>
+                                </AnchorPane>
+                            </Tab>
+                        </JFXTabPane>
                     </AnchorPane>
-                </Tab>
-                <Tab text="%label.extractLogOutput">
-                    <AnchorPane>
-                        <JFXTextArea fx:id="centerResultLog" AnchorPane.topAnchor="0.0"
-                                     AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                                     AnchorPane.leftAnchor="0.0"
-                                     editable="false"
-                                     style="-fx-background-color: black; -fx-font-family: Consolas,monaco,monospace; -fx-text-fill: greenyellow;"/>
-                    </AnchorPane>
-                </Tab>
-            </JFXTabPane>
+                </center>
+                <bottom>
+                    <JFXToggleButton fx:id="centerResultUniqueValuesToggle"
+                                     text="%label.extract.includeValues" selected="true"/>
+                </bottom>
+            </BorderPane>
         </AnchorPane>
     </center>
     <bottom>
@@ -185,6 +238,10 @@
                            text="%label.extract.export"
                            textFill="#c1fff9"
                            HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-download"
+                                  iconSize="24"/>
+                    </graphic>
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
                     </padding>
@@ -197,6 +254,9 @@
                            text="%label.extract.exportLog"
                            textFill="#c1fff9"
                            HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-file-earmark-medical" iconSize="24"/>
+                    </graphic>
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
                     </padding>
@@ -209,6 +269,10 @@
                            text="%label.extract.reset"
                            textFill="#c1fff9"
                            HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-arrow-90deg-left"
+                                  iconSize="24"/>
+                    </graphic>
                     <padding>
                         <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
                     </padding>

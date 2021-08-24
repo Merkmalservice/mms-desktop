@@ -19,12 +19,14 @@
         <URL value="@main.css"/>
     </stylesheets>
     <MenuBar fx:id="menuBar" onKeyPressed="#handleKeyInput">
-        <Menu text="App">
+        <Menu text="%label.app">
+            <!-- MenuItem fx:id="menuBarLogin" text="%label.login" onAction="#handleLoginAction"/>
+            <MenuItem fx:id="menuBarLogout" text="%label.logout" onAction="#handleLogoutAction"/-->
             <MenuItem text="%label.settings" onAction="#handleSettingsAction" disable="true"/>
             <SeparatorMenuItem/>
             <MenuItem text="%label.exit" onAction="#handleExitAction"/>
         </Menu>
-        <Menu text="Info">
+        <Menu text="%label.info">
             <MenuItem onAction="#handleAboutAction" text="%label.about"/>
         </Menu>
     </MenuBar>
@@ -35,9 +37,10 @@
         <left>
             <ToolBar orientation="VERTICAL" BorderPane.alignment="CENTER"
                      style="-fx-background-color: #455A6F;">
+                <fx:include source="components/userComponent.fxml" />
                 <JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
                            graphicTextGap="15.0"
-                           onAction="#handleExtractAction"
+                           onAction="#handleExtractFromIfcAction"
                            prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
                            text="%label.sidebar.extractfromifc" textFill="#c1fff9" style="-fx-cursor: hand;">
                     <padding>
@@ -47,6 +50,18 @@
                         <Font size="16.0"/>
                     </font>
                 </JFXButton>
+                <!-- JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
+                           graphicTextGap="15.0"
+                           onAction="#handleExtractFromJsonAction"
+                           prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
+                           text="%label.sidebar.extractfromjson" textFill="#c1fff9" style="-fx-cursor: hand;">
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </JFXButton -->
                 <JFXButton disable="true" alignment="BASELINE_LEFT" focusTraversable="false"
                            onAction="#handleConvertAction"
                            graphicTextGap="15.0" layoutX="10.0" layoutY="10.0" prefHeight="32.0"

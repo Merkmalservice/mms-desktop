@@ -9,4 +9,18 @@ public class MessageUtils {
             ResourceBundle resourceBundle, String key, Object... values) {
         return MessageFormat.format(resourceBundle.getString(key), values);
     }
+
+    public static String getKeyForUnit(ResourceBundle resourceBundle, String unit) {
+        return getKeyForUri(resourceBundle, "unit.", unit);
+    }
+
+    public static String getKeyForQuantityKind(ResourceBundle resourceBundle, String quantityKind) {
+        return getKeyForUri(resourceBundle, "quantitykind.", quantityKind);
+    }
+
+    private static String getKeyForUri(ResourceBundle resourceBundle, String prefix, String uri) {
+        return Utils.executeOrDefaultOnException(
+                () -> resourceBundle.getString(prefix + uri.substring(uri.lastIndexOf("/") + 1)),
+                uri);
+    }
 }

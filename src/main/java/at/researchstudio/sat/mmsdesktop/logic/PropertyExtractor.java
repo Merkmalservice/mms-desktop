@@ -3,22 +3,18 @@ package at.researchstudio.sat.mmsdesktop.logic;
 import static java.util.stream.Collectors.joining;
 
 import at.researchstudio.sat.merkmalservice.model.*;
-import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
-import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcDerivedUnit;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcSIUnit;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.*;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcProperty;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcVersion;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
-import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
-import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
-import at.researchstudio.sat.mmsdesktop.util.Utils;
+import at.researchstudio.sat.mmsdesktop.util.*;
 import be.ugent.progress.StatefulTaskProgressListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -33,6 +29,7 @@ import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -42,7 +39,42 @@ import org.springframework.util.StopWatch;
 public class PropertyExtractor {
     private static final boolean USE_NEWEXTRACTION = false;
 
-    public static Task<ExtractResult> generateIfcFileToJsonTask(
+    public static Task<ExtractResult> generateJsonFilesToJsonTask(
+            List<FileWrapper> jsonFiles, final ResourceBundle resourceBundle) {
+        return new Task<>() {
+            @Override
+            protected ExtractResult call() throws Exception {
+                StringBuilder logOutput = new StringBuilder();
+                List<Feature> extractedFeatures = new ArrayList<>();
+
+                final int max = jsonFiles.size();
+
+                updateTitle(
+                        MessageUtils.getKeyWithParameters(
+                                resourceBundle, "label.extract.process.start"));
+
+                for (FileWrapper jsonFile : jsonFiles) {
+                    int i = 0;
+                    extractedFeatures.addAll(
+                            at.researchstudio.sat.merkmalservice.utils.Utils.readFromJson(
+                                    jsonFile.getFile()));
+                    logOutput
+                            .append("Reading ")
+                            .append(++i)
+                            .append("/")
+                            .append(jsonFiles.size())
+                            .append(" Files to Lines")
+                            .append(System.lineSeparator());
+                    updateMessage(logOutput.toString());
+                    updateProgress(i, max);
+                }
+
+                return new ExtractResult(extractedFeatures, logOutput.toString());
+            }
+        };
+    }
+
+    public static Task<ExtractResult> generateIfcFilesToJsonTask(
             List<IfcFileWrapper> ifcFiles, final ResourceBundle resourceBundle) {
         return new Task<>() {
             @Override
@@ -81,7 +113,7 @@ public class PropertyExtractor {
                             updateMessage(logOutput.toString());
                             int sumHashes = 0;
                             Set<IfcProperty> ifcProperties = new HashSet<>();
-                            Set<IfcUnit> projectUnits = new HashSet<>();
+                            Set<IfcSIUnit> projectUnits = new HashSet<>();
                             try (LineIterator it =
                                     FileUtils.lineIterator(
                                             ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
@@ -114,7 +146,7 @@ public class PropertyExtractor {
                                             String prefix =
                                                     ""; // TODO: ADD PREFIX EXTRACTION FOR IFC FILE
                                             // PARSER
-                                            projectUnits.add(new IfcUnit(type, measure, prefix));
+                                            projectUnits.add(new IfcSIUnit(type, measure, prefix));
                                         } else {
                                             logOutput
                                                     .append(
@@ -432,25 +464,79 @@ public class PropertyExtractor {
     private static Map<IfcUnitType, List<IfcUnit>> extractProjectUnits(
             Model model, IfcVersion ifcVersion) throws IOException {
         ResourceLoader resourceLoader = new DefaultResourceLoader();
-        String query;
         Resource resource =
                 resourceLoader.getResource(ifcVersion.getProjectUnitQueryResourceString());
         InputStream inputStream = resource.getInputStream();
-        String extractPropNamesQuery =
+        String extractProjectUnitsQuery =
                 getFileContent(inputStream, StandardCharsets.UTF_8.toString());
-        try (QueryExecution qe = QueryExecutionFactory.create(extractPropNamesQuery, model)) {
+        Map<IfcUnitType, List<IfcUnit>> projectUnits;
+
+        try (QueryExecution qe = QueryExecutionFactory.create(extractProjectUnitsQuery, model)) {
             ResultSet rs = qe.execSelect();
-            List<IfcUnit> extractedUnits = new ArrayList<>();
+            List<IfcSIUnit> extractedUnits = new ArrayList<>();
             while (rs.hasNext()) {
                 QuerySolution qs = rs.next();
-                extractedUnits.add(
-                        new IfcUnit(
-                                qs.getResource("unitType"),
-                                qs.getResource("unitMeasure"),
-                                qs.getResource("unitPrefix")));
+                extractedUnits.add(new IfcSIUnitBuilder(qs).build());
             }
-            return extractedUnits.stream().collect(Collectors.groupingBy(IfcUnit::getType));
+            projectUnits = extractedUnits.stream().collect(Collectors.groupingBy(IfcUnit::getType));
         }
+
+        resource = resourceLoader.getResource(ifcVersion.getDerivedUnitQueryResourceString());
+        inputStream = resource.getInputStream();
+        String extractDerivedUnitQuery =
+                getFileContent(inputStream, StandardCharsets.UTF_8.toString());
+
+        // TODO DERIVEDUNIT QUERY (IMPL QUERY FOR IFC4 still)
+        try (QueryExecution qe = QueryExecutionFactory.create(extractDerivedUnitQuery, model)) {
+            ResultSet rs = qe.execSelect();
+            Set<IfcDerivedUnit> derivedUnits = new HashSet<>();
+            while (rs.hasNext()) {
+                QuerySolution qs = rs.next();
+
+                IfcDerivedUnit tempDerivedUnit = new IfcDerivedUnitBuilder(qs).build();
+
+                IfcDerivedUnit derivedUnit =
+                        derivedUnits.stream()
+                                .filter(tempDerivedUnit::equals)
+                                .findAny()
+                                .orElse(tempDerivedUnit);
+                derivedUnits.add(derivedUnit);
+
+                derivedUnit.addDerivedUnitElement(
+                        new IfcSIUnit(
+                                Utils.executeOrDefaultOnException(
+                                        () ->
+                                                IfcUnitType.fromString(
+                                                        qs.getResource("derivedUnitElType")
+                                                                .getURI()),
+                                        IfcUnitType.UNKNOWN,
+                                        NullPointerException.class,
+                                        IllegalArgumentException.class),
+                                Utils.executeOrDefaultOnException(
+                                        () ->
+                                                IfcUnitMeasure.fromString(
+                                                        qs.getResource("derivedUnitElMeasure")
+                                                                .getURI()),
+                                        IfcUnitMeasure.UNKNOWN,
+                                        NullPointerException.class,
+                                        IllegalArgumentException.class),
+                                Utils.executeOrDefaultOnException(
+                                        () ->
+                                                IfcUnitMeasurePrefix.fromString(
+                                                        qs.getResource("derivedUnitElPrefix")
+                                                                .getURI()),
+                                        IfcUnitMeasurePrefix.NONE,
+                                        NullPointerException.class,
+                                        IllegalArgumentException.class)),
+                        qs.getLiteral("exponentValue").getInt());
+            }
+
+            // TODO: IFC4 UNIT QUERY INCL IFCCONVERSIONBASEDUNIT, IFCMEASUREWITHUNIT
+            projectUnits.putAll(
+                    derivedUnits.stream().collect(Collectors.groupingBy(IfcUnit::getType)));
+        }
+
+        return projectUnits;
     }
 
     private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromData(
@@ -473,7 +559,7 @@ public class PropertyExtractor {
             Set<IfcProperty> extractedProperties = new HashSet<>();
             while (rs.hasNext()) {
                 QuerySolution qs = rs.next();
-                IfcProperty tempProp = new IfcProperty(qs, projectUnits);
+                IfcProperty tempProp = new IfcPropertyBuilder(qs, projectUnits).build();
                 IfcProperty prop =
                         extractedProperties.stream()
                                 .filter(tempProp::equals)
@@ -481,9 +567,16 @@ public class PropertyExtractor {
                                 .orElse(tempProp);
                 extractedProperties.add(prop);
 
-                prop.addExtractedValue(qs);
+                Literal propValue = qs.getLiteral("propValue");
+                if (propValue != null) {
+                    prop.addExtractedValue(propValue.getValue().toString());
+                }
+
                 if (IfcPropertyType.VALUELIST.equals(prop.getType())) {
-                    prop.addEnumOptionValue(qs);
+                    Literal enumOptionValue = qs.getLiteral("enumOptionValue");
+                    if (enumOptionValue != null) {
+                        prop.addEnumOptionValue(enumOptionValue.toString());
+                    }
                 }
             }
             return extractedProperties.stream()
@@ -505,15 +598,34 @@ public class PropertyExtractor {
                     fullLog.append(logString).append(System.getProperty("line.separator"));
                     extractedFeatures.addAll(
                             entry.getValue().stream()
-                                    .map(ifcProperty -> new BooleanFeature(ifcProperty.getName()))
+                                    .map(
+                                            ifcProperty -> {
+                                                BooleanFeature f =
+                                                        new BooleanFeature(ifcProperty.getName());
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
+                case IDENTIFIER:
                 case TEXT:
                 case LABEL:
                     fullLog.append(logString).append(System.getProperty("line.separator"));
                     extractedFeatures.addAll(
                             entry.getValue().stream()
-                                    .map(ifcProperty -> new StringFeature(ifcProperty.getName()))
+                                    .map(
+                                            ifcProperty -> {
+                                                StringFeature f =
+                                                        new StringFeature(ifcProperty.getName());
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 case VOLUME_MEASURE:
@@ -522,11 +634,8 @@ public class PropertyExtractor {
                             entry.getValue().stream()
                                     .map(
                                             ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            QudtQuantityKind.VOLUME,
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty, QudtQuantityKind.VOLUME))
                                     .collect(Collectors.toList()));
                     break;
                 case AREA_MEASURE:
@@ -535,11 +644,8 @@ public class PropertyExtractor {
                             entry.getValue().stream()
                                     .map(
                                             ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            QudtQuantityKind.AREA,
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty, QudtQuantityKind.AREA))
                                     .collect(Collectors.toList()));
                     break;
                 case DIMENSION_COUNT:
@@ -553,8 +659,8 @@ public class PropertyExtractor {
                             entry.getValue().stream()
                                     .map(
                                             ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
                                                             QudtQuantityKind.DIMENSIONLESS,
                                                             QudtUnit.UNITLESS))
                                     .collect(Collectors.toList()));
@@ -565,11 +671,8 @@ public class PropertyExtractor {
                             entry.getValue().stream()
                                     .map(
                                             ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            QudtQuantityKind.ANGLE,
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty, QudtQuantityKind.ANGLE))
                                     .collect(Collectors.toList()));
                     break;
                 case THERMAL_TRANSMITTANCE_MEASURE:
@@ -578,29 +681,174 @@ public class PropertyExtractor {
                             entry.getValue().stream()
                                     .map(
                                             ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            QudtQuantityKind.DIMENSIONLESS,
-                                                            // TODO: Figure out what
-                                                            // THERMAL_TRANSMITTANCE_MEASURE is in
-                                                            // QUDT.QuantityKind
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.DIMENSIONLESS))
+                                    // TODO: Figure out what THERMAL_TRANSMITTANCE_MEASURE is in
+                                    // QUDT.QuantityKind
                                     .collect(Collectors.toList()));
-                case LENGTH_MEASURE:
-                case POSITIVE_LENGTH_MEASURE:
+                    break;
+                case LUMINOUS_INTESITY_MEASURE:
                     fullLog.append(logString).append(System.getProperty("line.separator"));
                     extractedFeatures.addAll(
                             entry.getValue().stream()
                                     .map(
                                             ifcProperty ->
-                                                    new NumericFeature(
-                                                            ifcProperty.getName(),
-                                                            Utils
-                                                                    .extractQudtQuantityKindFromProperty(
-                                                                            ifcProperty),
-                                                            Utils.extractQudtUnitFromProperty(
-                                                                    ifcProperty)))
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.LUMINOUS_INTENSITY))
+                                    .collect(Collectors.toList()));
+                    break;
+                case ELECTRIC_CURRENT_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.ELECTRIC_CURRENT))
+                                    .collect(Collectors.toList()));
+                    break;
+                case MASS_DENSITY_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.MASS_DENSITY))
+                                    .collect(Collectors.toList()));
+                    break;
+                case ILLUMINANCE_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.ILLUMINANCE))
+                                    .collect(Collectors.toList()));
+                    break;
+                case PLANAR_FORCE_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.DIMENSIONLESS))
+                                    // TODO: Figure out what PLANAR_FORCE_MEASURE is in
+                                    // QUDT.QuantityKind
+                                    .collect(Collectors.toList()));
+                    break;
+                case FORCE_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty, QudtQuantityKind.FORCE))
+                                    .collect(Collectors.toList()));
+                    break;
+                case MOMENT_OF_INERTIA_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.MOMENT_OF_INERTIA))
+                                    .collect(Collectors.toList()));
+                    break;
+                case THERMODYNAMIC_TEMPERATURE_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind
+                                                                    .THERMODYNAMIC_TEMPERATURE))
+                                    .collect(Collectors.toList()));
+                    break;
+                case MASS_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty, QudtQuantityKind.MASS))
+                                    .collect(Collectors.toList()));
+                    break;
+                case PRESSURE_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty, QudtQuantityKind.PRESSURE))
+                                    .collect(Collectors.toList()));
+                    break;
+                case LUMINOUS_FLUX_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.LUMINOUS_FLUX))
+                                    .collect(Collectors.toList()));
+                    break;
+                case VOLUMETRIC_FLOW_RATE_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.VOLUME_FLOW_RATE))
+                                    .collect(Collectors.toList()));
+                    break;
+                case LINEAR_FORCE_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty,
+                                                            QudtQuantityKind.DIMENSIONLESS))
+                                    // TODO: Figure out what LINEAR_FORCE_MEASURE is in
+                                    // QUDT.QuantityKind
+                                    .collect(Collectors.toList()));
+                    break;
+                case POWER_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(
+                                            ifcProperty ->
+                                                    Utils.parseNumericFeature(
+                                                            ifcProperty, QudtQuantityKind.POWER))
+                                    .collect(Collectors.toList()));
+                    break;
+                case LENGTH_MEASURE:
+                case POSITIVE_LENGTH_MEASURE:
+                    fullLog.append(logString).append(System.getProperty("line.separator"));
+                    extractedFeatures.addAll(
+                            entry.getValue().stream()
+                                    .map(ifcProperty -> Utils.parseNumericFeature(ifcProperty))
                                     .collect(Collectors.toList()));
                     break;
                 case VALUELIST:
@@ -608,20 +856,29 @@ public class PropertyExtractor {
                     extractedFeatures.addAll(
                             entry.getValue().stream()
                                     .map(
-                                            ifcProperty ->
-                                                    new EnumFeature(
-                                                            ifcProperty.getName(),
-                                                            ifcProperty
-                                                                    .getEnumOptionValues()
-                                                                    .stream()
-                                                                    .map(
-                                                                            option ->
-                                                                                    new EnumFeature
-                                                                                            .MEStringValue(
-                                                                                            option,
-                                                                                            null))
-                                                                    .collect(Collectors.toList()),
-                                                            false))
+                                            ifcProperty -> {
+                                                EnumFeature f =
+                                                        new EnumFeature(
+                                                                ifcProperty.getName(),
+                                                                ifcProperty
+                                                                        .getEnumOptionValues()
+                                                                        .stream()
+                                                                        .map(
+                                                                                option ->
+                                                                                        new EnumFeature
+                                                                                                .MEStringValue(
+                                                                                                option,
+                                                                                                null))
+                                                                        .collect(
+                                                                                Collectors
+                                                                                        .toList()),
+                                                                false);
+                                                f.setUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                f.setDescriptionFromUniqueValues(
+                                                        ifcProperty.getExtractedUniqueValues());
+                                                return f;
+                                            })
                                     .collect(Collectors.toList()));
                     break;
                 default:
@@ -644,7 +901,6 @@ public class PropertyExtractor {
     }
 
     private static String getFileContent(InputStream fis, String encoding) throws IOException {
-        // TODO: REFACTOR THIS
         try (BufferedReader br = new BufferedReader(new InputStreamReader(fis, encoding))) {
             StringBuilder sb = new StringBuilder();
             String line;

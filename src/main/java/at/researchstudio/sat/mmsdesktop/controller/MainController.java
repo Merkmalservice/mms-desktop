@@ -1,46 +1,54 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
-import java.io.IOException;
+import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
+import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
+import at.researchstudio.sat.mmsdesktop.service.AuthService;
+import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import java.lang.invoke.MethodHandles;
 import java.util.ResourceBundle;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.MenuBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import org.apache.jena.ext.com.google.common.base.Throwables;
+import net.rgielen.fxweaver.core.FxmlView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@FxmlView("main.fxml")
 public class MainController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-    @Value("classpath:/about.fxml")
-    private Resource aboutResource;
-
-    @Value("classpath:/convert.fxml")
-    private Resource convertResource;
-
-    @Value("classpath:/extract.fxml")
-    private Resource extractResource;
-
-    @Value("classpath:/settings.fxml")
-    private Resource settingsResource;
-
-    private ResourceBundle resourceBundle;
+    private final AuthService authService;
+    private final ReactiveStateService stateService;
 
     @FXML private MenuBar menuBar;
-
+    // @FXML private MenuItem menuBarLogin;
+    // @FXML private MenuItem menuBarLogout;
     @FXML private BorderPane mainPane;
+
+    @Autowired
+    public MainController(AuthService authService, ReactiveStateService stateService) {
+        this.stateService = stateService;
+        this.authService = authService;
+    }
+
+    @Override
+    public void initialize(java.net.URL arg0, ResourceBundle resources) {
+        menuBar.setFocusTraversable(true);
+
+        // menuBarLogin.visibleProperty().bind(stateService.getLoginState().loggedInProperty().not());
+        // menuBarLogout.visibleProperty().bind(stateService.getLoginState().loggedInProperty());
+        mainPane.centerProperty()
+                .bind(stateService.getViewState().visibleCenterPanePropertyProperty());
+    }
 
     /**
      * Handle action related to input (in this case specifically only responds to keyboard event
@@ -83,17 +91,76 @@ public class MainController implements Initializable {
      */
     @FXML
     private void handleSettingsAction(final ActionEvent event) {
-        switchCenterPane(settingsResource);
+        stateService.getViewState().switchCenterPane(SettingsController.class);
     }
 
-    /**
-     * Handle action related to "Settings" menu item.
-     *
-     * @param event Event on "Settings" menu item.
-     */
     @FXML
-    private void handleExtractAction(final ActionEvent event) {
-        switchCenterPane(extractResource);
+    private void handleLoginAction(final ActionEvent event) {
+        Task<UserSession> loginTask = authService.getLoginTask();
+        stateService.getViewState().switchCenterPane(LoginController.class);
+
+        loginTask.setOnSucceeded(
+                t -> {
+                    stateService.getViewState().switchCenterPane(AboutController.class);
+                    stateService.getLoginState().setUserSession(loginTask.getValue());
+                    authService.resetLoginTask();
+                });
+
+        loginTask.setOnCancelled(
+                t -> {
+                    // TODO: Cancelled views
+                    stateService.getViewState().switchCenterPane(AboutController.class);
+                    stateService.getLoginState().setUserSession(null);
+                    authService.resetLoginTask();
+                });
+
+        loginTask.setOnFailed(
+                t -> {
+                    // TODO: Error Handling
+                    stateService.getViewState().switchCenterPane(AboutController.class);
+                    stateService.getLoginState().setUserSession(null);
+                    authService.resetLoginTask();
+                });
+
+        new Thread(loginTask).start();
+    }
+
+    @FXML
+    private void handleLogoutAction(final ActionEvent event) {
+        Task<LogoutResult> logoutTask = authService.getLogoutTask();
+
+        logoutTask.setOnSucceeded(
+                t -> {
+                    stateService.getViewState().switchCenterPane(AboutController.class);
+                    stateService.getLoginState().setUserSession(null);
+                    authService.resetLogoutTask();
+                });
+
+        logoutTask.setOnCancelled(
+                t -> {
+                    // TODO: Cancelled views
+                    stateService.getViewState().switchCenterPane(AboutController.class);
+                    authService.resetLogoutTask();
+                });
+
+        logoutTask.setOnFailed(
+                t -> {
+                    // TODO: Error Handling
+                    stateService.getViewState().switchCenterPane(AboutController.class);
+                    authService.resetLogoutTask();
+                });
+
+        new Thread(logoutTask).start();
+    }
+
+    @FXML
+    private void handleExtractFromIfcAction(final ActionEvent event) {
+        stateService.getViewState().switchCenterPane(ExtractFromIfcController.class);
+    }
+
+    @FXML
+    private void handleExtractFromJsonAction(final ActionEvent event) {
+        stateService.getViewState().switchCenterPane(ExtractFromJsonController.class);
     }
 
     /**
@@ -103,30 +170,11 @@ public class MainController implements Initializable {
      */
     @FXML
     private void handleConvertAction(final ActionEvent event) {
-        switchCenterPane(convertResource);
+        stateService.getViewState().switchCenterPane(ConvertController.class);
     }
 
     /** Perform functionality associated with "About" menu selection or CTRL-A. */
     private void provideAboutFunctionality() {
-        switchCenterPane(aboutResource);
-    }
-
-    @Override
-    public void initialize(java.net.URL arg0, ResourceBundle resources) {
-        this.resourceBundle = resources;
-        menuBar.setFocusTraversable(true);
-    }
-
-    private void switchCenterPane(Resource resource) {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(resource.getURL());
-            fxmlLoader.setResources(resourceBundle); // set Default Locale to
-            // System default
-
-            mainPane.setCenter(fxmlLoader.load());
-        } catch (IOException e) {
-            logger.error(Throwables.getStackTraceAsString(e));
-            // TODO: SHOW ERROR
-        }
+        stateService.getViewState().switchCenterPane(AboutController.class);
     }
 }
