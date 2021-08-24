@@ -34,9 +34,12 @@ public class AboutController implements Initializable {
                         + "- Parse:\n"
                         + "    - All Features will be parsed to the output File\n"
                         + "- Export:\n"
-                        + "    - JSON\n"
+                        + "    - JSON (with or without Unique Values in Description)\n"
                         + "    - Logfile\n"
                         + "- Check Log Output\n"
+                        + "##### View Extracted Features from IFC:\n"
+                        + "- View Features in Table\n"
+                        + "- View Specific Features and all unique extracted Values\n"
                         + "#### Support\n"
                         + " > sat@researchstudio.at");
     }
