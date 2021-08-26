@@ -9,6 +9,7 @@ public class IfcDerivedUnitBuilder {
     private IfcUnitType type;
     private String userDefinedLabel;
     private String uri;
+    private boolean projectDefault;
 
     public IfcDerivedUnitBuilder(QuerySolution qs) {
         this.uri =
@@ -19,6 +20,10 @@ public class IfcDerivedUnitBuilder {
             this.userDefinedLabel = qs.getLiteral("userDefinedTypeLabel").getString();
         }
 
+        this.projectDefault =
+                Utils.executeOrDefaultOnException(
+                        () -> qs.getResource("projectUri").getURI() != null, false);
+
         this.type =
                 Utils.executeOrDefaultOnException(
                         () -> IfcUnitType.fromString(qs.getResource("derivedUnitType").getURI()),
@@ -28,6 +33,6 @@ public class IfcDerivedUnitBuilder {
     }
 
     public IfcDerivedUnit build() {
-        return new IfcDerivedUnit(uri, type, userDefinedLabel);
+        return new IfcDerivedUnit(uri, type, userDefinedLabel, projectDefault);
     }
 }

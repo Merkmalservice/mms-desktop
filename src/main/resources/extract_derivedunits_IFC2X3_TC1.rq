@@ -3,9 +3,6 @@ PREFIX ifc: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>
 PREFIX express: <https://w3id.org/express#>
 SELECT DISTINCT ?projectUri ?unitAssignmentUri ?unitUri ?derivedUnitType ?userDefinedTypeLabel ?derivedUnitElementUri ?exponentValue ?derivedUnitElMeasure ?derivedUnitElPrefix ?derivedUnitElType ?derivedUnitElUri
 WHERE {
-      ?projectUri a ifc:IfcProject .
-      ?projectUri ifc:unitsInContext_IfcProject ?unitAssignmentUri .
-      ?unitAssignmentUri ifc:units_IfcUnitAssignment ?unitUri .
       ?unitUri a ifc:IfcDerivedUnit .
       ?unitUri ifc:unitType_IfcDerivedUnit ?derivedUnitType .
       OPTIONAL { ?unitUri ifc:userDefinedType_IfcDerivedUnit ?userDefinedTypeUri .
@@ -17,4 +14,10 @@ WHERE {
       ?derivedUnitElUri ifc:name_IfcSIUnit ?derivedUnitElMeasure .
       ?derivedUnitElUri ifc:unitType_IfcNamedUnit ?derivedUnitElType.
       OPTIONAL { ?derivedUnitElUri ifc:prefix_IfcSIUnit ?derivedUnitElPrefix . }
-      }
+
+      OPTIONAL {
+         ?projectUri a ifc:IfcProject .
+         ?projectUri ifc:unitsInContext_IfcProject ?unitAssignmentUri .
+         ?unitAssignmentUri ifc:units_IfcUnitAssignment ?unitUri .
+         }}
+

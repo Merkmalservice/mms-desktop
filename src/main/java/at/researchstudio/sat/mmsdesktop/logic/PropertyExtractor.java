@@ -146,10 +146,16 @@ public class PropertyExtractor {
                                                     StringUtils.trim(matcher.group("measure"));
                                             String prefix =
                                                     ""; // TODO: ADD PREFIX EXTRACTION FOR IFC FILE
+                                            boolean projectDefault =
+                                                    false; // TODO: FIGURE OUT PROJECTDEFAULT
                                             // PARSER
                                             projectUnits.add(
                                                     new IfcSIUnit(
-                                                            lineNumber, type, measure, prefix));
+                                                            lineNumber,
+                                                            type,
+                                                            measure,
+                                                            prefix,
+                                                            projectDefault));
                                         } else {
                                             logOutput
                                                     .append(
@@ -531,7 +537,8 @@ public class PropertyExtractor {
                                                                 .getURI()),
                                         IfcUnitMeasurePrefix.NONE,
                                         NullPointerException.class,
-                                        IllegalArgumentException.class)),
+                                        IllegalArgumentException.class),
+                                false),
                         qs.getLiteral("exponentValue").getInt());
             }
 

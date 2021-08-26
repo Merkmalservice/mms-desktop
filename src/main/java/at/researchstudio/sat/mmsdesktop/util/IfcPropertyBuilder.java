@@ -6,10 +6,7 @@ import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import java.lang.invoke.MethodHandles;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
@@ -37,8 +34,35 @@ public class IfcPropertyBuilder {
 
         if (Objects.nonNull(propUnitUriResource)) {
             this.unit = getIfcUnitWithId(propUnitUriResource.getURI(), projectUnits);
+            if (Objects.isNull(this.unit)) {
+                logger.warn(
+                        "Could not find Unit for IfcUnit with Id<{}>, name<{}>, IfcPropertyType<{}>",
+                        propUnitUriResource.getURI(),
+                        this.name,
+                        this.type);
+                logger.warn("within ProjectUnits:");
+                projectUnits.forEach(
+                        (key, value) -> {
+                            logger.warn(key.toString());
+                            Objects.requireNonNullElse(value, Collections.emptyList())
+                                    .forEach(unit -> logger.warn("\t{}", unit));
+                        });
+                logger.warn("###");
+            }
         } else if (this.type.isMeasureType()) {
             this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
+            if (Objects.isNull(this.unit)) {
+                logger.warn(
+                        "Could not find Unit for name<{}>, IfcPropertyType<{}>", this.name, type);
+                logger.warn("within ProjectUnits:");
+                projectUnits.forEach(
+                        (key, value) -> {
+                            logger.warn(key.toString());
+                            Objects.requireNonNullElse(value, Collections.emptyList())
+                                    .forEach(unit -> logger.warn("\t{}", unit));
+                        });
+                logger.warn("###");
+            }
         }
     }
 
@@ -72,6 +96,11 @@ public class IfcPropertyBuilder {
                     IfcUnit ifcUnit = units.get(0);
                     return ifcUnit;
                 } else {
+                    Optional<IfcUnit> defaultUnit =
+                            units.stream().filter(IfcUnit::isProjectDefault).findFirst();
+                    if (defaultUnit.isPresent()) {
+                        return defaultUnit.get();
+                    }
                     logger.warn(
                             "More than one unit present for IfcPropertyType<{}>, leaving it empty",
                             type);
@@ -79,14 +108,6 @@ public class IfcPropertyBuilder {
                 }
             }
         }
-        logger.warn("Could not find Unit for IfcPropertyType<{}>", type);
-        logger.warn("within ProjectUnits:");
-        projectUnits.forEach(
-                (key, value) -> {
-                    logger.warn(key.toString());
-                    Objects.requireNonNullElse(value, Collections.emptyList())
-                            .forEach(unit -> logger.warn("\t{}", unit));
-                });
         return null;
     }
 }
