@@ -1,10 +1,10 @@
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX ifc: <http://standards.buildingsmart.org/IFC/DEV/IFC2x3/TC1/OWL#>
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ifc:     <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD2_TC1/OWL#>
 PREFIX express: <https://w3id.org/express#>
 SELECT DISTINCT ?projectUri ?unitAssignmentUri ?unitUri ?derivedUnitType ?userDefinedTypeLabel ?derivedUnitElementUri ?exponentValue ?derivedUnitElMeasure ?derivedUnitElPrefix ?derivedUnitElType ?derivedUnitElUri
 WHERE {
       ?projectUri a ifc:IfcProject .
-      ?projectUri ifc:unitsInContext_IfcProject ?unitAssignmentUri .
+      ?projectUri ifc:unitsInContext_IfcContext ?unitAssignmentUri .
       ?unitAssignmentUri ifc:units_IfcUnitAssignment ?unitUri .
       ?unitUri a ifc:IfcDerivedUnit .
       ?unitUri ifc:unitType_IfcDerivedUnit ?derivedUnitType .

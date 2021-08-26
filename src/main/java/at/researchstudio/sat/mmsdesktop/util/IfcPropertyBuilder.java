@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.apache.jena.query.QuerySolution;
+import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,21 +33,32 @@ public class IfcPropertyBuilder {
                         NullPointerException.class,
                         IllegalArgumentException.class);
 
-        if (this.type.isMeasureType()) {
-            // TODO: update query and add optional propMeasure and propMeasurePrefix to add the ifc
-            // unit to the query
-            // output
-            // (not yet possible since our ifc-files do not have a specific unit attached to the
-            // properties)
-            // Resource unitMeasure = qs.getResource("propMeasure");
-            // Resource unitMeasurePrefix = qs.getResource("propMeasurePrefix");
+        Resource propUnitUriResource = qs.getResource("propUnitUri");
 
+        if (Objects.nonNull(propUnitUriResource)) {
+            this.unit = getIfcUnitWithId(propUnitUriResource.getURI(), projectUnits);
+        } else if (this.type.isMeasureType()) {
             this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
         }
     }
 
     public IfcProperty build() {
         return new IfcProperty(this.name, this.type, this.unit);
+    }
+
+    private static IfcUnit getIfcUnitWithId(
+            String id, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+        if (Objects.nonNull(projectUnits)) {
+
+            for (Map.Entry<IfcUnitType, List<IfcUnit>> entryList : projectUnits.entrySet()) {
+                for (IfcUnit unit : entryList.getValue()) {
+                    if (id.equals(unit.getId())) {
+                        return unit;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static IfcUnit getIfcUnitFromProjectUnits(

@@ -140,13 +140,16 @@ public class PropertyExtractor {
                                     } else if (line.contains("IFCSIUNIT")) {
                                         Matcher matcher = unitExtractPattern.matcher(line);
                                         if (matcher.find()) {
+                                            String lineNumber = "TODO"; // TODO Extract linenumber
                                             String type = StringUtils.trim(matcher.group("type"));
                                             String measure =
                                                     StringUtils.trim(matcher.group("measure"));
                                             String prefix =
                                                     ""; // TODO: ADD PREFIX EXTRACTION FOR IFC FILE
                                             // PARSER
-                                            projectUnits.add(new IfcSIUnit(type, measure, prefix));
+                                            projectUnits.add(
+                                                    new IfcSIUnit(
+                                                            lineNumber, type, measure, prefix));
                                         } else {
                                             logOutput
                                                     .append(
@@ -504,6 +507,7 @@ public class PropertyExtractor {
 
                 derivedUnit.addDerivedUnitElement(
                         new IfcSIUnit(
+                                qs.getResource("derivedUnitElUri").getURI(),
                                 Utils.executeOrDefaultOnException(
                                         () ->
                                                 IfcUnitType.fromString(
