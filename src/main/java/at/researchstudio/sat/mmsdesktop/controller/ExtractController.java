@@ -53,7 +53,7 @@ public class ExtractController implements Initializable {
     // BorderPane Elements
     @FXML private BorderPane parentPane;
     @FXML private HBox topPickFiles;
-    @FXML private TableView centerPickFiles;
+    @FXML private TableView<FileWrapper> centerPickFiles;
     @FXML private BorderPane centerProgress;
     @FXML private BorderPane centerResults;
     @FXML private JFXToggleButton centerResultUniqueValuesToggle;
@@ -302,7 +302,7 @@ public class ExtractController implements Initializable {
         stateService.getExtractState().showProcessView();
 
         Task<ExtractResult> task =
-                PropertyExtractor.generateIfcFilesToJsonTask(
+                PropertyExtractor.generateExtractFilesToJsonTask(
                         stateService.getExtractState().getSelectedExtractFiles(), resourceBundle);
 
         task.setOnSucceeded(

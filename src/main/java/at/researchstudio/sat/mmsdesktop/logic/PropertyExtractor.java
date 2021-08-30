@@ -39,13 +39,13 @@ import org.springframework.util.StopWatch;
 public class PropertyExtractor {
     private static final boolean USE_NEWEXTRACTION = false;
 
-    public static Task<ExtractResult> generateIfcFilesToJsonTask(
-            List<FileWrapper> ifcFiles, final ResourceBundle resourceBundle) {
+    public static Task<ExtractResult> generateExtractFilesToJsonTask(
+            List<FileWrapper> extractFiles, final ResourceBundle resourceBundle) {
         return new Task<>() {
             @Override
             public ExtractResult call() {
                 StringBuilder logOutput = new StringBuilder();
-                final int max = ifcFiles.size() * 2;
+                final int max = extractFiles.size() * 2;
                 List<Feature> extractedFeatures = new ArrayList<>();
                 int extractedIfcProperties = 0;
                 if (USE_NEWEXTRACTION) {
@@ -64,16 +64,16 @@ public class PropertyExtractor {
                     updateTitle(
                             MessageUtils.getKeyWithParameters(
                                     resourceBundle, "label.extract.process.start"));
-                    for (FileWrapper ifcFile : ifcFiles) {
+                    for (FileWrapper extractFile : extractFiles) {
                         try {
-                            if (ifcFile instanceof IfcFileWrapper) {
+                            if (extractFile instanceof IfcFileWrapper) {
                                 StopWatch stopWatch = new StopWatch();
                                 stopWatch.start();
                                 logOutput
                                         .append("Reading ")
                                         .append(i + 1)
                                         .append("/")
-                                        .append(ifcFiles.size())
+                                        .append(extractFiles.size())
                                         .append(" Files to Lines")
                                         .append(System.lineSeparator());
                                 updateMessage(logOutput.toString());
@@ -82,7 +82,7 @@ public class PropertyExtractor {
                                 Set<IfcSIUnit> projectUnits = new HashSet<>();
                                 try (LineIterator it =
                                         FileUtils.lineIterator(
-                                                ifcFile.getFile(),
+                                                extractFile.getFile(),
                                                 StandardCharsets.UTF_8.toString())) {
                                     while (it.hasNext()) {
                                         String line = it.nextLine();
@@ -102,7 +102,7 @@ public class PropertyExtractor {
                                                 logOutput
                                                         .append(
                                                                 "WARN: Could not extract IFCPROPERTYSINGLEVALUE from: ")
-                                                        .append(ifcFile.getPath())
+                                                        .append(extractFile.getPath())
                                                         .append(" Line: ")
                                                         .append(line)
                                                         .append(System.lineSeparator());
@@ -133,7 +133,7 @@ public class PropertyExtractor {
                                                 logOutput
                                                         .append(
                                                                 "WARN: Could not extract IFCSIUNIT from: ")
-                                                        .append(ifcFile.getPath())
+                                                        .append(extractFile.getPath())
                                                         .append(" Line: ")
                                                         .append(line)
                                                         .append(System.lineSeparator());
@@ -164,27 +164,26 @@ public class PropertyExtractor {
                                         .append("Reading ")
                                         .append(++i)
                                         .append("/")
-                                        .append(ifcFiles.size())
+                                        .append(extractFiles.size())
                                         .append(" Files to Lines finished")
                                         .append(System.lineSeparator());
-                                updateMessage(logOutput.toString());
                             } else {
                                 extractedFeatures.addAll(
                                         at.researchstudio.sat.merkmalservice.utils.Utils
-                                                .readFromJson(ifcFile.getFile()));
+                                                .readFromJson(extractFile.getFile()));
                                 logOutput
                                         .append("Reading ")
                                         .append(++i)
                                         .append("/")
-                                        .append(ifcFiles.size())
+                                        .append(extractFiles.size())
                                         .append(" Files to Features")
                                         .append(System.lineSeparator());
-                                updateMessage(logOutput.toString());
                             }
+                            updateMessage(logOutput.toString());
                         } catch (Exception e) {
                             logOutput
                                     .append("Can't convert file: ")
-                                    .append(ifcFile.getPath())
+                                    .append(extractFile.getPath())
                                     .append(" Reason: ")
                                     .append(e.getMessage())
                                     .append(System.lineSeparator());
@@ -202,7 +201,7 @@ public class PropertyExtractor {
                                 MessageUtils.getKeyWithParameters(
                                         resourceBundle, "label.extract.process.ifc2hdt", i, max));
                     }
-                    final int newMax = ifcFiles.size() + propertyData.size();
+                    final int newMax = extractFiles.size() + propertyData.size();
                     for (Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap :
                             propertyData) {
                         extractedIfcProperties +=
@@ -236,7 +235,7 @@ public class PropertyExtractor {
                             .append("Extracted ")
                             .append(extractedIfcProperties)
                             .append(" out of the ")
-                            .append(ifcFiles.size())
+                            .append(extractFiles.size())
                             .append(" ifcFiles")
                             .append(System.lineSeparator())
                             .append("Parsed ")
@@ -250,10 +249,10 @@ public class PropertyExtractor {
                             .append("EXITING, converted ")
                             .append(propertyData.size())
                             .append("/")
-                            .append(ifcFiles.size())
+                            .append(extractFiles.size())
                             .append(System.lineSeparator());
                     updateMessage(logOutput.toString());
-                    if (propertyData.size() != ifcFiles.size()) {
+                    if (propertyData.size() != extractFiles.size()) {
                         logOutput
                                 .append(
                                         "Not all Files could be converted, look in the log above to find out why")
@@ -268,15 +267,14 @@ public class PropertyExtractor {
                     updateTitle(
                             MessageUtils.getKeyWithParameters(
                                     resourceBundle, "label.extract.process.start"));
-                    for (FileWrapper ifcFile : ifcFiles) {
+                    for (FileWrapper extractFile : extractFiles) {
                         try {
-                            if (ifcFile instanceof IfcFileWrapper) {
+                            if (extractFile instanceof IfcFileWrapper) {
+                                IfcFileWrapper ifcFile = (IfcFileWrapper) extractFile;
                                 List<Model> updatedList = new ArrayList<>();
                                 if (!models.isEmpty()
-                                        && !models.get(((IfcFileWrapper) ifcFile).getIfcVersion())
-                                                .isEmpty()) {
-                                    updatedList.addAll(
-                                            models.get(((IfcFileWrapper) ifcFile).getIfcVersion()));
+                                        && !models.get(ifcFile.getIfcVersion()).isEmpty()) {
+                                    updatedList.addAll(models.get(ifcFile.getIfcVersion()));
                                 }
                                 updatedList.add(
                                         IFC2ModelConverter.readFromFile(
@@ -363,32 +361,31 @@ public class PropertyExtractor {
                                                     }
                                                 }));
                                 hdtDataCount++;
-                                models.put(((IfcFileWrapper) ifcFile).getIfcVersion(), updatedList);
+                                models.put(ifcFile.getIfcVersion(), updatedList);
                                 logOutput
                                         .append("Converted ")
                                         .append(++i)
                                         .append("/")
-                                        .append(ifcFiles.size())
+                                        .append(extractFiles.size())
                                         .append(" Files to HDT")
                                         .append(System.lineSeparator());
-                                updateMessage(logOutput.toString());
                             } else {
                                 extractedFeatures.addAll(
                                         at.researchstudio.sat.merkmalservice.utils.Utils
-                                                .readFromJson(ifcFile.getFile()));
+                                                .readFromJson(extractFile.getFile()));
                                 logOutput
                                         .append("Reading ")
                                         .append(++i)
                                         .append("/")
-                                        .append(ifcFiles.size())
+                                        .append(extractFiles.size())
                                         .append(" Files to Features")
                                         .append(System.lineSeparator());
-                                updateMessage(logOutput.toString());
                             }
+                            updateMessage(logOutput.toString());
                         } catch (Exception e) {
                             logOutput
                                     .append("Can't convert file: ")
-                                    .append(ifcFile.getPath())
+                                    .append(extractFile.getPath())
                                     .append(" Reason: ")
                                     .append(e.getMessage())
                                     .append(System.lineSeparator());
@@ -406,7 +403,7 @@ public class PropertyExtractor {
                                 MessageUtils.getKeyWithParameters(
                                         resourceBundle, "label.extract.process.ifc2hdt", i, max));
                     }
-                    final int newMax = ifcFiles.size() + models.size();
+                    final int newMax = extractFiles.size() + models.size();
                     for (Map.Entry<IfcVersion, List<Model>> modelMapEntry : models.entrySet()) {
                         for (Model model : modelMapEntry.getValue()) {
                             try {
@@ -455,7 +452,7 @@ public class PropertyExtractor {
                             .append("Extracted ")
                             .append(extractedIfcProperties)
                             .append(" out of the ")
-                            .append(ifcFiles.size())
+                            .append(extractFiles.size())
                             .append(" ifcFiles")
                             .append(System.lineSeparator())
                             .append("Parsed ")
@@ -469,10 +466,10 @@ public class PropertyExtractor {
                             .append("EXITING, converted ")
                             .append(hdtDataCount)
                             .append("/")
-                            .append(ifcFiles.size())
+                            .append(extractFiles.size())
                             .append(System.lineSeparator());
                     updateMessage(logOutput.toString());
-                    if (hdtDataCount != ifcFiles.size()) {
+                    if (hdtDataCount != extractFiles.size()) {
                         logOutput
                                 .append(
                                         "Not all Files could be converted, look in the log above to find out why")
@@ -874,7 +871,7 @@ public class PropertyExtractor {
                     fullLog.append(logString).append(System.getProperty("line.separator"));
                     extractedFeatures.addAll(
                             entry.getValue().stream()
-                                    .map(ifcProperty -> Utils.parseNumericFeature(ifcProperty))
+                                    .map(Utils::parseNumericFeature)
                                     .collect(Collectors.toList()));
                     break;
                 case VALUELIST:
