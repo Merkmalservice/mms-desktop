@@ -158,11 +158,6 @@ public class MainController implements Initializable {
         stateService.getViewState().switchCenterPane(ExtractFromIfcController.class);
     }
 
-    @FXML
-    private void handleExtractFromJsonAction(final ActionEvent event) {
-        stateService.getViewState().switchCenterPane(ExtractFromJsonController.class);
-    }
-
     /**
      * Handle action related to "Settings" menu item.
      *

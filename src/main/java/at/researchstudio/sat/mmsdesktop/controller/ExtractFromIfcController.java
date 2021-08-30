@@ -5,7 +5,7 @@ import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
-import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
+import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import com.jfoenix.controls.*;
 import java.io.File;
@@ -143,7 +143,7 @@ public class ExtractFromIfcController implements Initializable {
         fileChooser = new FileChooser();
         fileChooser
                 .getExtensionFilters()
-                .addAll(new FileChooser.ExtensionFilter("IFC Files", "*.ifc"));
+                .addAll(new FileChooser.ExtensionFilter("JSON/IFC Files", "*.ifc", "*.json"));
 
         saveFileChooser = new FileChooser();
         saveFileChooser.setInitialFileName("extracted-features.json");
@@ -199,7 +199,8 @@ public class ExtractFromIfcController implements Initializable {
         try {
             stateService
                     .getExtractState()
-                    .setSelectedIfcFiles(FileUtils.getIfcFilesFromDirectory(selectedDirectory));
+                    .setSelectedIfcFiles(
+                            FileUtils.getValidExtractionFilesFromDirectory(selectedDirectory));
         } catch (FileNotFoundException | NotDirectoryException e) {
             logger.warn("No Valid Directory selected");
         }
@@ -324,7 +325,7 @@ public class ExtractFromIfcController implements Initializable {
         new Thread(task).start();
     }
 
-    public ObservableList<IfcFileWrapper> getSelectedIfcFiles() {
+    public ObservableList<FileWrapper> getSelectedIfcFiles() {
         return stateService.getExtractState().getSelectedIfcFiles();
     }
 }

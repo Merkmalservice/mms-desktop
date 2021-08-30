@@ -3,6 +3,7 @@ package at.researchstudio.sat.mmsdesktop.util;
 import java.io.File;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,14 @@ public class FileWrapper {
 
     public String getPath() {
         return path;
+    }
+
+    public String getFileType() {
+        if (this instanceof IfcFileWrapper) {
+            return ((IfcFileWrapper) this).getIfcVersion().toString();
+        } else {
+            return FilenameUtils.getExtension(file.getAbsolutePath());
+        }
     }
 
     @Override

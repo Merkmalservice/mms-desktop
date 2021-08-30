@@ -39,43 +39,8 @@ import org.springframework.util.StopWatch;
 public class PropertyExtractor {
     private static final boolean USE_NEWEXTRACTION = false;
 
-    public static Task<ExtractResult> generateJsonFilesToJsonTask(
-            List<FileWrapper> jsonFiles, final ResourceBundle resourceBundle) {
-        return new Task<>() {
-            @Override
-            protected ExtractResult call() throws Exception {
-                StringBuilder logOutput = new StringBuilder();
-                List<Feature> extractedFeatures = new ArrayList<>();
-
-                final int max = jsonFiles.size();
-
-                updateTitle(
-                        MessageUtils.getKeyWithParameters(
-                                resourceBundle, "label.extract.process.start"));
-
-                for (FileWrapper jsonFile : jsonFiles) {
-                    int i = 0;
-                    extractedFeatures.addAll(
-                            at.researchstudio.sat.merkmalservice.utils.Utils.readFromJson(
-                                    jsonFile.getFile()));
-                    logOutput
-                            .append("Reading ")
-                            .append(++i)
-                            .append("/")
-                            .append(jsonFiles.size())
-                            .append(" Files to Lines")
-                            .append(System.lineSeparator());
-                    updateMessage(logOutput.toString());
-                    updateProgress(i, max);
-                }
-
-                return new ExtractResult(extractedFeatures, logOutput.toString());
-            }
-        };
-    }
-
     public static Task<ExtractResult> generateIfcFilesToJsonTask(
-            List<IfcFileWrapper> ifcFiles, final ResourceBundle resourceBundle) {
+            List<FileWrapper> ifcFiles, final ResourceBundle resourceBundle) {
         return new Task<>() {
             @Override
             public ExtractResult call() {
@@ -99,102 +64,123 @@ public class PropertyExtractor {
                     updateTitle(
                             MessageUtils.getKeyWithParameters(
                                     resourceBundle, "label.extract.process.start"));
-                    for (IfcFileWrapper ifcFile : ifcFiles) {
+                    for (FileWrapper ifcFile : ifcFiles) {
                         try {
-                            StopWatch stopWatch = new StopWatch();
-                            stopWatch.start();
-                            logOutput
-                                    .append("Reading ")
-                                    .append(i + 1)
-                                    .append("/")
-                                    .append(ifcFiles.size())
-                                    .append(" Files to Lines")
-                                    .append(System.lineSeparator());
-                            updateMessage(logOutput.toString());
-                            int sumHashes = 0;
-                            Set<IfcProperty> ifcProperties = new HashSet<>();
-                            Set<IfcSIUnit> projectUnits = new HashSet<>();
-                            try (LineIterator it =
-                                    FileUtils.lineIterator(
-                                            ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
-                                while (it.hasNext()) {
-                                    String line = it.nextLine();
-                                    sumHashes += line.hashCode();
-                                    // do something with line
-                                    if (line.contains("IFCPROPERTYSINGLEVALUE")) {
-                                        Matcher matcher = propertyExtractPattern.matcher(line);
-                                        if (matcher.find()) {
-                                            String name = StringUtils.trim(matcher.group("name"));
-                                            String type = StringUtils.trim(matcher.group("type"));
-                                            String value = StringUtils.trim(matcher.group("value"));
-                                            ifcProperties.add(new IfcProperty(name, type));
-                                        } else {
-                                            logOutput
-                                                    .append(
-                                                            "WARN: Could not extract IFCPROPERTYSINGLEVALUE from: ")
-                                                    .append(ifcFile.getPath())
-                                                    .append(" Line: ")
-                                                    .append(line)
-                                                    .append(System.lineSeparator());
-                                        }
-                                    } else if (line.contains("IFCSIUNIT")) {
-                                        Matcher matcher = unitExtractPattern.matcher(line);
-                                        if (matcher.find()) {
-                                            String lineNumber = "TODO"; // TODO Extract linenumber
-                                            String type = StringUtils.trim(matcher.group("type"));
-                                            String measure =
-                                                    StringUtils.trim(matcher.group("measure"));
-                                            String prefix =
-                                                    ""; // TODO: ADD PREFIX EXTRACTION FOR IFC FILE
-                                            boolean projectDefault =
-                                                    false; // TODO: FIGURE OUT PROJECTDEFAULT
-                                            // PARSER
-                                            projectUnits.add(
-                                                    new IfcSIUnit(
-                                                            lineNumber,
-                                                            type,
-                                                            measure,
-                                                            prefix,
-                                                            projectDefault));
-                                        } else {
-                                            logOutput
-                                                    .append(
-                                                            "WARN: Could not extract IFCSIUNIT from: ")
-                                                    .append(ifcFile.getPath())
-                                                    .append(" Line: ")
-                                                    .append(line)
-                                                    .append(System.lineSeparator());
+                            if (ifcFile instanceof IfcFileWrapper) {
+                                StopWatch stopWatch = new StopWatch();
+                                stopWatch.start();
+                                logOutput
+                                        .append("Reading ")
+                                        .append(i + 1)
+                                        .append("/")
+                                        .append(ifcFiles.size())
+                                        .append(" Files to Lines")
+                                        .append(System.lineSeparator());
+                                updateMessage(logOutput.toString());
+                                int sumHashes = 0;
+                                Set<IfcProperty> ifcProperties = new HashSet<>();
+                                Set<IfcSIUnit> projectUnits = new HashSet<>();
+                                try (LineIterator it =
+                                        FileUtils.lineIterator(
+                                                ifcFile.getFile(),
+                                                StandardCharsets.UTF_8.toString())) {
+                                    while (it.hasNext()) {
+                                        String line = it.nextLine();
+                                        sumHashes += line.hashCode();
+                                        // do something with line
+                                        if (line.contains("IFCPROPERTYSINGLEVALUE")) {
+                                            Matcher matcher = propertyExtractPattern.matcher(line);
+                                            if (matcher.find()) {
+                                                String name =
+                                                        StringUtils.trim(matcher.group("name"));
+                                                String type =
+                                                        StringUtils.trim(matcher.group("type"));
+                                                String value =
+                                                        StringUtils.trim(matcher.group("value"));
+                                                ifcProperties.add(new IfcProperty(name, type));
+                                            } else {
+                                                logOutput
+                                                        .append(
+                                                                "WARN: Could not extract IFCPROPERTYSINGLEVALUE from: ")
+                                                        .append(ifcFile.getPath())
+                                                        .append(" Line: ")
+                                                        .append(line)
+                                                        .append(System.lineSeparator());
+                                            }
+                                        } else if (line.contains("IFCSIUNIT")) {
+                                            Matcher matcher = unitExtractPattern.matcher(line);
+                                            if (matcher.find()) {
+                                                String lineNumber =
+                                                        "TODO"; // TODO Extract linenumber
+                                                String type =
+                                                        StringUtils.trim(matcher.group("type"));
+                                                String measure =
+                                                        StringUtils.trim(matcher.group("measure"));
+                                                String prefix =
+                                                        ""; // TODO: ADD PREFIX EXTRACTION FOR IFC
+                                                // FILE
+                                                boolean projectDefault =
+                                                        false; // TODO: FIGURE OUT PROJECTDEFAULT
+                                                // PARSER
+                                                projectUnits.add(
+                                                        new IfcSIUnit(
+                                                                lineNumber,
+                                                                type,
+                                                                measure,
+                                                                prefix,
+                                                                projectDefault));
+                                            } else {
+                                                logOutput
+                                                        .append(
+                                                                "WARN: Could not extract IFCSIUNIT from: ")
+                                                        .append(ifcFile.getPath())
+                                                        .append(" Line: ")
+                                                        .append(line)
+                                                        .append(System.lineSeparator());
+                                            }
                                         }
                                     }
                                 }
+                                Map<IfcUnitType, List<IfcUnit>> projectUnitsMap =
+                                        projectUnits.stream()
+                                                .collect(Collectors.groupingBy(IfcUnit::getType));
+                                logOutput
+                                        .append("extractedIfcProperties: ")
+                                        .append(ifcProperties.size())
+                                        .append(System.lineSeparator());
+                                Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap =
+                                        extractPropertiesFromData(ifcProperties, projectUnitsMap);
+                                stopWatch.stop();
+                                logOutput
+                                        .append(sumHashes)
+                                        .append(System.lineSeparator())
+                                        .append(stopWatch.getTotalTimeSeconds())
+                                        .append(System.lineSeparator())
+                                        .append(stopWatch.prettyPrint())
+                                        .append(System.lineSeparator());
+                                updateMessage(logOutput.toString());
+                                propertyData.add(extractedPropertyMap);
+                                logOutput
+                                        .append("Reading ")
+                                        .append(++i)
+                                        .append("/")
+                                        .append(ifcFiles.size())
+                                        .append(" Files to Lines finished")
+                                        .append(System.lineSeparator());
+                                updateMessage(logOutput.toString());
+                            } else {
+                                extractedFeatures.addAll(
+                                        at.researchstudio.sat.merkmalservice.utils.Utils
+                                                .readFromJson(ifcFile.getFile()));
+                                logOutput
+                                        .append("Reading ")
+                                        .append(++i)
+                                        .append("/")
+                                        .append(ifcFiles.size())
+                                        .append(" Files to Features")
+                                        .append(System.lineSeparator());
+                                updateMessage(logOutput.toString());
                             }
-                            Map<IfcUnitType, List<IfcUnit>> projectUnitsMap =
-                                    projectUnits.stream()
-                                            .collect(Collectors.groupingBy(IfcUnit::getType));
-                            logOutput
-                                    .append("extractedIfcProperties: ")
-                                    .append(ifcProperties.size())
-                                    .append(System.lineSeparator());
-                            Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap =
-                                    extractPropertiesFromData(ifcProperties, projectUnitsMap);
-                            stopWatch.stop();
-                            logOutput
-                                    .append(sumHashes)
-                                    .append(System.lineSeparator())
-                                    .append(stopWatch.getTotalTimeSeconds())
-                                    .append(System.lineSeparator())
-                                    .append(stopWatch.prettyPrint())
-                                    .append(System.lineSeparator());
-                            updateMessage(logOutput.toString());
-                            propertyData.add(extractedPropertyMap);
-                            logOutput
-                                    .append("Reading ")
-                                    .append(++i)
-                                    .append("/")
-                                    .append(ifcFiles.size())
-                                    .append(" Files to Lines finished")
-                                    .append(System.lineSeparator());
-                            updateMessage(logOutput.toString());
                         } catch (Exception e) {
                             logOutput
                                     .append("Can't convert file: ")
@@ -282,94 +268,123 @@ public class PropertyExtractor {
                     updateTitle(
                             MessageUtils.getKeyWithParameters(
                                     resourceBundle, "label.extract.process.start"));
-                    for (IfcFileWrapper ifcFile : ifcFiles) {
+                    for (FileWrapper ifcFile : ifcFiles) {
                         try {
-                            List<Model> updatedList = new ArrayList<>();
-                            if (!models.isEmpty()
-                                    && !models.get(ifcFile.getIfcVersion()).isEmpty()) {
-                                updatedList.addAll(models.get(ifcFile.getIfcVersion()));
+                            if (ifcFile instanceof IfcFileWrapper) {
+                                List<Model> updatedList = new ArrayList<>();
+                                if (!models.isEmpty()
+                                        && !models.get(((IfcFileWrapper) ifcFile).getIfcVersion())
+                                                .isEmpty()) {
+                                    updatedList.addAll(
+                                            models.get(((IfcFileWrapper) ifcFile).getIfcVersion()));
+                                }
+                                updatedList.add(
+                                        IFC2ModelConverter.readFromFile(
+                                                ifcFile.getFile(),
+                                                new StatefulTaskProgressListener() {
+                                                    @Override
+                                                    public void doNotifyProgress(
+                                                            String task,
+                                                            String message,
+                                                            float progress) {
+                                                        Set<String> taskNames = getTaskNames();
+                                                        double cumulativeProgress =
+                                                                taskNames.stream()
+                                                                        .map(this::getTaskProgress)
+                                                                        .filter(
+                                                                                p ->
+                                                                                        !p
+                                                                                                .isFinished())
+                                                                        .mapToDouble(
+                                                                                TaskProgress
+                                                                                        ::getLevel)
+                                                                        .sum();
+                                                        long taskcount =
+                                                                taskNames.stream()
+                                                                        .map(this::getTaskProgress)
+                                                                        .filter(
+                                                                                p ->
+                                                                                        !p
+                                                                                                .isFinished())
+                                                                        .filter(
+                                                                                p ->
+                                                                                        p.getLevel()
+                                                                                                > 0)
+                                                                        .count();
+                                                        double progressToDisplay =
+                                                                cumulativeProgress
+                                                                        / (double) taskcount;
+
+                                                        String cumulativeMessage =
+                                                                taskNames.stream()
+                                                                        .map(this::getTaskProgress)
+                                                                        .sorted(
+                                                                                Comparator
+                                                                                        .comparingLong(
+                                                                                                TaskProgress
+                                                                                                        ::getFirstMessageTimestamp))
+                                                                        .map(
+                                                                                this
+                                                                                        ::makeProgressMessage)
+                                                                        .collect(joining("\n"));
+                                                        updateMessage(cumulativeMessage);
+                                                        updateProgress(progressToDisplay, 1);
+                                                    }
+
+                                                    private String makeProgressMessage(
+                                                            TaskProgress taskProgress) {
+                                                        if (taskProgress.isFinished()) {
+                                                            return String.format(
+                                                                    "%s: finished",
+                                                                    taskProgress.getTask());
+                                                        }
+                                                        if (taskProgress.getLevel() > 0) {
+                                                            return String.format(
+                                                                    "%s: %s (%.0f%%)",
+                                                                    taskProgress.getTask(),
+                                                                    taskProgress.getMessage(),
+                                                                    taskProgress.getLevel() * 100);
+                                                        } else {
+                                                            return String.format(
+                                                                    "%s: %s",
+                                                                    taskProgress.getTask(),
+                                                                    taskProgress.getMessage());
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void doNotifyFinished(String s) {
+                                                        // ignore
+                                                    }
+
+                                                    @Override
+                                                    public void doNotifyFailed(String task) {
+                                                        // ignore
+                                                    }
+                                                }));
+                                hdtDataCount++;
+                                models.put(((IfcFileWrapper) ifcFile).getIfcVersion(), updatedList);
+                                logOutput
+                                        .append("Converted ")
+                                        .append(++i)
+                                        .append("/")
+                                        .append(ifcFiles.size())
+                                        .append(" Files to HDT")
+                                        .append(System.lineSeparator());
+                                updateMessage(logOutput.toString());
+                            } else {
+                                extractedFeatures.addAll(
+                                        at.researchstudio.sat.merkmalservice.utils.Utils
+                                                .readFromJson(ifcFile.getFile()));
+                                logOutput
+                                        .append("Reading ")
+                                        .append(++i)
+                                        .append("/")
+                                        .append(ifcFiles.size())
+                                        .append(" Files to Features")
+                                        .append(System.lineSeparator());
+                                updateMessage(logOutput.toString());
                             }
-                            updatedList.add(
-                                    IFC2ModelConverter.readFromFile(
-                                            ifcFile.getFile(),
-                                            new StatefulTaskProgressListener() {
-                                                @Override
-                                                public void doNotifyProgress(
-                                                        String task,
-                                                        String message,
-                                                        float progress) {
-                                                    Set<String> taskNames = getTaskNames();
-                                                    double cumulativeProgress =
-                                                            taskNames.stream()
-                                                                    .map(this::getTaskProgress)
-                                                                    .filter(p -> !p.isFinished())
-                                                                    .mapToDouble(
-                                                                            TaskProgress::getLevel)
-                                                                    .sum();
-                                                    long taskcount =
-                                                            taskNames.stream()
-                                                                    .map(this::getTaskProgress)
-                                                                    .filter(p -> !p.isFinished())
-                                                                    .filter(p -> p.getLevel() > 0)
-                                                                    .count();
-                                                    double progressToDisplay =
-                                                            cumulativeProgress / (double) taskcount;
-
-                                                    String cumulativeMessage =
-                                                            taskNames.stream()
-                                                                    .map(this::getTaskProgress)
-                                                                    .sorted(
-                                                                            Comparator
-                                                                                    .comparingLong(
-                                                                                            TaskProgress
-                                                                                                    ::getFirstMessageTimestamp))
-                                                                    .map(this::makeProgressMessage)
-                                                                    .collect(joining("\n"));
-                                                    updateMessage(cumulativeMessage);
-                                                    updateProgress(progressToDisplay, 1);
-                                                }
-
-                                                private String makeProgressMessage(
-                                                        TaskProgress taskProgress) {
-                                                    if (taskProgress.isFinished()) {
-                                                        return String.format(
-                                                                "%s: finished",
-                                                                taskProgress.getTask());
-                                                    }
-                                                    if (taskProgress.getLevel() > 0) {
-                                                        return String.format(
-                                                                "%s: %s (%.0f%%)",
-                                                                taskProgress.getTask(),
-                                                                taskProgress.getMessage(),
-                                                                taskProgress.getLevel() * 100);
-                                                    } else {
-                                                        return String.format(
-                                                                "%s: %s",
-                                                                taskProgress.getTask(),
-                                                                taskProgress.getMessage());
-                                                    }
-                                                }
-
-                                                @Override
-                                                public void doNotifyFinished(String s) {
-                                                    // ignore
-                                                }
-
-                                                @Override
-                                                public void doNotifyFailed(String task) {
-                                                    // ignore
-                                                }
-                                            }));
-                            hdtDataCount++;
-                            models.put(ifcFile.getIfcVersion(), updatedList);
-                            logOutput
-                                    .append("Converted ")
-                                    .append(++i)
-                                    .append("/")
-                                    .append(ifcFiles.size())
-                                    .append(" Files to HDT")
-                                    .append(System.lineSeparator());
-                            updateMessage(logOutput.toString());
                         } catch (Exception e) {
                             logOutput
                                     .append("Can't convert file: ")

@@ -30,6 +30,20 @@ public class FileUtils {
     }
 
     /**
+     * Extracts all valid Files from a given Directory (currently ifc and json are Valid Extraction
+     * files)
+     *
+     * @param directory specified Directory
+     * @return All IFC/Json-Files within the given directory
+     * @throws FileNotFoundException when directory is null or does not exist
+     * @throws NotDirectoryException when directory is not a directory
+     */
+    public static List<File> getValidExtractionFilesFromDirectory(File directory)
+            throws FileNotFoundException, NotDirectoryException {
+        return getFilesFromDirectory(directory, ".ifc", ".json");
+    }
+
+    /**
      * Extracts all JSON Files from a given Directory
      *
      * @param directory specified Directory
@@ -51,7 +65,7 @@ public class FileUtils {
      * @throws FileNotFoundException when directory is null or does not exist
      * @throws NotDirectoryException when directory is not a directory
      */
-    private static List<File> getFilesFromDirectory(File directory, String suffix)
+    private static List<File> getFilesFromDirectory(File directory, String... suffix)
             throws FileNotFoundException, NotDirectoryException {
         if (directory == null) {
             throw new FileNotFoundException("Directory does not exist");

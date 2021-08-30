@@ -21,6 +21,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.springframework.stereotype.Component;
 
@@ -30,11 +31,8 @@ public class ExtractState {
     private final BooleanProperty showExtractProcess;
     private final BooleanProperty showExtracted;
 
-    private final ObservableList<IfcFileWrapper> selectedIfcFiles;
+    private final ObservableList<FileWrapper> selectedIfcFiles;
     private final BooleanProperty selectedIfcFilesPresent;
-
-    private final ObservableList<FileWrapper> selectedJsonFiles;
-    private final BooleanProperty selectedJsonFilesPresent;
 
     private final SimpleStringProperty extractLogOutput;
     private final SimpleStringProperty extractJsonOutput;
@@ -48,9 +46,7 @@ public class ExtractState {
         this.showExtractProcess = new SimpleBooleanProperty(false);
         this.showExtracted = new SimpleBooleanProperty(false);
         this.selectedIfcFiles = FXCollections.observableArrayList();
-        this.selectedJsonFiles = FXCollections.observableArrayList();
         this.selectedIfcFilesPresent = new SimpleBooleanProperty(false);
-        this.selectedJsonFilesPresent = new SimpleBooleanProperty(false);
         this.extractLogOutput = new SimpleStringProperty("");
         this.extractJsonOutput = new SimpleStringProperty("[]");
         this.extractedFeatures = FXCollections.observableArrayList();
@@ -60,10 +56,6 @@ public class ExtractState {
 
     public BooleanProperty selectedIfcFilesPresentProperty() {
         return selectedIfcFilesPresent;
-    }
-
-    public BooleanProperty selectedJsonFilesPresentProperty() {
-        return selectedJsonFilesPresent;
     }
 
     public BooleanProperty showInitialProperty() {
@@ -78,31 +70,27 @@ public class ExtractState {
         return showExtracted;
     }
 
-    public ObservableList<IfcFileWrapper> getSelectedIfcFiles() {
+    public ObservableList<FileWrapper> getSelectedIfcFiles() {
         return selectedIfcFiles;
-    }
-
-    public ObservableList<FileWrapper> getSelectedJsonFiles() {
-        return selectedJsonFiles;
     }
 
     public void setSelectedIfcFiles(List<File> selectedFiles) {
         if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
-            Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<>(selectedIfcFiles);
+            Set<FileWrapper> selectedIfcFileSet = new HashSet<>(selectedIfcFiles);
             selectedIfcFileSet.addAll(
-                    selectedFiles.stream().map(IfcFileWrapper::new).collect(Collectors.toList()));
+                    selectedFiles.stream()
+                            .map(
+                                    f -> {
+                                        if (FilenameUtils.getExtension(f.getAbsolutePath())
+                                                .equals("ifc")) {
+                                            return new IfcFileWrapper(f);
+                                        } else {
+                                            return new FileWrapper(f);
+                                        }
+                                    })
+                            .collect(Collectors.toList()));
             selectedIfcFiles.setAll(selectedIfcFileSet);
             selectedIfcFilesPresent.set(true);
-        }
-    }
-
-    public void setSelectedJsonFiles(List<File> selectedFiles) {
-        if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
-            Set<FileWrapper> selectedJsonFileSet = new HashSet<>(selectedJsonFiles);
-            selectedJsonFileSet.addAll(
-                    selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
-            selectedJsonFiles.setAll(selectedJsonFileSet);
-            selectedJsonFilesPresent.set(true);
         }
     }
 
@@ -127,11 +115,6 @@ public class ExtractState {
     public void resetSelectedIfcFiles() {
         selectedIfcFiles.clear();
         selectedIfcFilesPresent.set(false);
-    }
-
-    public void resetSelectedJsonFiles() {
-        selectedJsonFiles.clear();
-        selectedJsonFilesPresent.set(false);
     }
 
     public void setExtractResult(Task<ExtractResult> task) {
