@@ -1,9 +1,13 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
+import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXTextArea;
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -11,8 +15,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import net.rgielen.fxweaver.core.FxmlView;
+import org.fxmisc.richtext.StyleClassedTextArea;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.swing.text.html.ListView;
 
 @Component
 @FxmlView("convert.fxml")
@@ -25,7 +32,7 @@ public class ConvertController implements Initializable {
     @FXML private BorderPane parentPane;
     @FXML private HBox topPickFile;
     @FXML private HBox topInputFile;
-    @FXML private JFXTextArea centerInputFileContent;
+    @FXML private JFXListView<String> centerInputFileContent;
 
     @Autowired
     public ConvertController(ReactiveStateService stateService) {
@@ -45,9 +52,9 @@ public class ConvertController implements Initializable {
                 .managedProperty()
                 .bind(stateService.getConvertState().showInputFileProperty());
 
-        centerInputFileContent
+        /*centerInputFileContent
                 .textProperty()
-                .bind(stateService.getConvertState().inputFileContentProperty());
+                .bind(stateService.getConvertState().inputFileContentProperty()); */
 
         fileChooser = new FileChooser();
         fileChooser
@@ -66,5 +73,9 @@ public class ConvertController implements Initializable {
     @FXML
     public void handleResetFileAction(ActionEvent actionEvent) {
         stateService.getConvertState().resetSelectedConvertFile();
+    }
+
+    public ObservableList<String> getFileContentList() {
+        return stateService.getConvertState().getInputFileContent();
     }
 }

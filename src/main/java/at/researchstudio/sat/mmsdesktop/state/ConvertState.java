@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.state;
 
+import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.springframework.stereotype.Component;
@@ -16,12 +19,12 @@ public class ConvertState {
     private final BooleanProperty showInitial;
     private final BooleanProperty showInputFile;
 
-    private final SimpleStringProperty inputFileContent;
+    private final ObservableList<String> inputFileContent;
 
     public ConvertState() {
         this.showInitial = new SimpleBooleanProperty(true);
         this.showInputFile = new SimpleBooleanProperty(false);
-        this.inputFileContent = new SimpleStringProperty("");
+        this.inputFileContent = FXCollections.observableArrayList();
     }
 
     public void setSelectedConvertFile(File file) {
@@ -33,15 +36,15 @@ public class ConvertState {
                 FileUtils.lineIterator(ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
             StringBuilder sb = new StringBuilder();
             while (it.hasNext()) {
-                sb.append(it.nextLine()).append(System.lineSeparator());
+                this.inputFileContent.add(it.nextLine());
             }
-            this.inputFileContent.setValue(sb.toString());
 
             showInitial.setValue(false);
             showInputFile.setValue(true);
         } catch (IOException e) {
             // TODO: ERROR HANDLING
-            this.inputFileContent.setValue("COULD NOT READ FILE");
+            this.inputFileContent.clear();
+            this.inputFileContent.add("ERROR: TODO");
             showInitial.setValue(false);
             showInputFile.setValue(true);
         }
@@ -49,7 +52,7 @@ public class ConvertState {
 
     public void resetSelectedConvertFile() {
         // TODO: ONLY DO THIS WITH A DIALOG
-        this.inputFileContent.setValue("");
+        this.inputFileContent.clear();
         showInputFile.setValue(false);
         showInitial.setValue(true);
     }
@@ -62,7 +65,7 @@ public class ConvertState {
         return showInputFile;
     }
 
-    public SimpleStringProperty inputFileContentProperty() {
+    public ObservableList<String> getInputFileContent() {
         return inputFileContent;
     }
 
