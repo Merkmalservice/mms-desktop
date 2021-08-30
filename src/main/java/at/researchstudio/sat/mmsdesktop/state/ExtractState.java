@@ -3,6 +3,7 @@ package at.researchstudio.sat.mmsdesktop.state;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.ExcludeDescriptionStrategy;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
+import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import com.google.gson.Gson;
@@ -21,7 +22,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.springframework.stereotype.Component;
 
@@ -31,8 +31,8 @@ public class ExtractState {
     private final BooleanProperty showExtractProcess;
     private final BooleanProperty showExtracted;
 
-    private final ObservableList<FileWrapper> selectedIfcFiles;
-    private final BooleanProperty selectedIfcFilesPresent;
+    private final ObservableList<FileWrapper> selectedExtractFiles;
+    private final BooleanProperty selectedExtractFilesPresent;
 
     private final SimpleStringProperty extractLogOutput;
     private final SimpleStringProperty extractJsonOutput;
@@ -45,8 +45,8 @@ public class ExtractState {
         this.showInitial = new SimpleBooleanProperty(true);
         this.showExtractProcess = new SimpleBooleanProperty(false);
         this.showExtracted = new SimpleBooleanProperty(false);
-        this.selectedIfcFiles = FXCollections.observableArrayList();
-        this.selectedIfcFilesPresent = new SimpleBooleanProperty(false);
+        this.selectedExtractFiles = FXCollections.observableArrayList();
+        this.selectedExtractFilesPresent = new SimpleBooleanProperty(false);
         this.extractLogOutput = new SimpleStringProperty("");
         this.extractJsonOutput = new SimpleStringProperty("[]");
         this.extractedFeatures = FXCollections.observableArrayList();
@@ -54,8 +54,8 @@ public class ExtractState {
         this.sortedExtractedFeatures = new SortedList<>(filteredExtractedFeatures);
     }
 
-    public BooleanProperty selectedIfcFilesPresentProperty() {
-        return selectedIfcFilesPresent;
+    public BooleanProperty selectedExtractFilesPresentProperty() {
+        return selectedExtractFilesPresent;
     }
 
     public BooleanProperty showInitialProperty() {
@@ -70,27 +70,23 @@ public class ExtractState {
         return showExtracted;
     }
 
-    public ObservableList<FileWrapper> getSelectedIfcFiles() {
-        return selectedIfcFiles;
+    public ObservableList<FileWrapper> getSelectedExtractFiles() {
+        return selectedExtractFiles;
     }
 
-    public void setSelectedIfcFiles(List<File> selectedFiles) {
+    public void setSelectedExtractFiles(List<File> selectedFiles) {
         if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
-            Set<FileWrapper> selectedIfcFileSet = new HashSet<>(selectedIfcFiles);
-            selectedIfcFileSet.addAll(
+            Set<FileWrapper> selectedExtractFileSet = new HashSet<>(selectedExtractFiles);
+            selectedExtractFileSet.addAll(
                     selectedFiles.stream()
                             .map(
-                                    f -> {
-                                        if (FilenameUtils.getExtension(f.getAbsolutePath())
-                                                .equals("ifc")) {
-                                            return new IfcFileWrapper(f);
-                                        } else {
-                                            return new FileWrapper(f);
-                                        }
-                                    })
+                                    f ->
+                                            FileUtils.isIfcFile(f)
+                                                    ? new IfcFileWrapper(f)
+                                                    : new FileWrapper(f))
                             .collect(Collectors.toList()));
-            selectedIfcFiles.setAll(selectedIfcFileSet);
-            selectedIfcFilesPresent.set(true);
+            selectedExtractFiles.setAll(selectedExtractFileSet);
+            selectedExtractFilesPresent.set(true);
         }
     }
 
@@ -112,9 +108,9 @@ public class ExtractState {
         showExtractProcess.setValue(true);
     }
 
-    public void resetSelectedIfcFiles() {
-        selectedIfcFiles.clear();
-        selectedIfcFilesPresent.set(false);
+    public void resetSelectedExtractFiles() {
+        selectedExtractFiles.clear();
+        selectedExtractFilesPresent.set(false);
     }
 
     public void setExtractResult(Task<ExtractResult> task) {

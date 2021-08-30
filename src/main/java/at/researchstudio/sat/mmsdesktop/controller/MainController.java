@@ -155,7 +155,7 @@ public class MainController implements Initializable {
 
     @FXML
     private void handleExtractFromIfcAction(final ActionEvent event) {
-        stateService.getViewState().switchCenterPane(ExtractFromIfcController.class);
+        stateService.getViewState().switchCenterPane(ExtractController.class);
     }
 
     /**

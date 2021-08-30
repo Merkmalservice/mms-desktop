@@ -8,6 +8,7 @@ import java.nio.file.NotDirectoryException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,16 @@ public class FileUtils {
     public static List<File> getIfcFilesFromDirectory(File directory)
             throws FileNotFoundException, NotDirectoryException {
         return getFilesFromDirectory(directory, ".ifc");
+    }
+
+    /**
+     * Returns true if given file has ifc extension
+     *
+     * @param file
+     * @return true if file is an ifc file, false if it isnt
+     */
+    public static boolean isIfcFile(File file) {
+        return FilenameUtils.getExtension(file.getAbsolutePath()).equals("ifc");
     }
 
     /**

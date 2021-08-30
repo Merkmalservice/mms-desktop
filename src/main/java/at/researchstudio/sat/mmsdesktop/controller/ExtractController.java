@@ -37,8 +37,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-@FxmlView("extractifc.fxml")
-public class ExtractFromIfcController implements Initializable {
+@FxmlView("extract.fxml")
+public class ExtractController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ReactiveStateService stateService;
@@ -70,7 +70,7 @@ public class ExtractFromIfcController implements Initializable {
     private ResourceBundle resourceBundle;
 
     @Autowired
-    public ExtractFromIfcController(ReactiveStateService stateService) {
+    public ExtractController(ReactiveStateService stateService) {
         this.stateService = stateService;
     }
 
@@ -113,10 +113,10 @@ public class ExtractFromIfcController implements Initializable {
 
         topPickFilesClearList
                 .disableProperty()
-                .bind(stateService.getExtractState().selectedIfcFilesPresentProperty().not());
+                .bind(stateService.getExtractState().selectedExtractFilesPresentProperty().not());
         bottomPickFilesExtract
                 .disableProperty()
-                .bind(stateService.getExtractState().selectedIfcFilesPresentProperty().not());
+                .bind(stateService.getExtractState().selectedExtractFilesPresentProperty().not());
 
         centerResultLog
                 .textProperty()
@@ -199,7 +199,7 @@ public class ExtractFromIfcController implements Initializable {
         try {
             stateService
                     .getExtractState()
-                    .setSelectedIfcFiles(
+                    .setSelectedExtractFiles(
                             FileUtils.getValidExtractionFilesFromDirectory(selectedDirectory));
         } catch (FileNotFoundException | NotDirectoryException e) {
             logger.warn("No Valid Directory selected");
@@ -210,7 +210,7 @@ public class ExtractFromIfcController implements Initializable {
     public void handlePickFileAction(ActionEvent actionEvent) {
         stateService
                 .getExtractState()
-                .setSelectedIfcFiles(
+                .setSelectedExtractFiles(
                         fileChooser.showOpenMultipleDialog(parentPane.getScene().getWindow()));
     }
 
@@ -279,7 +279,7 @@ public class ExtractFromIfcController implements Initializable {
 
     @FXML
     public void handleClearListAction(ActionEvent actionEvent) {
-        stateService.getExtractState().resetSelectedIfcFiles();
+        stateService.getExtractState().resetSelectedExtractFiles();
     }
 
     @FXML
@@ -303,7 +303,7 @@ public class ExtractFromIfcController implements Initializable {
 
         Task<ExtractResult> task =
                 PropertyExtractor.generateIfcFilesToJsonTask(
-                        stateService.getExtractState().getSelectedIfcFiles(), resourceBundle);
+                        stateService.getExtractState().getSelectedExtractFiles(), resourceBundle);
 
         task.setOnSucceeded(
                 t -> {
@@ -325,7 +325,7 @@ public class ExtractFromIfcController implements Initializable {
         new Thread(task).start();
     }
 
-    public ObservableList<FileWrapper> getSelectedIfcFiles() {
-        return stateService.getExtractState().getSelectedIfcFiles();
+    public ObservableList<FileWrapper> getSelectedExtractFiles() {
+        return stateService.getExtractState().getSelectedExtractFiles();
     }
 }

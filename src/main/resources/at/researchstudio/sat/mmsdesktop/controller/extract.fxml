@@ -10,7 +10,7 @@
 <BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractFromIfcController">
+            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractController">
     <BorderPane.margin>
         <Insets bottom="10.0" left="25.0" right="25.0" top="10.0"/>
     </BorderPane.margin>
@@ -83,7 +83,7 @@
             <TableView fx:id="centerPickFiles" AnchorPane.topAnchor="0.0"
                        AnchorPane.rightAnchor="0.0"
                        AnchorPane.bottomAnchor="0.0"
-                       AnchorPane.leftAnchor="0.0" items="${controller.selectedIfcFiles}">
+                       AnchorPane.leftAnchor="0.0" items="${controller.selectedExtractFiles}">
                 <columns>
                     <TableColumn editable="false" prefWidth="100.0"
                                  sortType="DESCENDING" text="%label.file.name">
