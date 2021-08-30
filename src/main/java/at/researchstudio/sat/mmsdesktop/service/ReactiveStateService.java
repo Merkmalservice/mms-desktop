@@ -1,9 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.service;
 
-import at.researchstudio.sat.mmsdesktop.state.ExtractState;
-import at.researchstudio.sat.mmsdesktop.state.LoginState;
-import at.researchstudio.sat.mmsdesktop.state.SelectedFeatureState;
-import at.researchstudio.sat.mmsdesktop.state.ViewState;
+import at.researchstudio.sat.mmsdesktop.state.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +8,7 @@ import org.springframework.stereotype.Component;
 public class ReactiveStateService {
     private final LoginState loginState;
     private final ExtractState extractState;
+    private final ConvertState convertState;
     private final ViewState viewState;
     private final SelectedFeatureState selectedFeatureState;
 
@@ -18,11 +16,13 @@ public class ReactiveStateService {
     public ReactiveStateService(
             LoginState loginState,
             ExtractState extractState,
+            ConvertState convertState,
             ViewState viewState,
             SelectedFeatureState selectedFeatureState) {
         this.loginState = loginState;
         this.extractState = extractState;
         this.viewState = viewState;
+        this.convertState = convertState;
         this.selectedFeatureState = selectedFeatureState;
     }
 
@@ -32,6 +32,10 @@ public class ReactiveStateService {
 
     public ExtractState getExtractState() {
         return extractState;
+    }
+
+    public ConvertState getConvertState() {
+        return convertState;
     }
 
     public ViewState getViewState() {

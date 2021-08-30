@@ -5,24 +5,84 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
-<AnchorPane xmlns="http://javafx.com/javafx/16"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ConvertController"
-            prefHeight="400.0" prefWidth="600.0">
-    <Label text="%label.convert"/>
-    <JFXButton fx:id="bPickFile" disable="true" alignment="CENTER" focusTraversable="false"
-               graphicTextGap="15.0" layoutX="10.0" layoutY="10.0" prefHeight="32.0"
-               prefWidth="220.0" ripplerFill="WHITE" text="%label.select.file"
-               textFill="#c1fff9" style="-fx-background-color: #5bbad5;">
-        <padding>
-            <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
-        </padding>
-    </JFXButton>
-    <JFXButton fx:id="bPickDirectory" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
-               prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
-               text="%label.select.directory" textFill="#c1fff9" style="-fx-background-color: #5bbad5;">
-        <padding>
-            <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
-        </padding>
-    </JFXButton>
-</AnchorPane>
+
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import com.jfoenix.controls.JFXTextArea?>
+<BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/16"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ConvertController">
+    <BorderPane.margin>
+        <Insets bottom="10.0" left="25.0" right="25.0" top="10.0"/>
+    </BorderPane.margin>
+    <top>
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="10.0"/>
+            </padding>
+            <Label layoutX="14.0" layoutY="14.0" style="-fx-font-weight: bold;"
+                   text="%label.convert">
+                <font>
+                    <Font size="18.0"/>
+                </font>
+            </Label>
+            <HBox spacing="10" fx:id="topPickFile">
+                <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                           onAction="#handlePickFileAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                           text="%label.select.file"
+                           textFill="#c1fff9"
+                           HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-file-earmark"
+                                  iconSize="24"/>
+                    </graphic>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+            </HBox>
+            <HBox spacing="10" fx:id="topInputFile">
+                <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                           onAction="#handleResetFileAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                           text="%label.select.file.close"
+                           textFill="#c1fff9"
+                           HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-file-earmark"
+                                  iconSize="24"/>
+                    </graphic>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <AnchorPane>
+            <BorderPane fx:id="centerInputFile" visible="false" managed="false"
+                        AnchorPane.topAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0">
+                <center>
+                    <AnchorPane>
+                    <JFXTextArea fx:id="centerInputFileContent"
+                                 AnchorPane.topAnchor="0.0"
+                                 AnchorPane.rightAnchor="0.0"
+                                 AnchorPane.bottomAnchor="0.0"
+                                 AnchorPane.leftAnchor="0.0" editable="false"
+                                 style="-fx-background-color: white; -fx-font-family: Consolas,monaco,monospace;"/>
+                    </AnchorPane>
+                </center>
+            </BorderPane>
+        </AnchorPane>
+    </center>
+    <bottom>
+
+    </bottom>
+</BorderPane>
