@@ -9,6 +9,7 @@
 <?import javafx.scene.text.Font?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 <?import com.jfoenix.controls.JFXListView?>
+<?import com.jfoenix.controls.JFXProgressBar?>
 <BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -65,6 +66,29 @@
     </top>
     <center>
         <AnchorPane>
+            <BorderPane fx:id="centerProgress" visible="false" managed="false"
+                        AnchorPane.topAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0">
+                <center>
+                    <AnchorPane>
+                        <padding>
+                            <Insets bottom="10.0"/>
+                        </padding>
+                        <JFXProgressBar fx:id="centerProgressProgressBar" prefHeight="40.0"
+                                        prefWidth="326.0" progress="0.0"
+                                        AnchorPane.topAnchor="0.0"
+                                        AnchorPane.rightAnchor="0.0"
+                                        AnchorPane.leftAnchor="0.0"
+                        />
+                        <Label fx:id="centerProgressProgressInfo" style="-fx-text-alignment: center"
+                               AnchorPane.topAnchor="50.0"
+                               AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                               AnchorPane.leftAnchor="0.0"
+                        />
+                    </AnchorPane>
+                </center>
+            </BorderPane>
             <BorderPane fx:id="centerInputFile" visible="false" managed="false"
                         AnchorPane.topAnchor="0.0"
                         AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
