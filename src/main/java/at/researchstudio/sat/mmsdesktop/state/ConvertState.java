@@ -1,7 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.state;
 
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Objects;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -16,13 +17,15 @@ public class ConvertState {
     private final BooleanProperty showLoadProgress;
     private final BooleanProperty showInputFile;
 
-    private final ObservableList<String> inputFileContent;
+    private final ObservableList<IfcLine> inputFileContent;
+    private final HashMap<String, IfcLine> inputFileContentMap;
 
     public ConvertState() {
         this.showInitial = new SimpleBooleanProperty(true);
         this.showLoadProgress = new SimpleBooleanProperty(false);
         this.showInputFile = new SimpleBooleanProperty(false);
         this.inputFileContent = FXCollections.observableArrayList();
+        this.inputFileContentMap = new HashMap<>();
     }
 
     public void showInitialView() {
@@ -43,37 +46,10 @@ public class ConvertState {
         showInitial.setValue(false);
     }
 
-    public void setSelectedConvertFile(List<String> lines) {
-        this.inputFileContent.clear();
-        this.inputFileContent.addAll(lines);
-
-        /*IfcFileWrapper ifcFile = new IfcFileWrapper(file);
-        System.out.println("TODO: select" + ifcFile);
-
-        // TODO: ADD PROGRESS AND MOVE TO OWN TASK
-        try (LineIterator it =
-                FileUtils.lineIterator(ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
-            StringBuilder sb = new StringBuilder();
-            while (it.hasNext()) {
-                this.inputFileContent.add(it.nextLine());
-            }
-
-            showInitial.setValue(false);
-            showInputFile.setValue(true);
-        } catch (IOException e) {
-            // TODO: ERROR HANDLING
-            this.inputFileContent.clear();
-            this.inputFileContent.add("ERROR: TODO");
-            showInitial.setValue(false);
-            showInputFile.setValue(true);
-        }*/
-    }
-
     public void resetSelectedConvertFile() {
         // TODO: ONLY DO THIS WITH A DIALOG
         this.inputFileContent.clear();
-        showInputFile.setValue(false);
-        showInitial.setValue(true);
+        showInitialView();
     }
 
     public BooleanProperty showLoadProgressProperty() {
@@ -88,17 +64,19 @@ public class ConvertState {
         return showInputFile;
     }
 
-    public ObservableList<String> getInputFileContent() {
+    public ObservableList<IfcLine> getInputFileContent() {
         return inputFileContent;
     }
 
     public void setLoadResult(Task<LoadResult> task) {
+        this.inputFileContent.clear();
+        this.inputFileContentMap.clear();
+
         this.inputFileContent.setAll(task.getValue().getLines());
+        this.inputFileContentMap.putAll(task.getValue().getDataLines());
+
         if (Objects.isNull(task.getException())) {
             // TODO: ERROR HANDLING
-            //            Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-            //            this.extractLogOutput.setValue(task.getValue().getLogOutput());
-            //            this.extractJsonOutput.setValue(gson.toJson(this.extractedFeatures));
         } else {
             //
             // this.extractLogOutput.setValue(Throwables.getStackTraceAsString(task.getException()));

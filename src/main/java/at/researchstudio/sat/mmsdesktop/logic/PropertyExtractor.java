@@ -10,20 +10,15 @@ import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.*;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcVersion;
+import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.*;
 import be.ugent.progress.StatefulTaskProgressListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javafx.concurrent.Task;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.LineIterator;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -34,10 +29,9 @@ import org.apache.jena.rdf.model.Model;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.StopWatch;
 
 public class PropertyExtractor {
-    private static final boolean USE_NEWEXTRACTION = false;
+    private static final boolean USE_NEWEXTRACTION = true;
 
     public static Task<ExtractResult> generateExtractFilesToJsonTask(
             List<FileWrapper> extractFiles, final ResourceBundle resourceBundle) {
@@ -49,16 +43,6 @@ public class PropertyExtractor {
                 List<Feature> extractedFeatures = new ArrayList<>();
                 int extractedIfcProperties = 0;
                 if (USE_NEWEXTRACTION) {
-                    // NEW PROCESS
-                    final Pattern propertyExtractPattern =
-                            Pattern.compile(
-                                    "(?>#[0-9]*= IFCPROPERTYSINGLEVALUE\\(')(?<name>.*)',\\$,(?<type>[A-Z]*)\\(('?)(?<value>.*)(\\),\\$)");
-                    // <- warning might contain a . or ' at the end of the value
-                    // Pattern.compile("^#\\d+=IFCPROPERTYSINGLEVALUE\\('([^']+)',\\$,([A-Z]+)\\('?([^)']+)'?\\),\\$\\);\\s*$");
-                    final Pattern unitExtractPattern =
-                            Pattern.compile(
-                                    "(?>#[0-9]*= IFCSIUNIT\\(\\*,.)(?<type>.*).,\\$,.(?<measure>.*).\\)");
-                    // <- warning might contain whitespaces, trim needed
                     List<Map<IfcPropertyType, List<IfcProperty>>> propertyData = new ArrayList<>();
                     int i = 0;
                     updateTitle(
@@ -67,8 +51,6 @@ public class PropertyExtractor {
                     for (FileWrapper extractFile : extractFiles) {
                         try {
                             if (extractFile instanceof IfcFileWrapper) {
-                                StopWatch stopWatch = new StopWatch();
-                                stopWatch.start();
                                 logOutput
                                         .append("Reading ")
                                         .append(i + 1)
@@ -77,88 +59,139 @@ public class PropertyExtractor {
                                         .append(" Files to Lines")
                                         .append(System.lineSeparator());
                                 updateMessage(logOutput.toString());
-                                int sumHashes = 0;
-                                Set<IfcProperty> ifcProperties = new HashSet<>();
-                                Set<IfcSIUnit> projectUnits = new HashSet<>();
-                                try (LineIterator it =
-                                        FileUtils.lineIterator(
-                                                extractFile.getFile(),
-                                                StandardCharsets.UTF_8.toString())) {
-                                    while (it.hasNext()) {
-                                        String line = it.nextLine();
-                                        sumHashes += line.hashCode();
-                                        // do something with line
-                                        if (line.contains("IFCPROPERTYSINGLEVALUE")) {
-                                            Matcher matcher = propertyExtractPattern.matcher(line);
-                                            if (matcher.find()) {
-                                                String name =
-                                                        StringUtils.trim(matcher.group("name"));
-                                                String type =
-                                                        StringUtils.trim(matcher.group("type"));
-                                                String value =
-                                                        StringUtils.trim(matcher.group("value"));
-                                                ifcProperties.add(new IfcProperty(name, type));
-                                            } else {
-                                                logOutput
-                                                        .append(
-                                                                "WARN: Could not extract IFCPROPERTYSINGLEVALUE from: ")
-                                                        .append(extractFile.getPath())
-                                                        .append(" Line: ")
-                                                        .append(line)
-                                                        .append(System.lineSeparator());
-                                            }
-                                        } else if (line.contains("IFCSIUNIT")) {
-                                            Matcher matcher = unitExtractPattern.matcher(line);
-                                            if (matcher.find()) {
-                                                String lineNumber =
-                                                        "TODO"; // TODO Extract linenumber
-                                                String type =
-                                                        StringUtils.trim(matcher.group("type"));
-                                                String measure =
-                                                        StringUtils.trim(matcher.group("measure"));
-                                                String prefix =
-                                                        ""; // TODO: ADD PREFIX EXTRACTION FOR IFC
-                                                // FILE
-                                                boolean projectDefault =
-                                                        false; // TODO: FIGURE OUT PROJECTDEFAULT
-                                                // PARSER
-                                                projectUnits.add(
-                                                        new IfcSIUnit(
-                                                                lineNumber,
-                                                                type,
-                                                                measure,
-                                                                prefix,
-                                                                projectDefault));
-                                            } else {
-                                                logOutput
-                                                        .append(
-                                                                "WARN: Could not extract IFCSIUNIT from: ")
-                                                        .append(extractFile.getPath())
-                                                        .append(" Line: ")
-                                                        .append(line)
-                                                        .append(System.lineSeparator());
+                                Set<IfcUnit> projectUnits = new HashSet<>();
+
+                                List<IfcLine> lines =
+                                        IfcFileReader.readIfcFile((IfcFileWrapper) extractFile);
+
+                                Map<Class<? extends IfcLine>, List<IfcLine>> ifcLinesGrouped =
+                                        lines.parallelStream()
+                                                .collect(Collectors.groupingBy(IfcLine::getClass));
+
+                                String projectUnitLineId = null;
+
+                                for (IfcLine line :
+                                        ifcLinesGrouped.getOrDefault(
+                                                IfcProjectLine.class, Collections.emptyList())) {
+                                    IfcProjectLine projectLine = (IfcProjectLine) line;
+                                    projectUnitLineId = projectLine.getUnitAssignmentId();
+                                }
+
+                                List<String> defaultProjectUnitIds = Collections.emptyList();
+
+                                for (IfcLine line :
+                                        ifcLinesGrouped.getOrDefault(
+                                                IfcUnitAssignmentLine.class,
+                                                Collections.emptyList())) {
+                                    if (line.getId().equals(projectUnitLineId)) {
+                                        defaultProjectUnitIds =
+                                                ((IfcUnitAssignmentLine) line).getUnitIds();
+                                    }
+                                }
+
+                                for (IfcLine line :
+                                        ifcLinesGrouped.getOrDefault(
+                                                IfcSIUnitLine.class, Collections.emptyList())) {
+                                    IfcSIUnitLine unitLine = (IfcSIUnitLine) line;
+                                    projectUnits.add(
+                                            new IfcSIUnit(
+                                                    unitLine.getId(),
+                                                    unitLine.getType(),
+                                                    unitLine.getMeasure(),
+                                                    unitLine.getPrefix(),
+                                                    defaultProjectUnitIds.contains(
+                                                            unitLine.getId())));
+                                }
+
+                                for (IfcLine line :
+                                        ifcLinesGrouped.getOrDefault(
+                                                IfcDerivedUnitLine.class,
+                                                Collections.emptyList())) {
+                                    IfcDerivedUnitLine unitLine = (IfcDerivedUnitLine) line;
+                                    IfcDerivedUnit tempDerivedUnit =
+                                            new IfcDerivedUnit(
+                                                    unitLine.getId(),
+                                                    unitLine.getType(),
+                                                    unitLine.getName(),
+                                                    defaultProjectUnitIds.contains(
+                                                            unitLine.getId()));
+                                    List<IfcLine> relevantDerivedUnitElements =
+                                            ifcLinesGrouped
+                                                    .getOrDefault(
+                                                            IfcDerivedUnitElementLine.class,
+                                                            Collections.emptyList())
+                                                    .stream()
+                                                    .filter(
+                                                            l ->
+                                                                    unitLine.getUnitElementIds()
+                                                                            .contains(l.getId()))
+                                                    .collect(Collectors.toList());
+
+                                    for (IfcLine l : relevantDerivedUnitElements) {
+                                        IfcDerivedUnitElementLine derivedUnitElementLine =
+                                                (IfcDerivedUnitElementLine) l;
+                                        for (IfcUnit unit : projectUnits) {
+                                            if (derivedUnitElementLine
+                                                            .getUnitId()
+                                                            .equals(unit.getId())
+                                                    && unit instanceof IfcSIUnit) {
+                                                tempDerivedUnit.addDerivedUnitElement(
+                                                        (IfcSIUnit) unit,
+                                                        derivedUnitElementLine.getExponent());
                                             }
                                         }
                                     }
+
+                                    projectUnits.add(tempDerivedUnit);
                                 }
+
                                 Map<IfcUnitType, List<IfcUnit>> projectUnitsMap =
                                         projectUnits.stream()
                                                 .collect(Collectors.groupingBy(IfcUnit::getType));
+
+                                Set<IfcProperty> extractedProperties = new HashSet<>();
+                                for (IfcLine line :
+                                        ifcLinesGrouped.getOrDefault(
+                                                IfcSinglePropertyValueLine.class,
+                                                Collections.emptyList())) {
+                                    IfcSinglePropertyValueLine propertyLine =
+                                            (IfcSinglePropertyValueLine) line;
+                                    IfcProperty tempProp =
+                                            new IfcPropertyBuilder(propertyLine, projectUnitsMap)
+                                                    .build();
+                                    IfcProperty prop =
+                                            extractedProperties.stream()
+                                                    .filter(tempProp::equals)
+                                                    .findAny()
+                                                    .orElse(tempProp);
+                                    extractedProperties.add(prop);
+
+                                    if (Objects.nonNull(propertyLine.getValue())) {
+                                        prop.addExtractedValue(propertyLine.getValue());
+                                    }
+
+                                    // TODO: OPTION VALUES FROM IFC
+                                    //                                    if
+                                    // (IfcPropertyType.VALUELIST.equals(prop.getType())) {
+                                    //                                        Literal
+                                    // enumOptionValue = qs.getLiteral("enumOptionValue");
+                                    //                                        if (enumOptionValue !=
+                                    // null) {
+                                    //
+                                    // prop.addEnumOptionValue(enumOptionValue.toString());
+                                    //                                        }
+                                    //                                    }
+                                }
+
                                 logOutput
                                         .append("extractedIfcProperties: ")
-                                        .append(ifcProperties.size())
+                                        .append(extractedProperties.size())
                                         .append(System.lineSeparator());
                                 Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap =
-                                        extractPropertiesFromData(ifcProperties, projectUnitsMap);
-                                stopWatch.stop();
-                                logOutput
-                                        .append(sumHashes)
-                                        .append(System.lineSeparator())
-                                        .append(stopWatch.getTotalTimeSeconds())
-                                        .append(System.lineSeparator())
-                                        .append(stopWatch.prettyPrint())
-                                        .append(System.lineSeparator());
-                                updateMessage(logOutput.toString());
+                                        extractedProperties.stream()
+                                                .collect(
+                                                        Collectors.groupingBy(
+                                                                IfcProperty::getType));
                                 propertyData.add(extractedPropertyMap);
                                 logOutput
                                         .append("Reading ")
@@ -560,13 +593,6 @@ public class PropertyExtractor {
         }
 
         return projectUnits;
-    }
-
-    private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromData(
-            Set<IfcProperty> ifcProperties, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
-        return ifcProperties.stream()
-                .map(ifc -> new IfcProperty(ifc, projectUnits))
-                .collect(Collectors.groupingBy(IfcProperty::getType));
     }
 
     private static Map<IfcPropertyType, List<IfcProperty>> extractPropertiesFromHdtData(

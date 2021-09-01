@@ -1,5 +1,9 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcSIUnitLine;
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcSinglePropertyValueLine;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
@@ -7,11 +11,9 @@ import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
 import java.io.File;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -22,8 +24,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import net.rgielen.fxweaver.core.FxmlView;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.LineIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +41,7 @@ public class ConvertController implements Initializable {
     @FXML private JFXProgressBar centerProgressProgressBar;
     @FXML private BorderPane centerProgress;
     @FXML private Label centerProgressProgressInfo;
-    @FXML private JFXListView<String> centerInputFileContent;
+    @FXML private JFXListView<IfcLine> centerInputFileContent;
 
     @Autowired
     public ConvertController(ReactiveStateService stateService) {
@@ -68,9 +68,31 @@ public class ConvertController implements Initializable {
                 .managedProperty()
                 .bind(stateService.getConvertState().showInputFileProperty());
 
-        /*centerInputFileContent
-        .textProperty()
-        .bind(stateService.getConvertState().inputFileContentProperty()); */
+        centerInputFileContent
+                .getSelectionModel()
+                .selectedItemProperty()
+                .addListener(
+                        new ChangeListener<IfcLine>() {
+                            // TODO: SHOW SELECTED FEATURE
+                            @Override
+                            public void changed(
+                                    ObservableValue<? extends IfcLine> observable,
+                                    IfcLine oldValue,
+                                    IfcLine newValue) {
+                                if (newValue instanceof IfcSinglePropertyValueLine) {
+                                    //                                    IfcProperty ifcProperty =
+                                    //
+                                    // ((IfcSinglePropertyValueLine) newValue)
+                                    //
+                                    // .getIfcProperty();
+                                    System.out.println(newValue);
+                                } else if (newValue instanceof IfcSIUnitLine) {
+                                    // IfcSIUnit ifcSIUnit = ((IfcSIUnitLine)
+                                    // newValue).getIfcUnit();
+                                    System.out.println(newValue);
+                                }
+                            }
+                        });
 
         fileChooser = new FileChooser();
         fileChooser
@@ -88,18 +110,10 @@ public class ConvertController implements Initializable {
                     new Task<LoadResult>() {
                         @Override
                         protected LoadResult call() throws Exception {
-                            IfcFileWrapper ifcFile = new IfcFileWrapper(file);
-                            System.out.println("TODO: select" + ifcFile);
-                            List<String> lines = new ArrayList<String>();
-                            try (LineIterator it =
-                                    FileUtils.lineIterator(
-                                            ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
-                                while (it.hasNext()) {
-                                    String line = it.nextLine();
-                                    lines.add(line);
-                                    updateTitle(line);
-                                }
-                            }
+                            // TODO: ERROR HANDLING FOR BETTER USABILITY
+                            List<IfcLine> lines =
+                                    IfcFileReader.readIfcFile(new IfcFileWrapper(file));
+
                             // TODO: Cancel op
                             return new LoadResult(lines);
                         }
@@ -130,7 +144,7 @@ public class ConvertController implements Initializable {
         stateService.getConvertState().resetSelectedConvertFile();
     }
 
-    public ObservableList<String> getFileContentList() {
+    public ObservableList<IfcLine> getFileContentList() {
         return stateService.getConvertState().getInputFileContent();
     }
 }
