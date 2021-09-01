@@ -11,6 +11,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -28,10 +29,9 @@ public class MainController implements Initializable {
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final AuthService authService;
     private final ReactiveStateService stateService;
-
     @FXML private MenuBar menuBar;
-    // @FXML private MenuItem menuBarLogin;
-    // @FXML private MenuItem menuBarLogout;
+    @FXML private MenuItem menuBarLogin;
+    @FXML private MenuItem menuBarLogout;
     @FXML private BorderPane mainPane;
 
     @Autowired
@@ -43,9 +43,8 @@ public class MainController implements Initializable {
     @Override
     public void initialize(java.net.URL arg0, ResourceBundle resources) {
         menuBar.setFocusTraversable(true);
-
-        // menuBarLogin.visibleProperty().bind(stateService.getLoginState().loggedInProperty().not());
-        // menuBarLogout.visibleProperty().bind(stateService.getLoginState().loggedInProperty());
+        menuBarLogin.visibleProperty().bind(stateService.getLoginState().loggedInProperty().not());
+        menuBarLogout.visibleProperty().bind(stateService.getLoginState().loggedInProperty());
         mainPane.centerProperty()
                 .bind(stateService.getViewState().visibleCenterPanePropertyProperty());
     }
@@ -98,14 +97,12 @@ public class MainController implements Initializable {
     private void handleLoginAction(final ActionEvent event) {
         Task<UserSession> loginTask = authService.getLoginTask();
         stateService.getViewState().switchCenterPane(LoginController.class);
-
         loginTask.setOnSucceeded(
                 t -> {
                     stateService.getViewState().switchCenterPane(AboutController.class);
                     stateService.getLoginState().setUserSession(loginTask.getValue());
                     authService.resetLoginTask();
                 });
-
         loginTask.setOnCancelled(
                 t -> {
                     // TODO: Cancelled views
@@ -113,7 +110,6 @@ public class MainController implements Initializable {
                     stateService.getLoginState().setUserSession(null);
                     authService.resetLoginTask();
                 });
-
         loginTask.setOnFailed(
                 t -> {
                     // TODO: Error Handling
@@ -121,35 +117,30 @@ public class MainController implements Initializable {
                     stateService.getLoginState().setUserSession(null);
                     authService.resetLoginTask();
                 });
-
         new Thread(loginTask).start();
     }
 
     @FXML
     private void handleLogoutAction(final ActionEvent event) {
         Task<LogoutResult> logoutTask = authService.getLogoutTask();
-
         logoutTask.setOnSucceeded(
                 t -> {
                     stateService.getViewState().switchCenterPane(AboutController.class);
                     stateService.getLoginState().setUserSession(null);
                     authService.resetLogoutTask();
                 });
-
         logoutTask.setOnCancelled(
                 t -> {
                     // TODO: Cancelled views
                     stateService.getViewState().switchCenterPane(AboutController.class);
                     authService.resetLogoutTask();
                 });
-
         logoutTask.setOnFailed(
                 t -> {
                     // TODO: Error Handling
                     stateService.getViewState().switchCenterPane(AboutController.class);
                     authService.resetLogoutTask();
                 });
-
         new Thread(logoutTask).start();
     }
 
@@ -166,6 +157,11 @@ public class MainController implements Initializable {
     @FXML
     private void handleConvertAction(final ActionEvent event) {
         stateService.getViewState().switchCenterPane(ConvertController.class);
+    }
+
+    @FXML
+    private void handleLoadProjectsAction(final ActionEvent event) {
+        stateService.getViewState().switchCenterPane(ProjectsController.class);
     }
 
     /** Perform functionality associated with "About" menu selection or CTRL-A. */

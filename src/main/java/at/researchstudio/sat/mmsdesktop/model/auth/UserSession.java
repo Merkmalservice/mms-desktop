@@ -10,14 +10,12 @@ import org.slf4j.LoggerFactory;
 public class UserSession {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     private final AccessToken accessToken;
 
     public UserSession(AccessToken accessToken) {
         logger.info("Logged in...");
         logger.info("Token: " + accessToken.getSubject());
         logger.info("Username: " + accessToken.getPreferredUsername());
-
         this.accessToken = accessToken;
     }
 
@@ -31,7 +29,6 @@ public class UserSession {
                                 () -> String.valueOf(getGivenName().charAt(0)), "")
                         + Utils.executeOrDefaultOnException(
                                 () -> String.valueOf(getFamilyName().charAt(0)), "");
-
         return StringUtils.isEmpty(initials) ? String.valueOf(getUsername().charAt(0)) : initials;
     }
 
@@ -46,5 +43,9 @@ public class UserSession {
 
     public String getGivenName() {
         return accessToken.getGivenName();
+    }
+
+    public AccessToken getAccessToken() {
+        return accessToken;
     }
 }

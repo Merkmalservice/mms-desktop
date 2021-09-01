@@ -1,27 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.layout.VBox?>
-
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.control.ToolBar?>
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import java.net.URL?>
-
-<VBox xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1"
+<VBox xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/16"
       fx:controller="at.researchstudio.sat.mmsdesktop.controller.MainController">
     <stylesheets>
         <URL value="@main.css"/>
     </stylesheets>
     <MenuBar fx:id="menuBar" onKeyPressed="#handleKeyInput">
         <Menu text="%label.app">
-            <!-- MenuItem fx:id="menuBarLogin" text="%label.login" onAction="#handleLoginAction"/>
-            <MenuItem fx:id="menuBarLogout" text="%label.logout" onAction="#handleLogoutAction"/-->
+            <MenuItem fx:id="menuBarLogin" text="%label.login" onAction="#handleLoginAction"/>
+            <MenuItem fx:id="menuBarLogout" text="%label.logout" onAction="#handleLogoutAction"/>
             <MenuItem text="%label.settings" onAction="#handleSettingsAction" disable="true"/>
             <SeparatorMenuItem/>
             <MenuItem text="%label.exit" onAction="#handleExitAction"/>
@@ -37,7 +31,7 @@
         <left>
             <ToolBar orientation="VERTICAL" BorderPane.alignment="CENTER"
                      style="-fx-background-color: #455A6F;">
-                <fx:include source="components/userComponent.fxml" />
+                <fx:include source="components/userComponent.fxml"/>
                 <JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
                            graphicTextGap="15.0"
                            onAction="#handleExtractFromIfcAction"
@@ -54,6 +48,19 @@
                            onAction="#handleConvertAction"
                            graphicTextGap="15.0" prefHeight="32.0"
                            prefWidth="220.0" ripplerFill="WHITE" text="%label.sidebar.convertifc"
+                           style="-fx-cursor: hand;"
+                           textFill="#c1fff9">
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </JFXButton>
+                <JFXButton disable="false" alignment="BASELINE_LEFT" focusTraversable="false"
+                           onAction="#handleLoadProjectsAction"
+                           graphicTextGap="15.0" layoutX="10.0" layoutY="10.0" prefHeight="32.0"
+                           prefWidth="220.0" ripplerFill="WHITE" text="%label.sidebar.projects"
                            style="-fx-cursor: hand;"
                            textFill="#c1fff9">
                     <padding>
