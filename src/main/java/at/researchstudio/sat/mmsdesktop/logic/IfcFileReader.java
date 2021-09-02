@@ -45,6 +45,7 @@ public class IfcFileReader {
 
         try (LineIterator it =
                 FileUtils.lineIterator(ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
+            StringBuilder sb = new StringBuilder();
             while (it.hasNext()) {
                 String line = it.nextLine();
                 try {
@@ -58,8 +59,20 @@ public class IfcFileReader {
                         lines.add(new IfcDerivedUnitLine(line));
                     } else if (line.contains("IFCUNITASSIGNMENT(")) {
                         lines.add(new IfcUnitAssignmentLine(line));
-                    } else if (line.contains("IFCPROJECT(")) {
-                        lines.add(new IfcProjectLine(line));
+                    } else if (line.contains("IFCQUANTITY")) {
+                        if (line.contains("IFCQUANTITYLENGTH(")) {
+                            lines.add(new IfcQuantityLengthLine(line));
+                        } else if (line.contains("IFCQUANTITYAREA(")) {
+                            lines.add(new IfcQuantityAreaLine(line));
+                        } else if (line.contains("IFCQUANTITYVOLUME(")) {
+                            lines.add(new IfcQuantityVolumeLine(line));
+                        } else if (line.contains("IFCQUANTITYCOUNT(")) {
+                            lines.add(new IfcQuantityCountLine(line));
+                        } else {
+                            sb.append("Couldnt parse Line: ").append(line)
+                                .append(" adding it as IfcQuantityLine").append(System.lineSeparator());
+                            lines.add(new IfcQuantityLine(line));
+                        }
                     } else {
                         lines.add(new IfcLine(line));
                     }
@@ -69,6 +82,9 @@ public class IfcFileReader {
                             null, "Couldnt parse Line: " + line + " adding it as IfcLine", 0);
                     lines.add(new IfcLine(line));
                 }
+            }
+            if (sb.length() > 0) {
+                taskProgressListener.notifyProgress(null, sb.toString(), 0);
             }
         }
 
