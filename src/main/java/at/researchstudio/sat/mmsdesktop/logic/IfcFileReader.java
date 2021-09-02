@@ -56,7 +56,7 @@ public class IfcFileReader {
                         lines.add(new IfcDerivedUnitElementLine(line));
                     } else if (line.contains("IFCDERIVEDUNIT(")) {
                         lines.add(new IfcDerivedUnitLine(line));
-                    } else if (line.contains("IFCUNITASSIGMENT(")) {
+                    } else if (line.contains("IFCUNITASSIGNMENT(")) {
                         lines.add(new IfcUnitAssignmentLine(line));
                     } else if (line.contains("IFCPROJECT(")) {
                         lines.add(new IfcProjectLine(line));
@@ -104,7 +104,7 @@ public class IfcFileReader {
         if (updateProgress) {
             taskProgressListener.notifyProgress(
                     null,
-                    "Extracted " + defaultProjectUnitIds.size() + " ProjectUnit Assignments",
+                    "Extracted " + defaultProjectUnitIds.size() + " IfcProjectUnit Assignments",
                     0);
         }
 
@@ -152,7 +152,7 @@ public class IfcFileReader {
 
         if (updateProgress) {
             taskProgressListener.notifyProgress(
-                    null, "Extracted " + projectUnits.size() + " Units", 0);
+                    null, "Extracted " + projectUnits.size() + " IfcUnits", 0);
         }
 
         Map<IfcUnitType, List<IfcUnit>> projectUnitsMap =
@@ -190,7 +190,7 @@ public class IfcFileReader {
 
         if (updateProgress) {
             taskProgressListener.notifyProgress(
-                    null, "Extracted " + extractedProperties.size() + " Properties", 0);
+                    null, "Extracted " + extractedProperties.size() + " IfcProperties", 0);
         }
 
         ParsedIfcFile parsedIfcFile = new ParsedIfcFile(lines, extractedProperties);
