@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.state;
 
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Objects;
 import javafx.beans.property.BooleanProperty;
@@ -72,12 +73,15 @@ public class ConvertState {
         this.inputFileContent.clear();
         this.inputFileContentMap.clear();
 
-        this.inputFileContent.setAll(task.getValue().getLines());
-        this.inputFileContentMap.putAll(task.getValue().getDataLines());
-
         if (Objects.isNull(task.getException())) {
-            // TODO: ERROR HANDLING
+            this.inputFileContent.setAll(task.getValue().getLines());
+            this.inputFileContentMap.putAll(task.getValue().getDataLines());
+
         } else {
+            // TODO: BETTER ERROR HANDLING
+            this.inputFileContent.setAll(
+                    Collections.singletonList(new IfcLine(task.getException().getMessage())));
+            this.inputFileContentMap.putAll(Collections.emptyMap());
             //
             // this.extractLogOutput.setValue(Throwables.getStackTraceAsString(task.getException()));
             //            this.extractJsonOutput.setValue("[]");

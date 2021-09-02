@@ -4,6 +4,7 @@ import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcSIUnitLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcSinglePropertyValueLine;
+import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
@@ -12,8 +13,6 @@ import com.jfoenix.controls.JFXProgressBar;
 import java.io.File;
 import java.net.URL;
 import java.util.*;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -68,29 +67,23 @@ public class ConvertController implements Initializable {
                 .managedProperty()
                 .bind(stateService.getConvertState().showInputFileProperty());
 
+        // TODO: SHOW SELECTED FEATURE
         centerInputFileContent
                 .getSelectionModel()
                 .selectedItemProperty()
                 .addListener(
-                        new ChangeListener<IfcLine>() {
-                            // TODO: SHOW SELECTED FEATURE
-                            @Override
-                            public void changed(
-                                    ObservableValue<? extends IfcLine> observable,
-                                    IfcLine oldValue,
-                                    IfcLine newValue) {
-                                if (newValue instanceof IfcSinglePropertyValueLine) {
-                                    //                                    IfcProperty ifcProperty =
-                                    //
-                                    // ((IfcSinglePropertyValueLine) newValue)
-                                    //
-                                    // .getIfcProperty();
-                                    System.out.println(newValue);
-                                } else if (newValue instanceof IfcSIUnitLine) {
-                                    // IfcSIUnit ifcSIUnit = ((IfcSIUnitLine)
-                                    // newValue).getIfcUnit();
-                                    System.out.println(newValue);
-                                }
+                        (observable, oldValue, newValue) -> {
+                            if (newValue instanceof IfcSinglePropertyValueLine) {
+                                //                                    IfcProperty ifcProperty =
+                                //
+                                // ((IfcSinglePropertyValueLine) newValue)
+                                //
+                                // .getIfcProperty();
+                                System.out.println(newValue);
+                            } else if (newValue instanceof IfcSIUnitLine) {
+                                // IfcSIUnit ifcSIUnit = ((IfcSIUnitLine)
+                                // newValue).getIfcUnit();
+                                System.out.println(newValue);
                             }
                         });
 
@@ -107,15 +100,15 @@ public class ConvertController implements Initializable {
         if (Objects.nonNull(file) && file.exists()) {
             // TODO: Maybe handle if/else within task, but probably not
             Task<LoadResult> task =
-                    new Task<LoadResult>() {
+                    new Task<>() {
                         @Override
                         protected LoadResult call() throws Exception {
                             // TODO: ERROR HANDLING FOR BETTER USABILITY
-                            List<IfcLine> lines =
+                            ParsedIfcFile parsedIfcFile =
                                     IfcFileReader.readIfcFile(new IfcFileWrapper(file));
 
                             // TODO: Cancel op
-                            return new LoadResult(lines);
+                            return new LoadResult(parsedIfcFile);
                         }
                     };
 
