@@ -59,6 +59,8 @@ public class IfcFileReader {
                         lines.add(new IfcDerivedUnitLine(line));
                     } else if (line.contains("IFCUNITASSIGNMENT(")) {
                         lines.add(new IfcUnitAssignmentLine(line));
+                    } else if (line.contains("IFCPROJECT(")) {
+                        lines.add(new IfcProjectLine(line));
                     } else if (line.contains("IFCQUANTITY")) {
                         if (line.contains("IFCQUANTITYLENGTH(")) {
                             lines.add(new IfcQuantityLengthLine(line));
@@ -69,8 +71,10 @@ public class IfcFileReader {
                         } else if (line.contains("IFCQUANTITYCOUNT(")) {
                             lines.add(new IfcQuantityCountLine(line));
                         } else {
-                            sb.append("Couldnt parse Line: ").append(line)
-                                .append(" adding it as IfcQuantityLine").append(System.lineSeparator());
+                            sb.append("Couldnt parse Line: ")
+                                    .append(line)
+                                    .append(" adding it as IfcQuantityLine")
+                                    .append(System.lineSeparator());
                             lines.add(new IfcQuantityLine(line));
                         }
                     } else {
@@ -204,6 +208,32 @@ public class IfcFileReader {
             //                                    }
         }
 
+        for (IfcLine line :
+                ifcLinesGrouped.getOrDefault(IfcQuantityCountLine.class, Collections.emptyList())) {
+            extractFromIfcQuantityLine(
+                    projectUnitsMap, extractedProperties, (IfcQuantityLine) line);
+        }
+
+        for (IfcLine line :
+                ifcLinesGrouped.getOrDefault(IfcQuantityAreaLine.class, Collections.emptyList())) {
+            extractFromIfcQuantityLine(
+                    projectUnitsMap, extractedProperties, (IfcQuantityLine) line);
+        }
+
+        for (IfcLine line :
+                ifcLinesGrouped.getOrDefault(
+                        IfcQuantityLengthLine.class, Collections.emptyList())) {
+            extractFromIfcQuantityLine(
+                    projectUnitsMap, extractedProperties, (IfcQuantityLine) line);
+        }
+
+        for (IfcLine line :
+                ifcLinesGrouped.getOrDefault(
+                        IfcQuantityVolumeLine.class, Collections.emptyList())) {
+            extractFromIfcQuantityLine(
+                    projectUnitsMap, extractedProperties, (IfcQuantityLine) line);
+        }
+
         if (updateProgress) {
             taskProgressListener.notifyProgress(
                     null, "Extracted " + extractedProperties.size() + " IfcProperties", 0);
@@ -219,6 +249,20 @@ public class IfcFileReader {
         }
 
         return parsedIfcFile;
+    }
+
+    private static void extractFromIfcQuantityLine(
+            Map<IfcUnitType, List<IfcUnit>> projectUnitsMap,
+            Set<IfcProperty> extractedProperties,
+            IfcQuantityLine propertyLine) {
+        IfcProperty tempProp = new IfcPropertyBuilder(propertyLine, projectUnitsMap).build();
+        IfcProperty prop =
+                extractedProperties.stream().filter(tempProp::equals).findAny().orElse(tempProp);
+        extractedProperties.add(prop);
+
+        if (Objects.nonNull(propertyLine.getValue())) {
+            prop.addExtractedValue(String.valueOf(propertyLine.getValue()));
+        }
     }
 
     public static List<Feature> extractFeaturesFromProperties(
