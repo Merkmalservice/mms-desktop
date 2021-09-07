@@ -30,6 +30,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 import net.rgielen.fxweaver.core.FxmlView;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,18 +169,21 @@ public class ExtractController implements Initializable {
                                         .getFilteredExtractedFeatures()
                                         .setPredicate(
                                                 feature -> {
-                                                    if (searchText == null || searchText.isEmpty())
+                                                    if (StringUtils.isEmpty(searchText))
                                                         return true;
-                                                    return (feature.getName()
-                                                                    .toLowerCase()
-                                                                    .contains(
-                                                                            searchText
-                                                                                    .toLowerCase()))
-                                                            || (feature.getDescription()
-                                                                    .toLowerCase()
-                                                                    .contains(
-                                                                            searchText
-                                                                                    .toLowerCase()));
+                                                    String name = feature.getName();
+                                                    String description = feature.getDescription();
+                                                    return (Objects.nonNull(name)
+                                                                    && name.toLowerCase()
+                                                                            .contains(
+                                                                                    searchText
+                                                                                            .toLowerCase()))
+                                                            || (Objects.nonNull(description)
+                                                                    && description
+                                                                            .toLowerCase()
+                                                                            .contains(
+                                                                                    searchText
+                                                                                            .toLowerCase()));
                                                 }));
 
         centerResultUniqueValuesToggle
