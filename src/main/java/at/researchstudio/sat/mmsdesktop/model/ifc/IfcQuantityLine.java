@@ -11,7 +11,7 @@ public class IfcQuantityLine extends IfcLine {
 
     private static final Pattern quantityExtractPattern_v4 =
             Pattern.compile(
-                    "(?>#[0-9]*= IFCQUANTITY[A-Z]*\\(')(?<name>[^']*)',('(?<description>[^']*)'|\\$),((?<unitId>.*)|\\$),(?<value>[^,]*),\\$\\)");
+                    "(?>#[0-9]*= IFCQUANTITY[A-Z]*\\(')(?<name>[^']*)',('(?<description>[^']*)'|\\$),((?<unitId>[^$]*)|\\$),(?<value>[^,]*),\\$\\)");
 
     private String name;
     private String description;
@@ -22,7 +22,7 @@ public class IfcQuantityLine extends IfcLine {
         super(line);
 
         Matcher matcher = quantityExtractPattern_v2x3.matcher(line);
-        if (matcher.find()) {
+        if (matcher.find() && !"$".equals(matcher.group("value"))) {
             name = StringUtils.trim(matcher.group("name"));
             // type = StringUtils.trim(matcher.group("type")); //TODO TYPE
             String valueString = StringUtils.trim(matcher.group("value"));

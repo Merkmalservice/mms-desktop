@@ -53,6 +53,10 @@ public class IfcFileReader {
                         lines.add(new IfcSinglePropertyValueLine(line));
                     } else if (line.contains("IFCSIUNIT(")) {
                         lines.add(new IfcSIUnitLine(line));
+                    } else if (line.contains("IFCPROPERTYENUMERATION(")) {
+                        lines.add(new IfcPropertyEnumerationLine(line));
+                    } else if (line.contains("IFCPROPERTYENUMERATEDVALUE(")) {
+                        lines.add(new IfcPropertyEnumeratedValueLine(line));
                     } else if (line.contains("IFCDERIVEDUNITELEMENT(")) {
                         lines.add(new IfcDerivedUnitElementLine(line));
                     } else if (line.contains("IFCDERIVEDUNIT(")) {
@@ -194,18 +198,46 @@ public class IfcFileReader {
             if (Objects.nonNull(propertyLine.getValue())) {
                 prop.addExtractedValue(propertyLine.getValue());
             }
+        }
 
-            // TODO: OPTION VALUES FROM IFC
-            //                                    if
-            // (IfcPropertyType.VALUELIST.equals(prop.getType())) {
-            //                                        Literal
-            // enumOptionValue = qs.getLiteral("enumOptionValue");
-            //                                        if (enumOptionValue !=
-            // null) {
-            //
-            // prop.addEnumOptionValue(enumOptionValue.toString());
-            //                                        }
-            //                                    }
+        for (IfcLine line :
+                ifcLinesGrouped.getOrDefault(
+                        IfcPropertyEnumeratedValueLine.class, Collections.emptyList())) {
+            // TODO:
+            IfcPropertyEnumeratedValueLine propertyLine = (IfcPropertyEnumeratedValueLine) line;
+
+            IfcPropertyEnumerationLine enumLine = null;
+
+            for (IfcLine el :
+                    ifcLinesGrouped.getOrDefault(
+                            IfcPropertyEnumerationLine.class, Collections.emptyList())) {
+                if (el.getId().equals(propertyLine.getEnumId())) {
+                    enumLine = (IfcPropertyEnumerationLine) el;
+                    break;
+                }
+            }
+
+            IfcProperty tempProp =
+                    new IfcProperty(propertyLine.getName(), IfcPropertyType.VALUELIST);
+
+            IfcProperty prop =
+                    extractedProperties.stream()
+                            .filter(tempProp::equals)
+                            .findAny()
+                            .orElse(tempProp);
+            extractedProperties.add(prop);
+
+            if (Objects.nonNull(propertyLine.getValues())) {
+                for (String value : propertyLine.getValues()) {
+                    prop.addExtractedValue(value);
+                }
+            }
+
+            if (Objects.nonNull(enumLine)) {
+                for (String enumValue : enumLine.getValues()) {
+                    prop.addEnumOptionValue(enumValue);
+                }
+            }
         }
 
         for (IfcLine line :

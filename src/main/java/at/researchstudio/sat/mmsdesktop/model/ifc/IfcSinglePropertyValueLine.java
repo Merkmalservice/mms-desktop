@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 public class IfcSinglePropertyValueLine extends IfcLine {
     private static final Pattern propertyExtractPattern =
             Pattern.compile(
-                    "(?>#[0-9]*= IFCPROPERTYSINGLEVALUE\\(')(?<name>.*)',\\$,(((?<type>[A-Z]*)\\(('?)(?<value>[^']*)('?)(\\))|\\$),(.(?<unitId>.*).|\\$)\\))");
+                    "(?>#[0-9]*= IFCPROPERTYSINGLEVALUE\\(')(?<name>.*)',\\$,(((?<type>[A-Z]*)\\(('?)(?<value>[^']*)('?)(\\))|\\$),(.(?<unitId>.*)|\\$)\\))");
     // <- warning might contain a . or ' at the end of the value
     private String name;
     private String type;
