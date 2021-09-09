@@ -24,11 +24,13 @@ public class ParsedIfcFile {
         this.extractedPropertyMap =
                 extractedProperties.stream().collect(Collectors.groupingBy(IfcProperty::getType));
 
-        this.dataLines = new HashMap<>();
         if (Objects.nonNull(lines) && lines.size() > 0) {
-            lines.stream()
-                    .filter(line -> Objects.nonNull(line) && line.getId() != null)
-                    .map(line -> this.dataLines.put(line.getId(), line));
+            this.dataLines =
+                    lines.stream()
+                            .filter(line -> Objects.nonNull(line) && Objects.nonNull(line.getId()))
+                            .collect(Collectors.toMap(IfcLine::getId, line -> line));
+        } else {
+            this.dataLines = Collections.emptyMap();
         }
     }
 

@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.model.task;
 
+import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import java.io.Serializable;
@@ -10,11 +11,13 @@ public class LoadResult implements Serializable {
     private final ParsedIfcFile parsedIfcFile;
     private final List<IfcLine> lines;
     private final Map<String, IfcLine> dataLines;
+    private final List<Feature> extractedFeatures;
 
     public LoadResult(ParsedIfcFile parsedIfcFile) {
         this.parsedIfcFile = parsedIfcFile;
         this.lines = parsedIfcFile.getLines();
         this.dataLines = parsedIfcFile.getDataLines();
+        this.extractedFeatures = parsedIfcFile.getFeatures();
     }
 
     public ParsedIfcFile getParsedIfcFile() {
@@ -27,5 +30,9 @@ public class LoadResult implements Serializable {
 
     public Map<String, IfcLine> getDataLines() {
         return dataLines;
+    }
+
+    public List<Feature> getExtractedFeatures() {
+        return extractedFeatures;
     }
 }

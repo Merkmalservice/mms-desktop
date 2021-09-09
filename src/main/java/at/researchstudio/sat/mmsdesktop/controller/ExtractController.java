@@ -1,6 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
 import at.researchstudio.sat.merkmalservice.utils.Utils;
+import at.researchstudio.sat.mmsdesktop.controller.components.FeatureView;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
@@ -43,6 +44,7 @@ public class ExtractController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ReactiveStateService stateService;
+
     // @FXML private JFXButton bRemoveSelectedEntry;
     @FXML private JFXButton topPickFilesClearList;
     @FXML private JFXButton bottomPickFilesExtract;
@@ -63,6 +65,7 @@ public class ExtractController implements Initializable {
     @FXML private HBox bottomResults;
     @FXML private HBox bottomPickFiles;
     @FXML private BorderPane selectedFeaturePreview;
+    @FXML private FeatureView featureView;
     private FileChooser saveFileChooser;
     private FileChooser saveLogFileChooser;
     private FileChooser fileChooser;
@@ -126,12 +129,20 @@ public class ExtractController implements Initializable {
                 .textProperty()
                 .bind(stateService.getExtractState().extractJsonOutput());
 
-        selectedFeaturePreview
-                .visibleProperty()
-                .bind(stateService.getSelectedFeatureState().showSelectedFeatureProperty());
-        selectedFeaturePreview
-                .managedProperty()
-                .bind(stateService.getSelectedFeatureState().showSelectedFeatureProperty());
+        stateService
+                .getSelectedFeatureState()
+                .featureProperty()
+                .addListener(
+                        (observable, oldFeature, newFeature) -> {
+                            featureView.setFeature(newFeature);
+                            if (Objects.nonNull(newFeature)) {
+                                selectedFeaturePreview.setVisible(true);
+                                selectedFeaturePreview.setManaged(true);
+                            } else {
+                                selectedFeaturePreview.setVisible(false);
+                                selectedFeaturePreview.setManaged(false);
+                            }
+                        });
 
         this.resourceBundle = resourceBundle;
 

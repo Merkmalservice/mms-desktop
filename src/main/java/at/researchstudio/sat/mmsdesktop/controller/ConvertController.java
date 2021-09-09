@@ -1,10 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView;
 import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcSIUnitLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcSinglePropertyValueLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
+import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
@@ -41,6 +39,8 @@ public class ConvertController implements Initializable {
     @FXML private BorderPane centerProgress;
     @FXML private Label centerProgressProgressInfo;
     @FXML private JFXListView<IfcLine> centerInputFileContent;
+    @FXML private BorderPane selectedIfcLineView;
+    @FXML private IfcLineView ifcLineView;
 
     @Autowired
     public ConvertController(ReactiveStateService stateService) {
@@ -67,25 +67,26 @@ public class ConvertController implements Initializable {
                 .managedProperty()
                 .bind(stateService.getConvertState().showInputFileProperty());
 
-        // TODO: SHOW SELECTED FEATURE
+        stateService
+                .getConvertState()
+                .selectedIfcLineProperty()
+                .addListener(
+                        ((observableValue, oldValue, selectedIfcLine) -> {
+                            selectedIfcLineView.setVisible(Objects.nonNull(selectedIfcLine));
+                            selectedIfcLineView.setManaged(Objects.nonNull(selectedIfcLine));
+                            ifcLineView.setExtractedFeatures(
+                                    stateService.getConvertState().getInputFileExtractedFeatures());
+                            ifcLineView.setIfcDataLines(
+                                    stateService.getConvertState().getInputFileDataLines());
+                            ifcLineView.setIfcLine(selectedIfcLine);
+                        }));
+
         centerInputFileContent
                 .getSelectionModel()
                 .selectedItemProperty()
                 .addListener(
-                        (observable, oldValue, newValue) -> {
-                            if (newValue instanceof IfcSinglePropertyValueLine) {
-                                //                                    IfcProperty ifcProperty =
-                                //
-                                // ((IfcSinglePropertyValueLine) newValue)
-                                //
-                                // .getIfcProperty();
-                                System.out.println(newValue);
-                            } else if (newValue instanceof IfcSIUnitLine) {
-                                // IfcSIUnit ifcSIUnit = ((IfcSIUnitLine)
-                                // newValue).getIfcUnit();
-                                System.out.println(newValue);
-                            }
-                        });
+                        (observable, deSelectedIfcLine, selectedIfcLine) ->
+                                stateService.getConvertState().setSelectedIfcLine(selectedIfcLine));
 
         fileChooser = new FileChooser();
         fileChooser
