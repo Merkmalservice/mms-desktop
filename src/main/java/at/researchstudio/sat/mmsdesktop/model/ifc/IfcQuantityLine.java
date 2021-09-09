@@ -24,6 +24,7 @@ public class IfcQuantityLine extends IfcLine {
         Matcher matcher = quantityExtractPattern_v2x3.matcher(line);
         if (matcher.find() && !"$".equals(matcher.group("value"))) {
             name = StringUtils.trim(matcher.group("name"));
+            description = StringUtils.trimToNull(matcher.group("description"));
             // type = StringUtils.trim(matcher.group("type")); //TODO TYPE
             String valueString = StringUtils.trim(matcher.group("value"));
             value = Double.parseDouble(valueString);
@@ -34,6 +35,7 @@ public class IfcQuantityLine extends IfcLine {
             if (matcher.find()) {
                 name = StringUtils.trim(matcher.group("name"));
                 // type = StringUtils.trim(matcher.group("type")); //TODO TYPE
+                description = StringUtils.trimToNull(matcher.group("description"));
                 String valueString = StringUtils.trim(matcher.group("value"));
                 value = Double.parseDouble(valueString);
                 // unitId = StringUtils.trimToNull(matcher.group("unitId")); //TODO UNITID

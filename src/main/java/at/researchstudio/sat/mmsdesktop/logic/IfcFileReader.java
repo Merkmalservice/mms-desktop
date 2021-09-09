@@ -61,6 +61,8 @@ public class IfcFileReader {
                         lines.add(new IfcDerivedUnitElementLine(line));
                     } else if (line.contains("IFCDERIVEDUNIT(")) {
                         lines.add(new IfcDerivedUnitLine(line));
+                    } else if (line.contains("IFCPROPERTYSET(")) {
+                        lines.add(new IfcPropertySetLine(line));
                     } else if (line.contains("IFCUNITASSIGNMENT(")) {
                         lines.add(new IfcUnitAssignmentLine(line));
                     } else if (line.contains("IFCPROJECT(")) {
