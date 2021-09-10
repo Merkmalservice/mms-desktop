@@ -5,11 +5,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcQuantityLine extends IfcLine {
-    private static final Pattern quantityExtractPattern_v2x3 =
+    private static final Pattern extractPattern_v2x3 =
             Pattern.compile(
                     "(?>#[0-9]*= IFCQUANTITY[A-Z]*\\(')(?<name>[^']*)',('(?<description>[^']*)'|\\$),((?<unitId>.*)|\\$),(?<value>[^,)]*)\\)");
 
-    private static final Pattern quantityExtractPattern_v4 =
+    private static final Pattern extractPattern_v4 =
             Pattern.compile(
                     "(?>#[0-9]*= IFCQUANTITY[A-Z]*\\(')(?<name>[^']*)',('(?<description>[^']*)'|\\$),((?<unitId>[^$]*)|\\$),(?<value>[^,]*),\\$\\)");
 
@@ -21,7 +21,7 @@ public class IfcQuantityLine extends IfcLine {
     public IfcQuantityLine(String line) {
         super(line);
 
-        Matcher matcher = quantityExtractPattern_v2x3.matcher(line);
+        Matcher matcher = extractPattern_v2x3.matcher(line);
         if (matcher.find() && !"$".equals(matcher.group("value"))) {
             name = StringUtils.trim(matcher.group("name"));
             description = StringUtils.trimToNull(matcher.group("description"));
@@ -31,7 +31,7 @@ public class IfcQuantityLine extends IfcLine {
             // unitId = StringUtils.trimToNull(matcher.group("unitId")); //TODO UNITID
             // unitId = Objects.nonNull(unitId) ? "#" + unitId : unitId; //TODO UNITID
         } else {
-            matcher = quantityExtractPattern_v4.matcher(line);
+            matcher = extractPattern_v4.matcher(line);
             if (matcher.find()) {
                 name = StringUtils.trim(matcher.group("name"));
                 // type = StringUtils.trim(matcher.group("type")); //TODO TYPE

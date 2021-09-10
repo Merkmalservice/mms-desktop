@@ -9,13 +9,13 @@ import org.apache.commons.lang3.StringUtils;
 public class IfcUnitAssignmentLine extends IfcLine {
     List<String> unitIds;
 
-    private static final Pattern unitIdsExtractPattern =
+    private static final Pattern extractPattern =
             Pattern.compile("(?>#[0-9]*= IFCUNITASSIGNMENT\\(\\((?<unitIds>.*)\\)\\))");
 
     public IfcUnitAssignmentLine(String line) {
         super(line);
 
-        Matcher matcher = unitIdsExtractPattern.matcher(line);
+        Matcher matcher = extractPattern.matcher(line);
 
         if (matcher.find()) {
             String unitIdsString = StringUtils.trim(matcher.group("unitIds"));

@@ -8,14 +8,14 @@ public class IfcDerivedUnitElementLine extends IfcLine {
     private String unitId;
     private int exponent;
 
-    private static final Pattern derivedUnitElementLinePattern =
+    private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCDERIVEDUNITELEMENT\\((?<unitId>.*),(?<exponent>.*)\\))");
 
     public IfcDerivedUnitElementLine(String line) {
         super(line);
 
-        Matcher matcher = derivedUnitElementLinePattern.matcher(line);
+        Matcher matcher = extractPattern.matcher(line);
 
         if (matcher.find()) {
             unitId = StringUtils.trim(matcher.group("unitId"));

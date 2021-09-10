@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class IfcDerivedUnitLine extends IfcLine {
     // TODO: IMPL
-    private static final Pattern derivedUnitLinePattern =
+    private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCDERIVEDUNIT\\(\\((?<unitIds>.*)\\),.(?<type>.*).,(('(?<name>.*)')|\\$)\\))");
 
@@ -19,7 +19,7 @@ public class IfcDerivedUnitLine extends IfcLine {
     public IfcDerivedUnitLine(String line) {
         super(line);
 
-        Matcher matcher = derivedUnitLinePattern.matcher(line);
+        Matcher matcher = extractPattern.matcher(line);
         if (matcher.find()) {
             type = StringUtils.trim(matcher.group("type"));
             name = StringUtils.trim(matcher.group("name"));

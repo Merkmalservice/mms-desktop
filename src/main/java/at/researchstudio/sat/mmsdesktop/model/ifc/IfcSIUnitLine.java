@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcSIUnitLine extends IfcLine {
-    private static final Pattern unitExtractPattern =
+    private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCSIUNIT\\(\\*,.)(?<type>.*).,(.(?<prefix>.*).|\\$),.(?<measure>.*).\\)");
     // <- warning might contain whitespaces, trim needed
@@ -17,7 +17,7 @@ public class IfcSIUnitLine extends IfcLine {
     public IfcSIUnitLine(String line) {
         super(line);
 
-        Matcher matcher = unitExtractPattern.matcher(line);
+        Matcher matcher = extractPattern.matcher(line);
 
         if (matcher.find()) {
             type = StringUtils.trim(matcher.group("type"));

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcPropertyEnumeratedValueLine extends IfcLine {
-    private static final Pattern propertyExtractPattern =
+    private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCPROPERTYENUMERATEDVALUE\\('(?<name>.*)',((?<description>[^,]*)|\\$),\\((?<values>.*)\\),(.(?<enumId>.*)|\\$)\\))");
 
@@ -22,7 +22,7 @@ public class IfcPropertyEnumeratedValueLine extends IfcLine {
     public IfcPropertyEnumeratedValueLine(String line) {
         super(line);
 
-        Matcher matcher = propertyExtractPattern.matcher(line);
+        Matcher matcher = extractPattern.matcher(line);
         if (matcher.find()) {
             name = StringUtils.trim(matcher.group("name"));
             String valuesString = matcher.group("values");
