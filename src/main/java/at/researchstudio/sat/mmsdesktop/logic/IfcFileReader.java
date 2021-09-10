@@ -57,6 +57,8 @@ public class IfcFileReader {
                         lines.add(new IfcPropertyEnumerationLine(line));
                     } else if (line.contains("IFCPROPERTYENUMERATEDVALUE(")) {
                         lines.add(new IfcPropertyEnumeratedValueLine(line));
+                    } else if (line.contains("IFCRELDEFINESBYPROPERTIES(")) {
+                        lines.add(new IfcRelDefinesByPropertiesLine(line));
                     } else if (line.contains("IFCDERIVEDUNITELEMENT(")) {
                         lines.add(new IfcDerivedUnitElementLine(line));
                     } else if (line.contains("IFCDERIVEDUNIT(")) {

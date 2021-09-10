@@ -11,12 +11,14 @@ public class LoadResult implements Serializable {
     private final ParsedIfcFile parsedIfcFile;
     private final List<IfcLine> lines;
     private final Map<String, IfcLine> dataLines;
+    private final Map<Class<? extends IfcLine>, List<IfcLine>> dataLinesByClass;
     private final List<Feature> extractedFeatures;
 
     public LoadResult(ParsedIfcFile parsedIfcFile) {
         this.parsedIfcFile = parsedIfcFile;
         this.lines = parsedIfcFile.getLines();
         this.dataLines = parsedIfcFile.getDataLines();
+        this.dataLinesByClass = parsedIfcFile.getDataLinesByClass();
         this.extractedFeatures = parsedIfcFile.getFeatures();
     }
 
@@ -30,6 +32,10 @@ public class LoadResult implements Serializable {
 
     public Map<String, IfcLine> getDataLines() {
         return dataLines;
+    }
+
+    public Map<Class<? extends IfcLine>, List<IfcLine>> getDataLinesByClass() {
+        return dataLinesByClass;
     }
 
     public List<Feature> getExtractedFeatures() {

@@ -25,6 +25,7 @@ public class ConvertState {
     private final ObservableList<IfcLine> inputFileContent;
     private final HashMap<String, IfcLine> inputFileContentMap;
     private final ObservableList<Feature> extractedFeatures;
+    private final HashMap<Class<? extends IfcLine>, List<IfcLine>> inputFileContentByClassMap;
 
     public ConvertState() {
         this.showInitial = new SimpleBooleanProperty(true);
@@ -33,6 +34,7 @@ public class ConvertState {
         this.inputFileContent = FXCollections.observableArrayList();
         this.extractedFeatures = FXCollections.observableArrayList();
         this.inputFileContentMap = new HashMap<>();
+        this.inputFileContentByClassMap = new HashMap<>();
         this.selectedIfcLine = new SimpleObjectProperty<>();
     }
 
@@ -79,17 +81,20 @@ public class ConvertState {
     public void setLoadResult(Task<LoadResult> task) {
         this.inputFileContent.clear();
         this.inputFileContentMap.clear();
+        this.inputFileContentByClassMap.clear();
         this.extractedFeatures.clear();
 
         if (Objects.isNull(task.getException())) {
             this.inputFileContent.setAll(task.getValue().getLines());
             this.inputFileContentMap.putAll(task.getValue().getDataLines());
+            this.inputFileContentByClassMap.putAll(task.getValue().getDataLinesByClass());
             this.extractedFeatures.addAll(task.getValue().getExtractedFeatures());
         } else {
             // TODO: BETTER ERROR HANDLING
             this.inputFileContent.setAll(
                     Collections.singletonList(new IfcLine(task.getException().getMessage())));
             this.inputFileContentMap.putAll(Collections.emptyMap());
+            this.inputFileContentByClassMap.putAll(Collections.emptyMap());
             this.extractedFeatures.addAll(Collections.emptyList());
             //
             // this.extractLogOutput.setValue(Throwables.getStackTraceAsString(task.getException()));
@@ -115,5 +120,9 @@ public class ConvertState {
 
     public ObservableMap<String, IfcLine> getInputFileDataLines() {
         return FXCollections.observableMap(inputFileContentMap);
+    }
+
+    public ObservableMap<Class<? extends IfcLine>, List<IfcLine>> getInputFileDataLinesByClass() {
+        return FXCollections.observableMap(inputFileContentByClassMap);
     }
 }

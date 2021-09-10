@@ -78,6 +78,8 @@ public class ConvertController implements Initializable {
                                     stateService.getConvertState().getInputFileExtractedFeatures());
                             ifcLineView.setIfcDataLines(
                                     stateService.getConvertState().getInputFileDataLines());
+                            ifcLineView.setIfcDataLinesByClass(
+                                    stateService.getConvertState().getInputFileDataLinesByClass());
                             ifcLineView.setIfcLine(selectedIfcLine);
                         }));
 

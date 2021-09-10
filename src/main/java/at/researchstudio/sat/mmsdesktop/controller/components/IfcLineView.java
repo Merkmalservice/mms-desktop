@@ -21,56 +21,111 @@ public class IfcLineView extends VBox {
     private IfcLine ifcLine;
     private ObservableMap<String, IfcLine> ifcDataLines;
     private ObservableList<Feature> extractedFeatures;
+    private ObservableMap<Class<? extends IfcLine>, List<IfcLine>> ifcDataLinesByClass;
 
     private static final Font pt16Font = new Font(16);
     private static final Font pt16SystemBoldFont = new Font("System Bold", 16);
+
+    private final Label selectedLineLabel;
+    private final Label memberOfPropertySetLabel;
+    private final Label relDefinesLabel;
+    private final Label refLineLabel;
+    private final Label siblingPropertiesLabel;
+    private final Label relatedObjectsLabel;
+    private final Label correspondingFeatureLabel;
+
+    public IfcLineView() {
+        this.selectedLineLabel = new Label("TODO: SELECTED LINE LABEL"); // TODO: SELECTED LINE LABEL
+        this.selectedLineLabel.setFont(pt16SystemBoldFont);
+        this.selectedLineLabel.setWrapText(true);
+
+        this.memberOfPropertySetLabel =
+                new Label("TODO: MEMBER OF PROPSETS LABEL"); // TODO: PROPERTY SET LABEL
+        this.memberOfPropertySetLabel.setFont(pt16SystemBoldFont);
+        this.memberOfPropertySetLabel.setWrapText(true);
+
+        this.relDefinesLabel = new Label("TODO: REL DEFINES LINES"); // TODO: LABEL
+        this.relDefinesLabel.setFont(pt16SystemBoldFont);
+        this.relDefinesLabel.setWrapText(true);
+
+        siblingPropertiesLabel = new Label("TODO: SIBLINGS OF PROPERTYSET LINES");
+        siblingPropertiesLabel.setFont(pt16SystemBoldFont);
+        siblingPropertiesLabel.setWrapText(true);
+
+        refLineLabel = new Label("LINES REFERENCING THE LINE LABEL: ");
+        refLineLabel.setFont(pt16SystemBoldFont);
+        refLineLabel.setWrapText(true);
+
+        correspondingFeatureLabel = new Label("FEATURE REFERENCED IN THIS LINE: "); // TODO: LABEL
+        correspondingFeatureLabel.setFont(pt16SystemBoldFont);
+        correspondingFeatureLabel.setWrapText(true);
+
+        relatedObjectsLabel = new Label("TODO: REL OBJECT LINES");
+        relatedObjectsLabel.setFont(pt16SystemBoldFont);
+        relatedObjectsLabel.setWrapText(true);
+    }
 
     public void setIfcLine(IfcLine ifcLine) {
         this.ifcLine = ifcLine;
         processDataChange();
     }
 
+    private void addLineToView(IfcLine ifcLine) {
+        Label l = new Label(ifcLine.toString()); // TODO: IFCLINE VIEW
+        l.setWrapText(true);
+        getChildren().add(l);
+    }
+
     private void processDataChange() {
         getChildren().clear();
 
         if (Objects.nonNull(ifcDataLines)
+                && Objects.nonNull(ifcDataLinesByClass)
                 && Objects.nonNull(ifcLine)
                 && Objects.nonNull(extractedFeatures)) {
-            Label l1 = new Label("TODO: SELECTED LINE LABEL");
-            l1.setFont(pt16SystemBoldFont);
-            l1.setWrapText(true);
-            getChildren().add(l1); //TODO: SELECTED LINE LABEL
-            Label l2 = new Label(ifcLine.toString());
-            l2.setWrapText(true);
-            getChildren().add(l2);
+            getChildren().add(selectedLineLabel);
+            addLineToView(ifcLine);
 
             if (ifcLine instanceof IfcSinglePropertyValueLine
                     || ifcLine instanceof IfcQuantityLine
                     || ifcLine instanceof IfcPropertyEnumeratedValueLine) {
                 List<IfcPropertySetLine> relatedPropertySets = getRelatedPropertySetLines(ifcLine);
 
-                if(!relatedPropertySets.isEmpty()) {
-                    Label l3 = new Label("TODO: MEMBER OF PROPSETS LABEL");
-                    l3.setFont(pt16SystemBoldFont);
-                    l3.setWrapText(true);
-                    getChildren().add(l3); //TODO: PROPERTY SET LABEL
-                    for(IfcPropertySetLine l : relatedPropertySets) {
-                        Label l4 = new Label(l.toString());
-                        l4.setWrapText(true);
-                        getChildren().add(l4); //TODO: IFCLINE VIEW
+                if (!relatedPropertySets.isEmpty()) {
+                    getChildren().add(memberOfPropertySetLabel);
+                    for (IfcPropertySetLine l : relatedPropertySets) {
+                        addLineToView(l);
 
-                        Label l5 = new Label("TODO: SIBLINGS OF PROPERTYSET LINES");
-                        l5.setFont(pt16SystemBoldFont);
-                        l5.setWrapText(true);
-                        getChildren().add(l5); //TODO: Siblings of propertyset
+                        getChildren().add(relDefinesLabel);
+
+                        List<IfcRelDefinesByPropertiesLine> relDefinesByPropertiesLines =
+                                getRelDefinesByPropertiesLinesReferencing(l);
+
+                        if (!relDefinesByPropertiesLines.isEmpty()) {
+                            for (IfcRelDefinesByPropertiesLine relDefinesByPropertiesLine :
+                                    relDefinesByPropertiesLines) {
+                                addLineToView(relDefinesByPropertiesLine);
+
+                                List<IfcLine> relatedObjectLines =
+                                        getRelatedObjectLines(relDefinesByPropertiesLine);
+
+                                getChildren().add(relatedObjectsLabel);
+
+                                if (!relatedObjectLines.isEmpty()) {
+                                    for (IfcLine relatedObjectLine : relatedObjectLines) {
+                                        addLineToView(relatedObjectLine);
+                                    }
+                                }
+                            }
+                        }
+
+                        getChildren().add(siblingPropertiesLabel);
 
                         List<IfcLine> propertySetChildLines = getPropertySetChildLines(l);
 
                         if (!propertySetChildLines.isEmpty()) {
-                            for(IfcLine childLine : propertySetChildLines) {
-                                Label l6 = new Label(childLine.toString());
-                                l6.setWrapText(true);
-                                getChildren().add(l6); //TODO: Child Line View (IFCLINE VIEW)
+                            for (IfcLine childLine : propertySetChildLines) {
+                                addLineToView(childLine);
                             }
                         }
                     }
@@ -79,26 +134,20 @@ public class IfcLineView extends VBox {
                 Feature relatedFeature = getRelatedFeature(ifcLine);
 
                 if (Objects.nonNull(relatedFeature)) {
-                    Label l8 = new Label("FEATURE REFERENCED IN THIS LINE: "); //TODO: LABEL
-                    l8.setFont(pt16SystemBoldFont);
-                    l8.setWrapText(true);
-                    getChildren().add(l8);
+
+                    getChildren().add(correspondingFeatureLabel);
                     FeatureView featureView = new FeatureView();
                     featureView.setFeature(relatedFeature);
                     getChildren().add(featureView);
                 }
             }
-            Label l8 = new Label("LINES REFERENCING THE LINE LABEL: ");
-            l8.setFont(pt16SystemBoldFont);
-            l8.setWrapText(true);
-            getChildren().add(l8); //TODO: ALL RELATED LINES LABEL
+
+            getChildren().add(refLineLabel);
             List<IfcLine> referencingLines = getAllLinesReferencing(ifcLine);
 
             if (!referencingLines.isEmpty()) {
-                for(IfcLine relatedLine : referencingLines) {
-                    Label l7 = new Label(relatedLine.toString());
-                    l7.setWrapText(true);
-                    getChildren().add(l7); //TODO: Related Line View (IFCLINE VIEW)
+                for (IfcLine relatedLine : referencingLines) {
+                    addLineToView(relatedLine);
                 }
             }
         }
@@ -133,50 +182,59 @@ public class IfcLineView extends VBox {
 
     private List<IfcLine> getAllLinesReferencing(IfcLine ifcLine) {
         return this.ifcDataLines.entrySet().parallelStream()
-                                .filter(
-                                        entry -> {
-                                            IfcLine entryIfcLine = entry.getValue();
-                                            if (Objects.nonNull(entryIfcLine)) {
-                                                return entryIfcLine.getLine().matches("(.*)"+ifcLine.getId()+"(,|\\))(.*)");
-                                            }
-                                            return false;
-                                        })
-                                .map(Map.Entry::getValue)
-                                .collect(Collectors.toList());
+                .filter(
+                        entry -> {
+                            IfcLine entryIfcLine = entry.getValue();
+                            if (Objects.nonNull(entryIfcLine)) {
+                                return entryIfcLine
+                                        .getLine()
+                                        .matches("(.*)" + ifcLine.getId() + "([,)])(.*)");
+                            }
+                            return false;
+                        })
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
     }
 
     private List<IfcPropertySetLine> getRelatedPropertySetLines(IfcLine ifcLine) {
-        return this.ifcDataLines.entrySet().parallelStream()
-                                .filter(
-                                        entry -> {
-                                            IfcLine entryIfcLine = entry.getValue();
-                                            if (Objects.nonNull(entryIfcLine)
-                                                    && entryIfcLine instanceof IfcPropertySetLine) {
-                                                return ((IfcPropertySetLine) entryIfcLine)
-                                                        .getPropertyIds()
-                                                        .contains(ifcLine.getId());
-                                            }
-                                            return false;
-                                        })
-                                .map(Map.Entry::getValue)
-                                .map(l -> (IfcPropertySetLine) l)
-                                .collect(Collectors.toList());
+        return this.ifcDataLinesByClass.get(IfcPropertySetLine.class).parallelStream()
+                .map(l -> (IfcPropertySetLine) l)
+                .filter(
+                        entryIfcLine -> {
+                            if (Objects.nonNull(entryIfcLine)) {
+                                return ((IfcPropertySetLine) entryIfcLine)
+                                        .getPropertyIds()
+                                        .contains(ifcLine.getId());
+                            }
+                            return false;
+                        })
+                .collect(Collectors.toList());
+    }
+
+    private List<IfcLine> getRelatedObjectLines(IfcRelDefinesByPropertiesLine ifcLine) {
+        return ifcLine.getRelatedObjectIds().stream()
+                .map(objectId -> this.ifcDataLines.get(objectId))
+                .collect(Collectors.toList());
     }
 
     private List<IfcLine> getPropertySetChildLines(IfcPropertySetLine ifcLine) {
-        return this.ifcDataLines.entrySet().parallelStream()
-                                .filter(
-                                        entry -> {
-                                            IfcLine entryIfcLine = entry.getValue();
-                                            if (Objects.nonNull(entryIfcLine)) {
-                                                return ifcLine
-                                                        .getPropertyIds()
-                                                        .contains(entryIfcLine.getId());
-                                            }
-                                            return false;
-                                        })
-                                .map(Map.Entry::getValue)
-                                .collect(Collectors.toList());
+        return ifcLine.getPropertyIds().stream()
+                .map(propertyId -> this.ifcDataLines.get(propertyId))
+                .collect(Collectors.toList());
+    }
+
+    private List<IfcRelDefinesByPropertiesLine> getRelDefinesByPropertiesLinesReferencing(
+            IfcPropertySetLine ifcLine) {
+        return this.ifcDataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
+                .map(l -> (IfcRelDefinesByPropertiesLine) l)
+                .filter(
+                        entryIfcLine -> {
+                            if (Objects.nonNull(entryIfcLine)) {
+                                return entryIfcLine.getPropertySetId().equals(ifcLine.getId());
+                            }
+                            return false;
+                        })
+                .collect(Collectors.toList());
     }
 
     public IfcLine getIfcLine() {
@@ -197,5 +255,10 @@ public class IfcLineView extends VBox {
 
     public void setExtractedFeatures(ObservableList<Feature> extractedFeatures) {
         this.extractedFeatures = extractedFeatures;
+    }
+
+    public void setIfcDataLinesByClass(
+            ObservableMap<Class<? extends IfcLine>, List<IfcLine>> inputFileDataLinesByClass) {
+        this.ifcDataLinesByClass = inputFileDataLinesByClass;
     }
 }
