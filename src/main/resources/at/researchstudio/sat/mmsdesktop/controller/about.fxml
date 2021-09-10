@@ -26,7 +26,7 @@
         </VBox>
     </top>
     <center>
-        <ScrollPane>
+        <ScrollPane style="-fx-background-color:transparent;" hbarPolicy="NEVER">
             <MarkdownView fx:id="centerAboutMarkdown"/>
         </ScrollPane>
     </center>

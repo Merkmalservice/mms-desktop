@@ -198,12 +198,14 @@
                                                 </HBox>
                                             </top>
                                             <center>
-                                                <ScrollPane>
-                                                    <FeatureView fx:id="featureView" maxWidth="350" minWidth="350" spacing="10">
-                                                        <padding>
-                                                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-                                                        </padding>
-                                                    </FeatureView>
+                                                <ScrollPane style="-fx-background-color:transparent;"  hbarPolicy="NEVER">
+                                                    <GridPane>
+                                                        <FeatureView fx:id="featureView" maxWidth="350" minWidth="350" spacing="10" GridPane.hgrow="ALWAYS">
+                                                            <padding>
+                                                                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                                                            </padding>
+                                                        </FeatureView>
+                                                    </GridPane>
                                                 </ScrollPane>
                                             </center>
                                         </BorderPane>

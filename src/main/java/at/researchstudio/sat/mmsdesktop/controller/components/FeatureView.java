@@ -35,6 +35,9 @@ public class FeatureView extends VBox {
     private final Label featureQuantityKind;
     private final Label featureUnit;
 
+    private static final Font pt16Font = new Font(16);
+    private static final Font pt16SystemBoldFont = new Font("System Bold", 16);
+
     public FeatureView() {
         this.resourceBundle = ResourceBundle.getBundle("messages", Locale.getDefault());
 
@@ -42,24 +45,23 @@ public class FeatureView extends VBox {
         featureTypeIcon = new FontIcon(BootstrapIcons.QUESTION_CIRCLE);
         featureName.setGraphic(featureTypeIcon);
         featureName.setFont(new Font(24));
+        featureName.setWrapText(true);
         getChildren().add(featureName);
 
         featureNumericType = new GridPane();
         featureNumericType.setHgap(10);
         featureNumericType.setVgap(10);
 
-        Font boldSystemFont = new Font("System Bold", 16);
-        Font boldFont = new Font(16);
         Label quantityKindLabel = new Label(resourceBundle.getString("label.feature.quantitykind"));
         Label unitLabel = new Label(resourceBundle.getString("label.feature.unit"));
         featureUnit = new Label();
         featureQuantityKind = new Label();
 
-        featureUnit.setFont(boldFont);
-        featureQuantityKind.setFont(boldFont);
+        featureUnit.setFont(pt16Font);
+        featureQuantityKind.setFont(pt16Font);
 
-        unitLabel.setFont(boldSystemFont);
-        quantityKindLabel.setFont(boldSystemFont);
+        unitLabel.setFont(pt16SystemBoldFont);
+        quantityKindLabel.setFont(pt16SystemBoldFont);
 
         featureNumericType.add(quantityKindLabel, 0, 0);
         featureNumericType.add(featureQuantityKind, 0, 1);
@@ -78,7 +80,7 @@ public class FeatureView extends VBox {
         getChildren().add(featureEnumType);
 
         Label description = new Label(resourceBundle.getString("label.feature.description"));
-        description.setFont(boldSystemFont);
+        description.setFont(pt16SystemBoldFont);
         getChildren().add(description);
 
         featureDescriptionMarkdown = new MarkdownView();
