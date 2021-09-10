@@ -340,6 +340,11 @@ public class ExtractController implements Initializable {
         new Thread(task).start();
     }
 
+    @FXML
+    public void handleCloseSelectedFeatureAction(ActionEvent actionEvent) {
+        stateService.getSelectedFeatureState().clearSelectedFeature();
+    }
+
     public ObservableList<FileWrapper> getSelectedExtractFiles() {
         return stateService.getExtractState().getSelectedExtractFiles();
     }

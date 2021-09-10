@@ -134,6 +134,11 @@ public class ConvertController implements Initializable {
     }
 
     @FXML
+    public void handleCloseLineAction(ActionEvent actionEvent) {
+        stateService.getConvertState().closeSelectedIfcLine();
+    }
+
+    @FXML
     public void handleResetFileAction(ActionEvent actionEvent) {
         stateService.getConvertState().resetSelectedConvertFile();
     }

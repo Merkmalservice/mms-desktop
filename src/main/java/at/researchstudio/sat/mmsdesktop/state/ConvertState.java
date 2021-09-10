@@ -101,6 +101,10 @@ public class ConvertState {
         selectedIfcLine.setValue(ifcLine);
     }
 
+    public void closeSelectedIfcLine() {
+        setSelectedIfcLine(null);
+    }
+
     public ObjectProperty<IfcLine> selectedIfcLineProperty() {
         return selectedIfcLine;
     }
