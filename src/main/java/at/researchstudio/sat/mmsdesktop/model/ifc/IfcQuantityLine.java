@@ -4,7 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
-public class IfcQuantityLine extends IfcLine {
+public class IfcQuantityLine extends IfcLine implements IfcNamedPropertyLineInterface {
     private static final Pattern extractPattern_v2x3 =
             Pattern.compile(
                     "(?>#[0-9]*= IFCQUANTITY[A-Z]*\\(')(?<name>[^']*)',('(?<description>[^']*)'|\\$),((?<unitId>.*)|\\$),(?<value>[^,)]*)\\)");

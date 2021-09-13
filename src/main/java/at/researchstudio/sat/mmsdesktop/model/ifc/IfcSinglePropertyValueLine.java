@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
-public class IfcSinglePropertyValueLine extends IfcLine {
+public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPropertyLineInterface {
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCPROPERTYSINGLEVALUE\\(')(?<name>.*)',((?<description>[^$]*)|\\$),(((?<type>[A-Z]*)\\(('?)(?<value>[^']*)('?)(\\))|\\$),(.(?<unitId>.*)|\\$)\\))");
@@ -26,7 +26,9 @@ public class IfcSinglePropertyValueLine extends IfcLine {
             description = StringUtils.trimToNull(matcher.group("description"));
             value = StringUtils.trimToNull(matcher.group("value"));
             unitId = StringUtils.trimToNull(matcher.group("unitId"));
-            unitId = Objects.nonNull(unitId) ? "#" + unitId : unitId;
+            if (Objects.nonNull(unitId)) {
+                unitId = "#" + unitId;
+            }
         } else {
             throw new IllegalArgumentException("IfcPropertySingleValue invalid: " + line);
         }

@@ -10,7 +10,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
-public class IfcPropertyEnumeratedValueLine extends IfcLine {
+public class IfcPropertyEnumeratedValueLine extends IfcLine
+        implements IfcNamedPropertyLineInterface {
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCPROPERTYENUMERATEDVALUE\\('(?<name>.*)',((?<description>[^,]*)|\\$),\\((?<values>.*)\\),(.(?<enumId>.*)|\\$)\\))");
@@ -43,7 +44,9 @@ public class IfcPropertyEnumeratedValueLine extends IfcLine {
                                     })
                             .collect(Collectors.toList());
             enumId = StringUtils.trimToNull(matcher.group("enumId"));
-            enumId = Objects.nonNull(enumId) ? "#" + enumId : enumId;
+            if (Objects.nonNull(enumId)) {
+                enumId = "#" + enumId;
+            }
         } else {
             throw new IllegalArgumentException("IfcPropertyEnumeratedValue invalid: " + line);
         }

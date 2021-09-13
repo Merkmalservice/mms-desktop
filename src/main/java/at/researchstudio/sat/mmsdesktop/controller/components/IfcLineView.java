@@ -2,14 +2,10 @@ package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
-import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
-import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Task;
@@ -35,10 +31,7 @@ public class IfcLineView extends VBox {
 
     private final Label selectedLineLabel;
     private final Label memberOfPropertySetLabel;
-    private final Label relDefinesLabel;
     private final Label refLineLabel;
-    private final Label siblingPropertiesLabel;
-    private final Label relatedObjectsLabel;
     private final Label correspondingFeatureLabel;
 
     public IfcLineView() {
@@ -53,14 +46,6 @@ public class IfcLineView extends VBox {
         this.memberOfPropertySetLabel.setFont(pt16SystemBoldFont);
         this.memberOfPropertySetLabel.setWrapText(true);
 
-        this.relDefinesLabel = new Label(resourceBundle.getString("label.line.relDefinesLines"));
-        this.relDefinesLabel.setFont(pt16SystemBoldFont);
-        this.relDefinesLabel.setWrapText(true);
-
-        siblingPropertiesLabel = new Label(resourceBundle.getString("label.line.siblingsOfLine"));
-        siblingPropertiesLabel.setFont(pt16SystemBoldFont);
-        siblingPropertiesLabel.setWrapText(true);
-
         refLineLabel = new Label(resourceBundle.getString("label.line.referencingLines"));
         refLineLabel.setFont(pt16SystemBoldFont);
         refLineLabel.setWrapText(true);
@@ -69,11 +54,6 @@ public class IfcLineView extends VBox {
                 new Label(resourceBundle.getString("label.line.correspondingFeature"));
         correspondingFeatureLabel.setFont(pt16SystemBoldFont);
         correspondingFeatureLabel.setWrapText(true);
-
-        relatedObjectsLabel =
-                new Label(resourceBundle.getString("label.line.correspondingObjects"));
-        relatedObjectsLabel.setFont(pt16SystemBoldFont);
-        relatedObjectsLabel.setWrapText(true);
     }
 
     public void setIfcLine(IfcLine ifcLine) {
@@ -82,9 +62,7 @@ public class IfcLineView extends VBox {
     }
 
     private void addLineToView(IfcLine ifcLine) {
-        Label l = new Label(ifcLine.toString()); // TODO: IFCLINE VIEW
-        l.setWrapText(true);
-        getChildren().add(l);
+        getChildren().add(new IfcLineComponent(ifcLine));
     }
 
     private void processDataChange() {
@@ -97,9 +75,7 @@ public class IfcLineView extends VBox {
             getChildren().add(selectedLineLabel);
             addLineToView(ifcLine);
 
-            if (ifcLine instanceof IfcSinglePropertyValueLine
-                    || ifcLine instanceof IfcQuantityLine
-                    || ifcLine instanceof IfcPropertyEnumeratedValueLine) {
+            if (ifcLine instanceof IfcNamedPropertyLineInterface) {
                 List<IfcPropertySetLine> relatedPropertySets = getRelatedPropertySetLines(ifcLine);
 
                 if (!relatedPropertySets.isEmpty()) {
@@ -107,6 +83,10 @@ public class IfcLineView extends VBox {
                     for (IfcPropertySetLine l : relatedPropertySets) {
                         addLineToView(l);
 
+                        Label relDefinesLabel =
+                                new Label(resourceBundle.getString("label.line.relDefinesLines"));
+                        relDefinesLabel.setFont(pt16SystemBoldFont);
+                        relDefinesLabel.setWrapText(true);
                         getChildren().add(relDefinesLabel);
 
                         List<IfcRelDefinesByPropertiesLine> relDefinesByPropertiesLines =
@@ -120,6 +100,12 @@ public class IfcLineView extends VBox {
                                 List<IfcLine> relatedObjectLines =
                                         getRelatedObjectLines(relDefinesByPropertiesLine);
 
+                                Label relatedObjectsLabel =
+                                        new Label(
+                                                resourceBundle.getString(
+                                                        "label.line.correspondingObjects"));
+                                relatedObjectsLabel.setFont(pt16SystemBoldFont);
+                                relatedObjectsLabel.setWrapText(true);
                                 getChildren().add(relatedObjectsLabel);
 
                                 if (!relatedObjectLines.isEmpty()) {
@@ -130,6 +116,10 @@ public class IfcLineView extends VBox {
                             }
                         }
 
+                        Label siblingPropertiesLabel =
+                                new Label(resourceBundle.getString("label.line.siblingsOfLine"));
+                        siblingPropertiesLabel.setFont(pt16SystemBoldFont);
+                        siblingPropertiesLabel.setWrapText(true);
                         getChildren().add(siblingPropertiesLabel);
 
                         List<IfcLine> propertySetChildLines = getPropertySetChildLines(l);
@@ -155,21 +145,24 @@ public class IfcLineView extends VBox {
 
             getChildren().add(refLineLabel);
 
-            //TODO: MAYBE ADD PROGRESS BAR FOR REF LINES
-            Task<List<IfcLine>> refLineTask = new Task<>() {
-                @Override protected List<IfcLine> call() throws Exception {
-                    return getAllLinesReferencing(ifcLine);
-                }
-            };
+            // TODO: MAYBE ADD PROGRESS BAR FOR REF LINES
+            Task<List<IfcLine>> refLineTask =
+                    new Task<>() {
+                        @Override
+                        protected List<IfcLine> call() {
+                            return getAllLinesReferencing(ifcLine);
+                        }
+                    };
 
-            refLineTask.setOnSucceeded(t -> {
-                List<IfcLine> referencingLines = refLineTask.getValue();
-                if (!referencingLines.isEmpty()) {
-                    for (IfcLine relatedLine : referencingLines) {
-                        addLineToView(relatedLine);
-                    }
-                }
-            });
+            refLineTask.setOnSucceeded(
+                    t -> {
+                        List<IfcLine> referencingLines = refLineTask.getValue();
+                        if (!referencingLines.isEmpty()) {
+                            for (IfcLine relatedLine : referencingLines) {
+                                addLineToView(relatedLine);
+                            }
+                        }
+                    });
 
             new Thread(refLineTask).start();
         }
@@ -177,12 +170,8 @@ public class IfcLineView extends VBox {
 
     private Feature getRelatedFeature(IfcLine ifcLine) {
         String name;
-        if (ifcLine instanceof IfcSinglePropertyValueLine) {
-            name = ((IfcSinglePropertyValueLine) ifcLine).getName();
-        } else if (ifcLine instanceof IfcQuantityLine) {
-            name = ((IfcQuantityLine) ifcLine).getName();
-        } else if (ifcLine instanceof IfcPropertyEnumeratedValueLine) {
-            name = ((IfcPropertyEnumeratedValueLine) ifcLine).getName();
+        if (ifcLine instanceof IfcNamedPropertyLineInterface) {
+            name = ((IfcNamedPropertyLineInterface) ifcLine).getName();
         } else {
             name = null;
         }
@@ -224,9 +213,7 @@ public class IfcLineView extends VBox {
                 .filter(
                         entryIfcLine -> {
                             if (Objects.nonNull(entryIfcLine)) {
-                                return ((IfcPropertySetLine) entryIfcLine)
-                                        .getPropertyIds()
-                                        .contains(ifcLine.getId());
+                                return entryIfcLine.getPropertyIds().contains(ifcLine.getId());
                             }
                             return false;
                         })
