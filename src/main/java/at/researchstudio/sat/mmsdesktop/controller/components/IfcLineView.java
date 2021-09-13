@@ -18,7 +18,9 @@ public class IfcLineView extends VBox {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    private final ResourceBundle resourceBundle;
     private IfcLine ifcLine;
+
     private ObservableMap<String, IfcLine> ifcDataLines;
     private ObservableList<Feature> extractedFeatures;
     private ObservableMap<Class<? extends IfcLine>, List<IfcLine>> ifcDataLinesByClass;
@@ -35,33 +37,36 @@ public class IfcLineView extends VBox {
     private final Label correspondingFeatureLabel;
 
     public IfcLineView() {
-        this.selectedLineLabel =
-                new Label("TODO: SELECTED LINE LABEL"); // TODO: SELECTED LINE LABEL
+        this.resourceBundle = ResourceBundle.getBundle("messages", Locale.getDefault());
+
+        this.selectedLineLabel = new Label(resourceBundle.getString("label.line.selected"));
         this.selectedLineLabel.setFont(pt16SystemBoldFont);
         this.selectedLineLabel.setWrapText(true);
 
         this.memberOfPropertySetLabel =
-                new Label("TODO: MEMBER OF PROPSETS LABEL"); // TODO: PROPERTY SET LABEL
+                new Label(resourceBundle.getString("label.line.memberOfPropertySet"));
         this.memberOfPropertySetLabel.setFont(pt16SystemBoldFont);
         this.memberOfPropertySetLabel.setWrapText(true);
 
-        this.relDefinesLabel = new Label("TODO: REL DEFINES LINES"); // TODO: LABEL
+        this.relDefinesLabel = new Label(resourceBundle.getString("label.line.relDefinesLines"));
         this.relDefinesLabel.setFont(pt16SystemBoldFont);
         this.relDefinesLabel.setWrapText(true);
 
-        siblingPropertiesLabel = new Label("TODO: SIBLINGS OF PROPERTYSET LINES");
+        siblingPropertiesLabel = new Label(resourceBundle.getString("label.line.siblingsOfLine"));
         siblingPropertiesLabel.setFont(pt16SystemBoldFont);
         siblingPropertiesLabel.setWrapText(true);
 
-        refLineLabel = new Label("LINES REFERENCING THE LINE LABEL: ");
+        refLineLabel = new Label(resourceBundle.getString("label.line.referencingLines"));
         refLineLabel.setFont(pt16SystemBoldFont);
         refLineLabel.setWrapText(true);
 
-        correspondingFeatureLabel = new Label("FEATURE REFERENCED IN THIS LINE: "); // TODO: LABEL
+        correspondingFeatureLabel =
+                new Label(resourceBundle.getString("label.line.correspondingFeature"));
         correspondingFeatureLabel.setFont(pt16SystemBoldFont);
         correspondingFeatureLabel.setWrapText(true);
 
-        relatedObjectsLabel = new Label("TODO: REL OBJECT LINES");
+        relatedObjectsLabel =
+                new Label(resourceBundle.getString("label.line.correspondingObjects"));
         relatedObjectsLabel.setFont(pt16SystemBoldFont);
         relatedObjectsLabel.setWrapText(true);
     }

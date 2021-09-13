@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import org.springframework.stereotype.Component;
 
@@ -21,8 +22,11 @@ public class ConvertState {
     private final BooleanProperty showInputFile;
 
     private final ObjectProperty<IfcLine> selectedIfcLine;
+    private final ObjectProperty<Feature> selectedFeature;
 
     private final ObservableList<IfcLine> inputFileContent;
+    private final FilteredList<IfcLine> filteredInputFileContent;
+
     private final HashMap<String, IfcLine> inputFileContentMap;
     private final ObservableList<Feature> extractedFeatures;
     private final HashMap<Class<? extends IfcLine>, List<IfcLine>> inputFileContentByClassMap;
@@ -32,10 +36,12 @@ public class ConvertState {
         this.showLoadProgress = new SimpleBooleanProperty(false);
         this.showInputFile = new SimpleBooleanProperty(false);
         this.inputFileContent = FXCollections.observableArrayList();
+        this.filteredInputFileContent = new FilteredList<>(inputFileContent);
         this.extractedFeatures = FXCollections.observableArrayList();
         this.inputFileContentMap = new HashMap<>();
         this.inputFileContentByClassMap = new HashMap<>();
         this.selectedIfcLine = new SimpleObjectProperty<>();
+        this.selectedFeature = new SimpleObjectProperty<>();
     }
 
     public void showInitialView() {
@@ -57,7 +63,7 @@ public class ConvertState {
     }
 
     public void resetSelectedConvertFile() {
-        // TODO: ONLY DO THIS WITH A DIALOG
+        // TODO: ONLY DO THIS WITH A DIALOG, CLEAR EVERYTHING IN THIS VIEW TOO
         this.inputFileContent.clear();
         showInitialView();
     }
@@ -106,6 +112,18 @@ public class ConvertState {
         selectedIfcLine.setValue(ifcLine);
     }
 
+    public void setSelectedFeature(Feature feature) {
+        //        System.out.println("BLAARGH: " + feature);
+        //        List<IfcLine> filteredList = inputFileContent
+        //                .stream().filter(ifcLine -> ifcLine
+        //                        .getLine()
+        //
+        // .contains(Utils.convertUtf8ToIFCString(feature.getName()))).collect(
+        //                        Collectors.toList());
+        //        System.out.println("FILTERED LISTSIZE: " + filteredList.size());
+        selectedFeature.setValue(feature);
+    }
+
     public void closeSelectedIfcLine() {
         setSelectedIfcLine(null);
     }
@@ -114,8 +132,16 @@ public class ConvertState {
         return selectedIfcLine;
     }
 
+    public ObjectProperty<Feature> selectedFeatureProperty() {
+        return selectedFeature;
+    }
+
     public ObservableList<Feature> getInputFileExtractedFeatures() {
         return extractedFeatures;
+    }
+
+    public FilteredList<IfcLine> getFilteredInputFileContent() {
+        return filteredInputFileContent;
     }
 
     public ObservableMap<String, IfcLine> getInputFileDataLines() {

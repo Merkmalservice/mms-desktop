@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView;
 import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
@@ -21,13 +22,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import net.rgielen.fxweaver.core.FxmlView;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 @FxmlView("convert.fxml")
 public class ConvertController implements Initializable {
-
     private FileChooser fileChooser;
     private final ReactiveStateService stateService;
 
@@ -38,7 +39,9 @@ public class ConvertController implements Initializable {
     @FXML private JFXProgressBar centerProgressProgressBar;
     @FXML private BorderPane centerProgress;
     @FXML private Label centerProgressProgressInfo;
-    @FXML private JFXListView<IfcLine> centerInputFileContent;
+    @FXML private JFXListView<IfcLine> fullFileContentList;
+    @FXML private JFXListView<IfcLine> filteredFileContentList;
+    @FXML private JFXListView<Feature> extractedFeaturesList;
     @FXML private BorderPane selectedIfcLineView;
     @FXML private IfcLineView ifcLineView;
 
@@ -83,7 +86,39 @@ public class ConvertController implements Initializable {
                             ifcLineView.setIfcLine(selectedIfcLine);
                         }));
 
-        centerInputFileContent
+        extractedFeaturesList
+                .getSelectionModel()
+                .selectedItemProperty()
+                .addListener(
+                        (observable, deSelectedIfcFeature, selectedIfcFeature) ->
+                                stateService
+                                        .getConvertState()
+                                        .getFilteredInputFileContent()
+                                        .setPredicate(
+                                                ifcLine -> {
+                                                    if (Objects.isNull(selectedIfcFeature)
+                                                            || StringUtils.isEmpty(
+                                                                    selectedIfcFeature.getName()))
+                                                        return true;
+
+                                                    String translatedName =
+                                                            at.researchstudio.sat.merkmalservice
+                                                                    .utils.Utils
+                                                                    .convertUtf8ToIFCString(
+                                                                            selectedIfcFeature
+                                                                                    .getName());
+                                                    return ifcLine.getLine()
+                                                            .contains("'" + translatedName + "'");
+                                                }));
+
+        fullFileContentList
+                .getSelectionModel()
+                .selectedItemProperty()
+                .addListener(
+                        (observable, deSelectedIfcLine, selectedIfcLine) ->
+                                stateService.getConvertState().setSelectedIfcLine(selectedIfcLine));
+
+        filteredFileContentList
                 .getSelectionModel()
                 .selectedItemProperty()
                 .addListener(
@@ -147,5 +182,13 @@ public class ConvertController implements Initializable {
 
     public ObservableList<IfcLine> getFileContentList() {
         return stateService.getConvertState().getInputFileContent();
+    }
+
+    public ObservableList<Feature> getFileContentFeatures() {
+        return stateService.getConvertState().getInputFileExtractedFeatures();
+    }
+
+    public ObservableList<IfcLine> getFileContentFiltered() {
+        return stateService.getConvertState().getFilteredInputFileContent();
     }
 }

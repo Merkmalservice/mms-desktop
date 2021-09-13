@@ -11,6 +11,8 @@
 <?import com.jfoenix.controls.JFXListView?>
 <?import com.jfoenix.controls.JFXProgressBar?>
 <?import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView?>
+<?import com.jfoenix.controls.JFXComboBox?>
+<?import com.jfoenix.controls.JFXTabPane?>
 <BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -96,12 +98,49 @@
                         AnchorPane.leftAnchor="0.0">
                 <center>
                     <AnchorPane>
-                        <JFXListView fx:id="centerInputFileContent"
-                                     items="${controller.fileContentList}"
-                                     AnchorPane.topAnchor="0.0"
-                                     AnchorPane.rightAnchor="0.0"
-                                     AnchorPane.bottomAnchor="0.0"
-                                     AnchorPane.leftAnchor="0.0"/>
+                        <JFXTabPane AnchorPane.topAnchor="0.0"
+                                    AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                                    AnchorPane.leftAnchor="0.0"
+                                    style="-fx-cursor: hand;">
+                            <Tab text="%label.convert.inputFile">
+                                <BorderPane>
+                                    <center>
+                                        <AnchorPane>
+                                            <JFXListView fx:id="fullFileContentList"
+                                                         items="${controller.fileContentList}"
+                                                         AnchorPane.topAnchor="0.0"
+                                                         AnchorPane.rightAnchor="0.0"
+                                                         AnchorPane.bottomAnchor="0.0"
+                                                         AnchorPane.leftAnchor="0.0"/>
+                                        </AnchorPane>
+                                    </center>
+                                </BorderPane>
+                            </Tab>
+                            <Tab text="%label.convert.inspect">
+                                <BorderPane>
+                                    <left>
+                                        <AnchorPane>
+                                            <JFXListView fx:id="extractedFeaturesList"
+                                                         items="${controller.fileContentFeatures}"
+                                                         AnchorPane.topAnchor="0.0"
+                                                         AnchorPane.rightAnchor="0.0"
+                                                         AnchorPane.bottomAnchor="0.0"
+                                                         AnchorPane.leftAnchor="0.0"/>
+                                        </AnchorPane>
+                                    </left>
+                                    <center>
+                                        <AnchorPane>
+                                            <JFXListView fx:id="filteredFileContentList"
+                                                         items="${controller.fileContentFiltered}"
+                                                         AnchorPane.topAnchor="0.0"
+                                                         AnchorPane.rightAnchor="0.0"
+                                                         AnchorPane.bottomAnchor="0.0"
+                                                         AnchorPane.leftAnchor="0.0"/>
+                                        </AnchorPane>
+                                    </center>
+                                </BorderPane>
+                            </Tab>
+                        </JFXTabPane>
                     </AnchorPane>
                 </center>
                 <right>
