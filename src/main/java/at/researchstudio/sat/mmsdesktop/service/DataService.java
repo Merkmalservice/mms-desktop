@@ -1,36 +1,35 @@
 package at.researchstudio.sat.mmsdesktop.service;
 
-import org.keycloak.representations.AccessToken;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 
 public class DataService {
-    private AuthService authService;
-
-    public DataService(AuthService authService) {
-        this.authService = authService;
-    }
-
-    public static void callGraphQlEndpoint(String query, AccessToken token) {
-        Client client = ClientBuilder.newClient();
-        WebTarget resource =
-                        client.target("https://mms.researchstudio.at/backend/graphql")
-                                        .property(HttpHeaders.AUTHORIZATION, "Bearer " + token.getSubject());
-        Invocation.Builder request = resource.request();
-        request.accept(MediaType.APPLICATION_JSON);
-        Response response = request.get();
-        if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
-            System.out.println("Success! " + response.getStatus());
-            System.out.println(response.getEntity());
+    public static String callGraphQlEndpoint(String queryString, String idTokenString)
+            throws Exception {
+        HttpPost post = new HttpPost("https://merkmalservice.at/backend/graphql");
+        Header headers[] = {
+            new BasicHeader("Content-type", "application/json"),
+            new BasicHeader("Accept", "application/json"),
+            new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + idTokenString)
+        };
+        post.setHeaders(headers);
+        post.setEntity(new StringEntity(queryString));
+        HttpClient client = HttpClients.custom().build();
+        HttpResponse response = client.execute(post);
+        String result = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
+        response.getEntity().getContent().close();
+        if (response.getStatusLine().getStatusCode() == 200) {
+            return result;
         } else {
-            System.out.println("ERROR! " + response.getStatus());
-            System.out.println(response.getEntity());
+            throw new Exception(response.getStatusLine().getReasonPhrase());
         }
     }
 }

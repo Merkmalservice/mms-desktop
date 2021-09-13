@@ -1,16 +1,21 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.mmsdesktop.model.task.DataResult;
+import at.researchstudio.sat.mmsdesktop.model.task.ProjectResult;
 import at.researchstudio.sat.mmsdesktop.service.DataService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import com.google.gson.Gson;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.BorderPane;
 import net.rgielen.fxweaver.core.FxmlView;
-import org.keycloak.representations.AccessToken;
+import org.apache.commons.codec.Charsets;
+import org.apache.jena.ext.com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,7 +39,16 @@ public class ProjectsController implements Initializable {
     @FXML
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
         System.out.println("Loading Projects");
-        AccessToken accessToken = stateService.getLoginState().getUserSession().getAccessToken();
-        DataService.callGraphQlEndpoint("test", accessToken);
+        String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
+        URL josnUrl = Resources.getResource("graphql/query-projects.json");
+        try {
+            String queryString = Resources.toString(josnUrl, Charsets.UTF_8);
+            String result = DataService.callGraphQlEndpoint(queryString, idTokenString);
+            Gson gson = new Gson();
+            ArrayList<ProjectResult> projectResults =
+                    gson.fromJson(result, DataResult.class).getData().getProjects();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
