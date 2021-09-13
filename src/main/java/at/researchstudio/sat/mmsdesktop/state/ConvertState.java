@@ -1,9 +1,11 @@
 package at.researchstudio.sat.mmsdesktop.state;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
+import at.researchstudio.sat.mmsdesktop.controller.components.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import java.util.*;
+import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -28,7 +30,7 @@ public class ConvertState {
     private final FilteredList<IfcLine> filteredInputFileContent;
 
     private final HashMap<String, IfcLine> inputFileContentMap;
-    private final ObservableList<Feature> extractedFeatures;
+    private final ObservableList<FeatureLabel> extractedFeatures;
     private final HashMap<Class<? extends IfcLine>, List<IfcLine>> inputFileContentByClassMap;
 
     public ConvertState() {
@@ -94,7 +96,11 @@ public class ConvertState {
             this.inputFileContent.setAll(task.getValue().getLines());
             this.inputFileContentMap.putAll(task.getValue().getDataLines());
             this.inputFileContentByClassMap.putAll(task.getValue().getDataLinesByClass());
-            this.extractedFeatures.addAll(task.getValue().getExtractedFeatures());
+            this.extractedFeatures.addAll(
+                    task.getValue().getExtractedFeatures().stream()
+                            .sorted(Comparator.comparing(Feature::getName))
+                            .map(FeatureLabel::new)
+                            .collect(Collectors.toList()));
         } else {
             // TODO: BETTER ERROR HANDLING
             this.inputFileContent.setAll(
@@ -136,7 +142,7 @@ public class ConvertState {
         return selectedFeature;
     }
 
-    public ObservableList<Feature> getInputFileExtractedFeatures() {
+    public ObservableList<FeatureLabel> getInputFileExtractedFeatures() {
         return extractedFeatures;
     }
 

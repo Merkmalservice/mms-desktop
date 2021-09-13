@@ -1,6 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
-import at.researchstudio.sat.merkmalservice.model.Feature;
+import at.researchstudio.sat.mmsdesktop.controller.components.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView;
 import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
@@ -41,7 +41,7 @@ public class ConvertController implements Initializable {
     @FXML private Label centerProgressProgressInfo;
     @FXML private JFXListView<IfcLine> fullFileContentList;
     @FXML private JFXListView<IfcLine> filteredFileContentList;
-    @FXML private JFXListView<Feature> extractedFeaturesList;
+    @FXML private JFXListView<FeatureLabel> extractedFeaturesList;
     @FXML private BorderPane selectedIfcLineView;
     @FXML private IfcLineView ifcLineView;
 
@@ -98,7 +98,9 @@ public class ConvertController implements Initializable {
                                                 ifcLine -> {
                                                     if (Objects.isNull(selectedIfcFeature)
                                                             || StringUtils.isEmpty(
-                                                                    selectedIfcFeature.getName()))
+                                                                    selectedIfcFeature
+                                                                            .getFeature()
+                                                                            .getName()))
                                                         return true;
 
                                                     String translatedName =
@@ -106,6 +108,7 @@ public class ConvertController implements Initializable {
                                                                     .utils.Utils
                                                                     .convertUtf8ToIFCString(
                                                                             selectedIfcFeature
+                                                                                    .getFeature()
                                                                                     .getName());
                                                     return ifcLine.getLine()
                                                             .contains("'" + translatedName + "'");
@@ -184,7 +187,7 @@ public class ConvertController implements Initializable {
         return stateService.getConvertState().getInputFileContent();
     }
 
-    public ObservableList<Feature> getFileContentFeatures() {
+    public ObservableList<FeatureLabel> getFileContentFeatures() {
         return stateService.getConvertState().getInputFileExtractedFeatures();
     }
 

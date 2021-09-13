@@ -2,12 +2,17 @@ package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
+import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
+import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.concurrent.Task;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -22,7 +27,7 @@ public class IfcLineView extends VBox {
     private IfcLine ifcLine;
 
     private ObservableMap<String, IfcLine> ifcDataLines;
-    private ObservableList<Feature> extractedFeatures;
+    private ObservableList<FeatureLabel> extractedFeatures;
     private ObservableMap<Class<? extends IfcLine>, List<IfcLine>> ifcDataLinesByClass;
 
     private static final Font pt16Font = new Font(16);
@@ -149,13 +154,24 @@ public class IfcLineView extends VBox {
             }
 
             getChildren().add(refLineLabel);
-            List<IfcLine> referencingLines = getAllLinesReferencing(ifcLine);
 
-            if (!referencingLines.isEmpty()) {
-                for (IfcLine relatedLine : referencingLines) {
-                    addLineToView(relatedLine);
+            //TODO: MAYBE ADD PROGRESS BAR FOR REF LINES
+            Task<List<IfcLine>> refLineTask = new Task<>() {
+                @Override protected List<IfcLine> call() throws Exception {
+                    return getAllLinesReferencing(ifcLine);
                 }
-            }
+            };
+
+            refLineTask.setOnSucceeded(t -> {
+                List<IfcLine> referencingLines = refLineTask.getValue();
+                if (!referencingLines.isEmpty()) {
+                    for (IfcLine relatedLine : referencingLines) {
+                        addLineToView(relatedLine);
+                    }
+                }
+            });
+
+            new Thread(refLineTask).start();
         }
     }
 
@@ -173,13 +189,13 @@ public class IfcLineView extends VBox {
 
         if (Objects.nonNull(name)) {
             String convertedName = Utils.convertIFCStringToUtf8(name);
-            Optional<Feature> optionalFeature =
+            Optional<FeatureLabel> optionalFeature =
                     this.extractedFeatures.stream()
-                            .filter(f -> convertedName.equals(f.getName()))
+                            .filter(f -> convertedName.equals(f.getFeature().getName()))
                             .findFirst();
 
             if (optionalFeature.isPresent()) {
-                return optionalFeature.get();
+                return optionalFeature.get().getFeature();
             }
         }
 
@@ -255,11 +271,11 @@ public class IfcLineView extends VBox {
         this.ifcDataLines = ifcDataLines;
     }
 
-    public ObservableList<Feature> getExtractedFeatures() {
+    /*public ObservableList<Feature> getExtractedFeatures() {
         return extractedFeatures;
-    }
+    }*/
 
-    public void setExtractedFeatures(ObservableList<Feature> extractedFeatures) {
+    public void setExtractedFeatures(ObservableList<FeatureLabel> extractedFeatures) {
         this.extractedFeatures = extractedFeatures;
     }
 
