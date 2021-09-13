@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcDerivedUnitLine extends IfcLine {
-    // TODO: IMPL
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCDERIVEDUNIT\\(\\((?<unitIds>.*)\\),.(?<type>.*).,(('(?<name>.*)')|\\$)\\))");

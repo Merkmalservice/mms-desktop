@@ -23,8 +23,6 @@ public class IfcSIUnitLine extends IfcLine {
             type = StringUtils.trim(matcher.group("type"));
             measure = StringUtils.trim(matcher.group("measure"));
             prefix = StringUtils.trimToNull(matcher.group("prefix"));
-            boolean projectDefault = false; // TODO: FIGURE OUT PROJECTDEFAULT
-            // PARSER
         } else {
             throw new IllegalArgumentException("IfcSIUnitLine invalid: " + line);
         }

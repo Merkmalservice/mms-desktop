@@ -35,7 +35,8 @@ public class IfcLineView extends VBox {
     private final Label correspondingFeatureLabel;
 
     public IfcLineView() {
-        this.selectedLineLabel = new Label("TODO: SELECTED LINE LABEL"); // TODO: SELECTED LINE LABEL
+        this.selectedLineLabel =
+                new Label("TODO: SELECTED LINE LABEL"); // TODO: SELECTED LINE LABEL
         this.selectedLineLabel.setFont(pt16SystemBoldFont);
         this.selectedLineLabel.setWrapText(true);
 

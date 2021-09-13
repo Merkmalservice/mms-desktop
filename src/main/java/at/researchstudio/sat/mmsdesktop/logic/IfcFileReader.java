@@ -120,7 +120,6 @@ public class IfcFileReader {
         }
 
         List<String> defaultProjectUnitIds = Collections.emptyList();
-        // TODO: PROJECT UNIT ASSIGNMENT FIX
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(
                         IfcUnitAssignmentLine.class, Collections.emptyList())) {
@@ -207,7 +206,6 @@ public class IfcFileReader {
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(
                         IfcPropertyEnumeratedValueLine.class, Collections.emptyList())) {
-            // TODO:
             IfcPropertyEnumeratedValueLine propertyLine = (IfcPropertyEnumeratedValueLine) line;
 
             IfcPropertyEnumerationLine enumLine = null;
