@@ -4,6 +4,7 @@ import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import com.jfoenix.controls.JFXButton;
 import java.lang.invoke.MethodHandles;
 import java.util.ResourceBundle;
 import javafx.concurrent.Task;
@@ -33,6 +34,7 @@ public class MainController implements Initializable {
     @FXML private MenuItem menuBarLogin;
     @FXML private MenuItem menuBarLogout;
     @FXML private BorderPane mainPane;
+    @FXML private JFXButton projectsButton;
 
     @Autowired
     public MainController(AuthService authService, ReactiveStateService stateService) {
@@ -45,6 +47,9 @@ public class MainController implements Initializable {
         menuBar.setFocusTraversable(true);
         menuBarLogin.visibleProperty().bind(stateService.getLoginState().loggedInProperty().not());
         menuBarLogout.visibleProperty().bind(stateService.getLoginState().loggedInProperty());
+        projectsButton
+                .disableProperty()
+                .bind(stateService.getLoginState().loggedInProperty().not());
         mainPane.centerProperty()
                 .bind(stateService.getViewState().visibleCenterPanePropertyProperty());
     }
