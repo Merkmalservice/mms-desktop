@@ -34,6 +34,7 @@ public class FeatureView extends VBox {
 
     private static final Font pt16Font = new Font(16);
     private static final Font pt16SystemBoldFont = new Font("System Bold", 16);
+    private boolean showJson = true;
 
     public FeatureView() {
         this.resourceBundle = ResourceBundle.getBundle("messages", Locale.getDefault());
@@ -98,13 +99,17 @@ public class FeatureView extends VBox {
         if (Objects.nonNull(feature)) {
             featureName.setFeature(feature);
             featureDescriptionMarkdown.setMdString(feature.getDescription());
-            featureJson.setText(
-                    Utils.executeOrDefaultOnException(
-                            () -> {
-                                Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
-                                return gson.toJson(feature);
-                            },
-                            ""));
+            if (showJson) {
+                featureJson.setText(
+                        Utils.executeOrDefaultOnException(
+                                () -> {
+                                    Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
+                                    return gson.toJson(feature);
+                                },
+                                ""));
+            }
+            featureJson.setManaged(showJson);
+            featureJson.setVisible(showJson);
 
             featureNumericType.setVisible(false);
             featureNumericType.setManaged(false);
@@ -129,6 +134,12 @@ public class FeatureView extends VBox {
                                 resourceBundle, ((NumericFeature) feature).getUnit()));
             }
         }
+    }
+
+    public void setShowJson(boolean showJson) {
+        this.showJson = showJson;
+        featureJson.setManaged(this.showJson);
+        featureJson.setVisible(this.showJson);
     }
 
     public Feature getFeature() {

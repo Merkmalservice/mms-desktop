@@ -93,7 +93,10 @@ public class IfcLineView extends VBox {
                         propSetsBox.setPadding(new Insets(10, 10, 10, 10));
 
                         String propSetName = l.getName();
-                        String convertedPropSetName = Objects.nonNull(propSetName) ? Utils.convertIFCStringToUtf8(propSetName) : "NO NAME";
+                        String convertedPropSetName =
+                                Objects.nonNull(propSetName)
+                                        ? Utils.convertIFCStringToUtf8(propSetName)
+                                        : "NO NAME";
                         TitledPane propSetPane =
                                 new TitledPane(
                                         "'" + convertedPropSetName + "'/" + l.getId(),
@@ -189,6 +192,7 @@ public class IfcLineView extends VBox {
 
                 if (Objects.nonNull(relatedFeature)) {
                     FeatureView featureView = new FeatureView();
+                    featureView.setShowJson(false);
                     featureView.setSpacing(10);
                     featureView.setPadding(new Insets(10, 10, 10, 10));
                     featureView.setFeature(relatedFeature);
