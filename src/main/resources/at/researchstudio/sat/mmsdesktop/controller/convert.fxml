@@ -178,7 +178,7 @@
                         <center>
                             <ScrollPane style="-fx-background-color:transparent;" hbarPolicy="NEVER">
                                 <GridPane>
-                                    <IfcLineView fx:id="ifcLineView" maxWidth="350" minWidth="350" spacing="10" GridPane.hgrow="ALWAYS">
+                                    <IfcLineView fx:id="ifcLineView" maxWidth="500" minWidth="400" spacing="10" GridPane.hgrow="ALWAYS">
                                         <padding>
                                             <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
                                         </padding>

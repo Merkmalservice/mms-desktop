@@ -9,7 +9,10 @@ import java.util.stream.Collectors;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import org.slf4j.Logger;
@@ -30,9 +33,10 @@ public class IfcLineView extends VBox {
     private static final Font pt16SystemBoldFont = new Font("System Bold", 16);
 
     private final Label selectedLineLabel;
-    private final Label memberOfPropertySetLabel;
-    private final Label refLineLabel;
-    private final Label correspondingFeatureLabel;
+
+    private final Accordion accordion;
+    private final TitledPane correspondingFeaturePane;
+    private final TitledPane referencedLinesPane;
 
     public IfcLineView() {
         this.resourceBundle = ResourceBundle.getBundle("messages", Locale.getDefault());
@@ -41,19 +45,17 @@ public class IfcLineView extends VBox {
         this.selectedLineLabel.setFont(pt16SystemBoldFont);
         this.selectedLineLabel.setWrapText(true);
 
-        this.memberOfPropertySetLabel =
-                new Label(resourceBundle.getString("label.line.memberOfPropertySet"));
-        this.memberOfPropertySetLabel.setFont(pt16SystemBoldFont);
-        this.memberOfPropertySetLabel.setWrapText(true);
-
-        refLineLabel = new Label(resourceBundle.getString("label.line.referencingLines"));
-        refLineLabel.setFont(pt16SystemBoldFont);
-        refLineLabel.setWrapText(true);
-
-        correspondingFeatureLabel =
-                new Label(resourceBundle.getString("label.line.correspondingFeature"));
-        correspondingFeatureLabel.setFont(pt16SystemBoldFont);
-        correspondingFeatureLabel.setWrapText(true);
+        accordion = new Accordion();
+        correspondingFeaturePane =
+                new TitledPane(
+                        resourceBundle.getString("label.line.correspondingFeature"),
+                        new Label(resourceBundle.getString("label.notPresent")));
+        correspondingFeaturePane.setFont(pt16SystemBoldFont);
+        referencedLinesPane =
+                new TitledPane(
+                        resourceBundle.getString("label.line.referencingLines"),
+                        new Label(resourceBundle.getString("label.notPresent")));
+        referencedLinesPane.setFont(pt16SystemBoldFont);
     }
 
     public void setIfcLine(IfcLine ifcLine) {
@@ -67,6 +69,7 @@ public class IfcLineView extends VBox {
 
     private void processDataChange() {
         getChildren().clear();
+        accordion.getPanes().clear();
 
         if (Objects.nonNull(ifcDataLines)
                 && Objects.nonNull(ifcDataLinesByClass)
@@ -76,18 +79,28 @@ public class IfcLineView extends VBox {
             addLineToView(ifcLine);
 
             if (ifcLine instanceof IfcNamedPropertyLineInterface) {
+                accordion.getPanes().add(correspondingFeaturePane);
                 List<IfcPropertySetLine> relatedPropertySets = getRelatedPropertySetLines(ifcLine);
 
                 if (!relatedPropertySets.isEmpty()) {
-                    getChildren().add(memberOfPropertySetLabel);
+
                     for (IfcPropertySetLine l : relatedPropertySets) {
-                        addLineToView(l);
+                        VBox propSetsBox = new VBox();
+                        propSetsBox.setSpacing(10);
+                        propSetsBox.setPadding(new Insets(10, 10, 10, 10));
+                        TitledPane propSetPane =
+                                new TitledPane(
+                                        "'" + l.getName() + "'/" + l.getId(),
+                                        propSetsBox); // TODO: Better Key
+                        propSetPane.setFont(pt16SystemBoldFont);
+                        accordion.getPanes().add(propSetPane);
+                        propSetsBox.getChildren().add(new IfcLineComponent(l));
 
                         Label relDefinesLabel =
                                 new Label(resourceBundle.getString("label.line.relDefinesLines"));
                         relDefinesLabel.setFont(pt16SystemBoldFont);
                         relDefinesLabel.setWrapText(true);
-                        getChildren().add(relDefinesLabel);
+                        propSetsBox.getChildren().add(relDefinesLabel);
 
                         List<IfcRelDefinesByPropertiesLine> relDefinesByPropertiesLines =
                                 getRelDefinesByPropertiesLinesReferencing(l);
@@ -95,7 +108,9 @@ public class IfcLineView extends VBox {
                         if (!relDefinesByPropertiesLines.isEmpty()) {
                             for (IfcRelDefinesByPropertiesLine relDefinesByPropertiesLine :
                                     relDefinesByPropertiesLines) {
-                                addLineToView(relDefinesByPropertiesLine);
+                                propSetsBox
+                                        .getChildren()
+                                        .add(new IfcLineComponent(relDefinesByPropertiesLine));
 
                                 List<IfcLine> relatedObjectLines =
                                         getRelatedObjectLines(relDefinesByPropertiesLine);
@@ -106,11 +121,13 @@ public class IfcLineView extends VBox {
                                                         "label.line.correspondingObjects"));
                                 relatedObjectsLabel.setFont(pt16SystemBoldFont);
                                 relatedObjectsLabel.setWrapText(true);
-                                getChildren().add(relatedObjectsLabel);
+                                propSetsBox.getChildren().add(relatedObjectsLabel);
 
                                 if (!relatedObjectLines.isEmpty()) {
                                     for (IfcLine relatedObjectLine : relatedObjectLines) {
-                                        addLineToView(relatedObjectLine);
+                                        propSetsBox
+                                                .getChildren()
+                                                .add(new IfcLineComponent(relatedObjectLine));
                                     }
                                 }
                             }
@@ -120,13 +137,13 @@ public class IfcLineView extends VBox {
                                 new Label(resourceBundle.getString("label.line.siblingsOfLine"));
                         siblingPropertiesLabel.setFont(pt16SystemBoldFont);
                         siblingPropertiesLabel.setWrapText(true);
-                        getChildren().add(siblingPropertiesLabel);
+                        propSetsBox.getChildren().add(siblingPropertiesLabel);
 
                         List<IfcLine> propertySetChildLines = getPropertySetChildLines(l);
 
                         if (!propertySetChildLines.isEmpty()) {
                             for (IfcLine childLine : propertySetChildLines) {
-                                addLineToView(childLine);
+                                propSetsBox.getChildren().add(new IfcLineComponent(childLine));
                             }
                         }
                     }
@@ -135,31 +152,38 @@ public class IfcLineView extends VBox {
                 Feature relatedFeature = getRelatedFeature(ifcLine);
 
                 if (Objects.nonNull(relatedFeature)) {
-
-                    getChildren().add(correspondingFeatureLabel);
                     FeatureView featureView = new FeatureView();
+                    featureView.setSpacing(10);
+                    featureView.setPadding(new Insets(10, 10, 10, 10));
                     featureView.setFeature(relatedFeature);
                     getChildren().add(featureView);
+                    correspondingFeaturePane.setContent(featureView);
                 }
             }
-
-            getChildren().add(refLineLabel);
+            accordion.getPanes().add(referencedLinesPane);
+            getChildren().add(accordion);
 
             // TODO: MAYBE ADD PROGRESS BAR FOR REF LINES
+            VBox refLinesBox = new VBox();
+            refLinesBox.setSpacing(10);
+            refLinesBox.setPadding(new Insets(10, 10, 10, 10));
+
             Task<List<IfcLine>> refLineTask =
                     new Task<>() {
                         @Override
                         protected List<IfcLine> call() {
+                            refLinesBox.getChildren().clear();
                             return getAllLinesReferencing(ifcLine);
                         }
                     };
 
+            referencedLinesPane.setContent(refLinesBox);
             refLineTask.setOnSucceeded(
                     t -> {
                         List<IfcLine> referencingLines = refLineTask.getValue();
                         if (!referencingLines.isEmpty()) {
                             for (IfcLine relatedLine : referencingLines) {
-                                addLineToView(relatedLine);
+                                refLinesBox.getChildren().add(new IfcLineComponent(relatedLine));
                             }
                         }
                     });
