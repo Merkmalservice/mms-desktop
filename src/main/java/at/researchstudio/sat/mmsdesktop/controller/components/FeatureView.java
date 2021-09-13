@@ -18,15 +18,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import org.kordamp.ikonli.bootstrapicons.BootstrapIcons;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 public class FeatureView extends VBox {
     private final ResourceBundle resourceBundle;
     private Feature feature;
 
-    private final Label featureName;
-    private final FontIcon featureTypeIcon;
+    private final FeatureLabel featureName;
     private final GridPane featureNumericType;
     private final TableView<EnumFeature.OptionValue> featureEnumType;
     private final MarkdownView featureDescriptionMarkdown;
@@ -41,9 +38,7 @@ public class FeatureView extends VBox {
     public FeatureView() {
         this.resourceBundle = ResourceBundle.getBundle("messages", Locale.getDefault());
 
-        featureName = new Label();
-        featureTypeIcon = new FontIcon(BootstrapIcons.QUESTION_CIRCLE);
-        featureName.setGraphic(featureTypeIcon);
+        featureName = new FeatureLabel();
         featureName.setFont(new Font(24));
         featureName.setWrapText(true);
         getChildren().add(featureName);
@@ -101,7 +96,7 @@ public class FeatureView extends VBox {
     public void setFeature(Feature feature) {
         this.feature = feature;
         if (Objects.nonNull(feature)) {
-            featureName.setText(feature.getName());
+            featureName.setFeature(feature);
             featureDescriptionMarkdown.setMdString(feature.getDescription());
             featureJson.setText(
                     Utils.executeOrDefaultOnException(
@@ -116,19 +111,12 @@ public class FeatureView extends VBox {
             featureEnumType.setVisible(false);
             featureEnumType.setManaged(false);
 
-            if (feature instanceof StringFeature) {
-                featureTypeIcon.setIconCode(BootstrapIcons.FILE_TEXT);
-            } else if (feature instanceof EnumFeature) {
+            if (feature instanceof EnumFeature) {
                 featureEnumType.setVisible(true);
                 featureEnumType.setManaged(true);
 
                 featureEnumType.setItems(
                         FXCollections.observableList(((EnumFeature) feature).getOptions()));
-                featureTypeIcon.setIconCode(BootstrapIcons.UI_RADIOS);
-            } else if (feature instanceof ReferenceFeature) {
-                featureTypeIcon.setIconCode(BootstrapIcons.LINK_45DEG);
-            } else if (feature instanceof BooleanFeature) {
-                featureTypeIcon.setIconCode(BootstrapIcons.TOGGLES);
             } else if (feature instanceof NumericFeature) {
                 featureNumericType.setVisible(true);
                 featureNumericType.setManaged(true);
@@ -139,10 +127,6 @@ public class FeatureView extends VBox {
                 this.featureUnit.setText(
                         MessageUtils.getKeyForUnit(
                                 resourceBundle, ((NumericFeature) feature).getUnit()));
-
-                featureTypeIcon.setIconCode(BootstrapIcons.CALCULATOR);
-            } else {
-                featureTypeIcon.setIconCode(BootstrapIcons.QUESTION_CIRCLE);
             }
         }
     }
