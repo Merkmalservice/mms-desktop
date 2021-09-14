@@ -103,8 +103,9 @@ public class ConvertState {
                             .collect(Collectors.toList()));
         } else {
             // TODO: BETTER ERROR HANDLING
-            this.inputFileContent.setAll(
-                    Collections.singletonList(new IfcLine(task.getException().getMessage())));
+            // String errorMessage = task.getException().getMessage();
+
+            this.inputFileContent.setAll(Collections.emptyList());
             this.inputFileContentMap.putAll(Collections.emptyMap());
             this.inputFileContentByClassMap.putAll(Collections.emptyMap());
             this.extractedFeatures.addAll(Collections.emptyList());
