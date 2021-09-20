@@ -1,5 +1,5 @@
 {
-  "query": "query PROJECTS {projects {id name}}",
+  "query": "query PROJECTS {projects {id name users{id} standards{id mappings{id}}}}",
   "operationName": "PROJECTS",
   "variables:": {
   }

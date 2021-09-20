@@ -7,8 +7,10 @@ import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import com.google.gson.Gson;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -26,11 +28,13 @@ public class ProjectsController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ReactiveStateService stateService;
+    private final ObservableList<ProjectResult> loadedProjects;
     // BorderPane Elements
     @FXML private BorderPane parentPane;
 
     public ProjectsController(ReactiveStateService stateService) {
         this.stateService = stateService;
+        this.loadedProjects = FXCollections.observableArrayList();
     }
 
     @Override
@@ -45,10 +49,15 @@ public class ProjectsController implements Initializable {
             String queryString = Resources.toString(josnUrl, Charsets.UTF_8);
             String result = DataService.callGraphQlEndpoint(queryString, idTokenString);
             Gson gson = new Gson();
-            ArrayList<ProjectResult> projectResults =
+            List<ProjectResult> projects =
                     gson.fromJson(result, DataResult.class).getData().getProjects();
+            loadedProjects.setAll(projects);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public ObservableList<ProjectResult> getLoadedProjects() {
+        return loadedProjects;
     }
 }
