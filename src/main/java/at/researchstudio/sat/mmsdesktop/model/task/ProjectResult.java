@@ -61,10 +61,28 @@ public class ProjectResult {
 
     class Standard {
         String id;
-        List mappings;
+        List<Mapping> mappings;
     }
 
     class User {
+        String id;
+        String name;
+    }
+
+    class Mapping {
+        String id;
+        Feature inputFeature;
+        Feature outputFeature;
+    }
+
+    class Feature {
+        String id;
+        String name;
+        String description;
+        Organization organization;
+    }
+
+    class Organization {
         String id;
         String name;
     }

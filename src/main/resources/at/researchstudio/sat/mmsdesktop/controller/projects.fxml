@@ -51,7 +51,7 @@
                        AnchorPane.bottomAnchor="0.0"
                        AnchorPane.leftAnchor="0.0" items="${controller.loadedProjects}">
                 <columns>
-                    <TableColumn editable="false" prefWidth="100.0"
+                    <TableColumn editable="false" prefWidth="200.0"
                                  sortType="DESCENDING" text="%label.projects.name">
                         <cellValueFactory>
                             <PropertyValueFactory property="name"/>
@@ -59,18 +59,21 @@
 
                     </TableColumn>
                     <TableColumn editable="false" prefWidth="100.0"
+                                 style="-fx-alignment: CENTER-RIGHT;"
                                  sortType="DESCENDING" text="%label.projects.users">
                         <cellValueFactory>
                             <PropertyValueFactory property="usersSize"/>
                         </cellValueFactory>
                     </TableColumn>
                     <TableColumn editable="false" prefWidth="100.0"
+                                 style="-fx-alignment: CENTER-RIGHT;"
                                  sortType="DESCENDING" text="%label.projects.standards">
                         <cellValueFactory>
                             <PropertyValueFactory property="standardsSize"/>
                         </cellValueFactory>
                     </TableColumn>
                     <TableColumn editable="false" prefWidth="100.0"
+                                 style="-fx-alignment: CENTER-RIGHT;"
                                  sortType="DESCENDING" text="%label.projects.mappings">
                         <cellValueFactory>
                             <PropertyValueFactory property="mappingsSize"/>
