@@ -10,8 +10,14 @@ public class IfcSIUnitBuilder {
     private IfcUnitType type;
     private IfcUnitMeasure measure;
     private IfcUnitMeasurePrefix prefix;
+    private String uri;
+    private boolean projectDefault;
 
     public IfcSIUnitBuilder(QuerySolution qs) {
+        this.uri =
+                qs.getResource("unitUri")
+                        .getURI(); // TODO: MAYBE ERROR HANDLING BUT THIS SHOULD BE HERE ALWAYS I
+        // THINK
         this.type =
                 Utils.executeOrDefaultOnException(
                         () -> IfcUnitType.fromString(qs.getResource("unitType").getURI()),
@@ -32,9 +38,13 @@ public class IfcSIUnitBuilder {
                         IfcUnitMeasurePrefix.NONE,
                         NullPointerException.class,
                         IllegalArgumentException.class);
+
+        this.projectDefault =
+                Utils.executeOrDefaultOnException(
+                        () -> qs.getResource("projectUri").getURI() != null, false);
     }
 
     public IfcSIUnit build() {
-        return new IfcSIUnit(type, measure, prefix);
+        return new IfcSIUnit(uri, type, measure, prefix, projectDefault);
     }
 }

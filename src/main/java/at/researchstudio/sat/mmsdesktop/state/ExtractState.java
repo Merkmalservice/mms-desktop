@@ -3,6 +3,7 @@ package at.researchstudio.sat.mmsdesktop.state;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.ExcludeDescriptionStrategy;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
+import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import com.google.gson.Gson;
@@ -30,11 +31,8 @@ public class ExtractState {
     private final BooleanProperty showExtractProcess;
     private final BooleanProperty showExtracted;
 
-    private final ObservableList<IfcFileWrapper> selectedIfcFiles;
-    private final BooleanProperty selectedIfcFilesPresent;
-
-    private final ObservableList<FileWrapper> selectedJsonFiles;
-    private final BooleanProperty selectedJsonFilesPresent;
+    private final ObservableList<FileWrapper> selectedExtractFiles;
+    private final BooleanProperty selectedExtractFilesPresent;
 
     private final SimpleStringProperty extractLogOutput;
     private final SimpleStringProperty extractJsonOutput;
@@ -47,10 +45,8 @@ public class ExtractState {
         this.showInitial = new SimpleBooleanProperty(true);
         this.showExtractProcess = new SimpleBooleanProperty(false);
         this.showExtracted = new SimpleBooleanProperty(false);
-        this.selectedIfcFiles = FXCollections.observableArrayList();
-        this.selectedJsonFiles = FXCollections.observableArrayList();
-        this.selectedIfcFilesPresent = new SimpleBooleanProperty(false);
-        this.selectedJsonFilesPresent = new SimpleBooleanProperty(false);
+        this.selectedExtractFiles = FXCollections.observableArrayList();
+        this.selectedExtractFilesPresent = new SimpleBooleanProperty(false);
         this.extractLogOutput = new SimpleStringProperty("");
         this.extractJsonOutput = new SimpleStringProperty("[]");
         this.extractedFeatures = FXCollections.observableArrayList();
@@ -58,12 +54,8 @@ public class ExtractState {
         this.sortedExtractedFeatures = new SortedList<>(filteredExtractedFeatures);
     }
 
-    public BooleanProperty selectedIfcFilesPresentProperty() {
-        return selectedIfcFilesPresent;
-    }
-
-    public BooleanProperty selectedJsonFilesPresentProperty() {
-        return selectedJsonFilesPresent;
+    public BooleanProperty selectedExtractFilesPresentProperty() {
+        return selectedExtractFilesPresent;
     }
 
     public BooleanProperty showInitialProperty() {
@@ -78,31 +70,23 @@ public class ExtractState {
         return showExtracted;
     }
 
-    public ObservableList<IfcFileWrapper> getSelectedIfcFiles() {
-        return selectedIfcFiles;
+    public ObservableList<FileWrapper> getSelectedExtractFiles() {
+        return selectedExtractFiles;
     }
 
-    public ObservableList<FileWrapper> getSelectedJsonFiles() {
-        return selectedJsonFiles;
-    }
-
-    public void setSelectedIfcFiles(List<File> selectedFiles) {
+    public void setSelectedExtractFiles(List<File> selectedFiles) {
         if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
-            Set<IfcFileWrapper> selectedIfcFileSet = new HashSet<>(selectedIfcFiles);
-            selectedIfcFileSet.addAll(
-                    selectedFiles.stream().map(IfcFileWrapper::new).collect(Collectors.toList()));
-            selectedIfcFiles.setAll(selectedIfcFileSet);
-            selectedIfcFilesPresent.set(true);
-        }
-    }
-
-    public void setSelectedJsonFiles(List<File> selectedFiles) {
-        if (Objects.nonNull(selectedFiles) && selectedFiles.size() > 0) {
-            Set<FileWrapper> selectedJsonFileSet = new HashSet<>(selectedJsonFiles);
-            selectedJsonFileSet.addAll(
-                    selectedFiles.stream().map(FileWrapper::new).collect(Collectors.toList()));
-            selectedJsonFiles.setAll(selectedJsonFileSet);
-            selectedJsonFilesPresent.set(true);
+            Set<FileWrapper> selectedExtractFileSet = new HashSet<>(selectedExtractFiles);
+            selectedExtractFileSet.addAll(
+                    selectedFiles.stream()
+                            .map(
+                                    f ->
+                                            FileUtils.isIfcFile(f)
+                                                    ? new IfcFileWrapper(f)
+                                                    : new FileWrapper(f))
+                            .collect(Collectors.toList()));
+            selectedExtractFiles.setAll(selectedExtractFileSet);
+            selectedExtractFilesPresent.set(true);
         }
     }
 
@@ -124,14 +108,9 @@ public class ExtractState {
         showExtractProcess.setValue(true);
     }
 
-    public void resetSelectedIfcFiles() {
-        selectedIfcFiles.clear();
-        selectedIfcFilesPresent.set(false);
-    }
-
-    public void resetSelectedJsonFiles() {
-        selectedJsonFiles.clear();
-        selectedJsonFilesPresent.set(false);
+    public void resetSelectedExtractFiles() {
+        selectedExtractFiles.clear();
+        selectedExtractFilesPresent.set(false);
     }
 
     public void setExtractResult(Task<ExtractResult> task) {

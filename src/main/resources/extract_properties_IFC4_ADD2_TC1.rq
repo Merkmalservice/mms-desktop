@@ -2,8 +2,8 @@ PREFIX express: <https://w3id.org/express#>
 PREFIX list: <https://w3id.org/list#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX ifc:     <http://standards.buildingsmart.org/IFC/DEV/IFC4/ADD2_TC1/OWL#>
-
-SELECT DISTINCT ?propName ?propType ?valueType ?propValue ?enumOptionValue WHERE {
+# TODO: INCLUDE PROPUNITURI SEE IFC2_3 FOR GUIDANCE
+SELECT DISTINCT ?propName ?propType ?valueType ?propValue ?enumOptionValue ?propUnitUri WHERE {
     {
         ?uri
             ifc:nominalValue_IfcPropertySingleValue ?propValueUri ;

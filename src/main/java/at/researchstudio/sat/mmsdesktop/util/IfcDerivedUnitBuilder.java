@@ -8,11 +8,21 @@ import org.apache.jena.query.QuerySolution;
 public class IfcDerivedUnitBuilder {
     private IfcUnitType type;
     private String userDefinedLabel;
+    private String uri;
+    private boolean projectDefault;
 
     public IfcDerivedUnitBuilder(QuerySolution qs) {
+        this.uri =
+                qs.getResource("unitUri")
+                        .getURI(); // TODO: MAYBE ERROR HANDLING BUT THIS SHOULD BE HERE ALWAYS I
+        // THINK
         if (Objects.nonNull(qs.getLiteral("userDefinedTypeLabel"))) {
             this.userDefinedLabel = qs.getLiteral("userDefinedTypeLabel").getString();
         }
+
+        this.projectDefault =
+                Utils.executeOrDefaultOnException(
+                        () -> qs.getResource("projectUri").getURI() != null, false);
 
         this.type =
                 Utils.executeOrDefaultOnException(
@@ -23,6 +33,6 @@ public class IfcDerivedUnitBuilder {
     }
 
     public IfcDerivedUnit build() {
-        return new IfcDerivedUnit(type, userDefinedLabel);
+        return new IfcDerivedUnit(uri, type, userDefinedLabel, projectDefault);
     }
 }

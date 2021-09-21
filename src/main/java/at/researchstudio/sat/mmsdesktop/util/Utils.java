@@ -26,7 +26,7 @@ public class Utils {
     public static String extractQudtUnitFromProperty(IfcProperty property) {
         try {
             return QudtUnit.extractUnitFromIfcUnit(property.getUnit());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             logger.warn(e.getMessage());
             logger.warn(
                     "Could not find QudtUnit for ifcProperty: "
@@ -41,7 +41,7 @@ public class Utils {
     public static String extractQudtQuantityKindFromProperty(IfcProperty property) {
         try {
             return QudtQuantityKind.extractQuantityKindFromPropertyName(property.getName());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | NullPointerException e) {
             logger.warn(e.getMessage());
             logger.error(
                     "Could not find QudtQuantityKind for ifcProperty: "
@@ -78,7 +78,6 @@ public class Utils {
             if (ArrayUtils.isEmpty(returnDefaultOnException)) {
                 return defaultValue;
             }
-
             for (Class<? extends Throwable> throwableClass : returnDefaultOnException) {
                 if (throwableClass.isAssignableFrom(e.getClass())) {
                     return defaultValue;

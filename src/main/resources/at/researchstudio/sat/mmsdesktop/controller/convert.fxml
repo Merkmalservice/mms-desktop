@@ -5,24 +5,193 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import javafx.geometry.Insets?>
-<AnchorPane xmlns="http://javafx.com/javafx/16"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ConvertController"
-            prefHeight="400.0" prefWidth="600.0">
-    <Label text="%label.convert"/>
-    <JFXButton fx:id="bPickFile" disable="true" alignment="CENTER" focusTraversable="false"
-               graphicTextGap="15.0" layoutX="10.0" layoutY="10.0" prefHeight="32.0"
-               prefWidth="220.0" ripplerFill="WHITE" text="%label.select.file"
-               textFill="#c1fff9" style="-fx-background-color: #5bbad5;">
-        <padding>
-            <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
-        </padding>
-    </JFXButton>
-    <JFXButton fx:id="bPickDirectory" alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
-               prefHeight="32.0" prefWidth="220.0" ripplerFill="WHITE"
-               text="%label.select.directory" textFill="#c1fff9" style="-fx-background-color: #5bbad5;">
-        <padding>
-            <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
-        </padding>
-    </JFXButton>
-</AnchorPane>
+
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import com.jfoenix.controls.JFXListView?>
+<?import com.jfoenix.controls.JFXProgressBar?>
+<?import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView?>
+<?import com.jfoenix.controls.JFXComboBox?>
+<?import com.jfoenix.controls.JFXTabPane?>
+<BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/16"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="at.researchstudio.sat.mmsdesktop.controller.ConvertController">
+    <BorderPane.margin>
+        <Insets bottom="10.0" left="25.0" right="25.0" top="10.0"/>
+    </BorderPane.margin>
+    <top>
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="10.0"/>
+            </padding>
+            <Label style="-fx-font-weight: bold;"
+                   text="%label.convert">
+                <font>
+                    <Font size="18.0"/>
+                </font>
+            </Label>
+            <HBox spacing="10" fx:id="topPickFile">
+                <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                           onAction="#handlePickFileAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                           text="%label.select.file"
+                           textFill="#c1fff9"
+                           HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-file-earmark"
+                                  iconSize="24"/>
+                    </graphic>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+            </HBox>
+            <HBox spacing="10" fx:id="topInputFile">
+                <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                           onAction="#handleResetFileAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                           text="%label.select.file.close"
+                           textFill="#c1fff9"
+                           HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-file-earmark"
+                                  iconSize="24"/>
+                    </graphic>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <AnchorPane>
+            <BorderPane fx:id="centerProgress" visible="false" managed="false"
+                        AnchorPane.topAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0">
+                <center>
+                    <AnchorPane>
+                        <padding>
+                            <Insets bottom="10.0"/>
+                        </padding>
+                        <JFXProgressBar fx:id="centerProgressProgressBar" prefHeight="40.0"
+                                        prefWidth="326.0" progress="0.0"
+                                        AnchorPane.topAnchor="0.0"
+                                        AnchorPane.rightAnchor="0.0"
+                                        AnchorPane.leftAnchor="0.0"
+                        />
+                        <Label fx:id="centerProgressProgressInfo" style="-fx-text-alignment: center"
+                               AnchorPane.topAnchor="50.0"
+                               AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                               AnchorPane.leftAnchor="0.0"
+                        />
+                    </AnchorPane>
+                </center>
+            </BorderPane>
+            <BorderPane fx:id="centerInputFile" visible="false" managed="false"
+                        AnchorPane.topAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0">
+                <center>
+                    <AnchorPane>
+                        <JFXTabPane AnchorPane.topAnchor="0.0"
+                                    AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                                    AnchorPane.leftAnchor="0.0"
+                                    style="-fx-cursor: hand;">
+                            <Tab text="%label.convert.inputFile">
+                                <BorderPane>
+                                    <center>
+                                        <AnchorPane>
+                                            <JFXListView fx:id="fullFileContentList"
+                                                         items="${controller.fileContentList}"
+                                                         AnchorPane.topAnchor="0.0"
+                                                         AnchorPane.rightAnchor="0.0"
+                                                         AnchorPane.bottomAnchor="0.0"
+                                                         AnchorPane.leftAnchor="0.0"/>
+                                        </AnchorPane>
+                                    </center>
+                                </BorderPane>
+                            </Tab>
+                            <Tab text="%label.convert.inspect">
+                                <BorderPane>
+                                    <left>
+                                        <AnchorPane>
+                                            <JFXListView fx:id="extractedFeaturesList"
+                                                         items="${controller.fileContentFeatures}"
+                                                         AnchorPane.topAnchor="0.0"
+                                                         AnchorPane.rightAnchor="0.0"
+                                                         AnchorPane.bottomAnchor="0.0"
+                                                         AnchorPane.leftAnchor="0.0"/>
+                                        </AnchorPane>
+                                    </left>
+                                    <center>
+                                        <AnchorPane>
+                                            <JFXListView fx:id="filteredFileContentList"
+                                                         items="${controller.fileContentFiltered}"
+                                                         AnchorPane.topAnchor="0.0"
+                                                         AnchorPane.rightAnchor="0.0"
+                                                         AnchorPane.bottomAnchor="0.0"
+                                                         AnchorPane.leftAnchor="0.0"/>
+                                        </AnchorPane>
+                                    </center>
+                                </BorderPane>
+                            </Tab>
+                        </JFXTabPane>
+                    </AnchorPane>
+                </center>
+                <right>
+                    <BorderPane fx:id="selectedIfcLineView" visible="false"
+                                managed="false">
+                        <top>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <padding>
+                                    <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                                </padding>
+                                <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                                           onAction="#handleCloseLineAction"
+                                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                                           ripplerFill="WHITE"
+                                           textFill="#c1fff9">
+                                    <tooltip>
+                                        <Tooltip text="%label.close"/>
+                                    </tooltip>
+                                    <graphic>
+                                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-x"
+                                                  iconSize="24"/>
+                                    </graphic>
+                                    <padding>
+                                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                                    </padding>
+                                </JFXButton>
+                                <Label style="-fx-font-weight: bold;" HBox.hgrow="ALWAYS" alignment="CENTER"
+                                       text="%label.detailview">
+                                    <font>
+                                        <Font size="18.0"/>
+                                    </font>
+                                </Label>
+                            </HBox>
+                        </top>
+                        <center>
+                            <ScrollPane style="-fx-background-color:transparent;" hbarPolicy="NEVER">
+                                <GridPane>
+                                    <IfcLineView fx:id="ifcLineView" maxWidth="500" minWidth="400" spacing="10" GridPane.hgrow="ALWAYS">
+                                        <padding>
+                                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                                        </padding>
+                                    </IfcLineView>
+                                </GridPane>
+                            </ScrollPane>
+                        </center>
+                    </BorderPane>
+                </right>
+            </BorderPane>
+        </AnchorPane>
+    </center>
+    <bottom>
+
+    </bottom>
+</BorderPane>

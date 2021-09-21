@@ -10,11 +10,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LoginState {
-    private UserSession userSession;
-
     private final BooleanProperty loggedIn;
     private final StringProperty fullName;
     private final StringProperty userInitials;
+    private UserSession userSession;
 
     public LoginState() {
         loggedIn = new SimpleBooleanProperty(false);
@@ -44,6 +43,10 @@ public class LoginState {
 
     public StringProperty userInitialsProperty() {
         return userInitials;
+    }
+
+    public UserSession getUserSession() {
+        return userSession;
     }
 
     public void setUserSession(UserSession userSession) {

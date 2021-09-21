@@ -15,10 +15,9 @@ import org.springframework.stereotype.Component;
 public class AuthService {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
+    private final JavaFXKeycloakInstalled keycloak;
     private Task<UserSession> loginTask;
     private Task<LogoutResult> logoutTask;
-    private final JavaFXKeycloakInstalled keycloak;
 
     public AuthService(HostServices hostService) {
         this.keycloak = new JavaFXKeycloakInstalled(hostService);
@@ -33,11 +32,10 @@ public class AuthService {
             public UserSession call() throws Exception {
                 try {
                     keycloak.loginDesktop();
-                    return new UserSession(keycloak.getToken());
+                    return new UserSession(keycloak.getToken(), keycloak.getTokenString());
                 } catch (InterruptedException e) {
                     logger.warn("Login process cancelled by User");
                 }
-
                 return null;
             }
         };
@@ -60,7 +58,6 @@ public class AuthService {
                 } catch (InterruptedException e) {
                     logger.warn("Logout process cancelled by User");
                 }
-
                 return new LogoutResult(true);
             }
         };
