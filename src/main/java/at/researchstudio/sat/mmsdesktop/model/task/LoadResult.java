@@ -26,10 +26,6 @@ public class LoadResult implements Serializable {
         return parsedIfcFile.getDataLines();
     }
 
-    public Map<Class<? extends IfcLine>, List<IfcLine>> getDataLinesByClass() {
-        return parsedIfcFile.getDataLinesByClass();
-    }
-
     public List<Feature> getExtractedFeatures() {
         return parsedIfcFile.getFeatures();
     }

@@ -12,7 +12,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import org.springframework.stereotype.Component;
@@ -25,13 +24,12 @@ public class ConvertState {
 
     private final ObjectProperty<IfcLine> selectedIfcLine;
     private final ObjectProperty<Feature> selectedFeature;
+    private final ObjectProperty<ParsedIfcFile> parsedIfcFile;
 
     private final ObservableList<IfcLine> inputFileContent;
     private final FilteredList<IfcLine> filteredInputFileContent;
 
-    private final HashMap<Integer, IfcLine> inputFileContentMap;
     private final ObservableList<FeatureLabel> extractedFeatures;
-    private final HashMap<Class<? extends IfcLine>, List<IfcLine>> inputFileContentByClassMap;
 
     public ConvertState() {
         this.showInitial = new SimpleBooleanProperty(true);
@@ -40,10 +38,9 @@ public class ConvertState {
         this.inputFileContent = FXCollections.observableArrayList();
         this.filteredInputFileContent = new FilteredList<>(inputFileContent);
         this.extractedFeatures = FXCollections.observableArrayList();
-        this.inputFileContentMap = new HashMap<>();
-        this.inputFileContentByClassMap = new HashMap<>();
         this.selectedIfcLine = new SimpleObjectProperty<>();
         this.selectedFeature = new SimpleObjectProperty<>();
+        this.parsedIfcFile = new SimpleObjectProperty<>();
     }
 
     public void showInitialView() {
@@ -88,14 +85,11 @@ public class ConvertState {
 
     public void setLoadResult(Task<LoadResult> task) {
         this.inputFileContent.clear();
-        this.inputFileContentMap.clear();
-        this.inputFileContentByClassMap.clear();
         this.extractedFeatures.clear();
 
         if (Objects.isNull(task.getException())) {
+            this.parsedIfcFile.setValue(task.getValue().getParsedIfcFile());
             this.inputFileContent.setAll(task.getValue().getLines());
-            this.inputFileContentMap.putAll(task.getValue().getDataLines());
-            this.inputFileContentByClassMap.putAll(task.getValue().getDataLinesByClass());
             this.extractedFeatures.addAll(
                     task.getValue().getExtractedFeatures().stream()
                             .sorted(Comparator.comparing(Feature::getName))
@@ -104,10 +98,8 @@ public class ConvertState {
         } else {
             // TODO: BETTER ERROR HANDLING
             // String errorMessage = task.getException().getMessage();
-
+            this.parsedIfcFile.setValue(null);
             this.inputFileContent.setAll(Collections.emptyList());
-            this.inputFileContentMap.putAll(Collections.emptyMap());
-            this.inputFileContentByClassMap.putAll(Collections.emptyMap());
             this.extractedFeatures.addAll(Collections.emptyList());
             //
             // this.extractLogOutput.setValue(Throwables.getStackTraceAsString(task.getException()));
@@ -143,19 +135,15 @@ public class ConvertState {
         return selectedFeature;
     }
 
+    public ObjectProperty<ParsedIfcFile> parsedIfcFileProperty() {
+        return parsedIfcFile;
+    }
+
     public ObservableList<FeatureLabel> getInputFileExtractedFeatures() {
         return extractedFeatures;
     }
 
     public FilteredList<IfcLine> getFilteredInputFileContent() {
         return filteredInputFileContent;
-    }
-
-    public ObservableMap<Integer, IfcLine> getInputFileDataLines() {
-        return FXCollections.observableMap(inputFileContentMap);
-    }
-
-    public ObservableMap<Class<? extends IfcLine>, List<IfcLine>> getInputFileDataLinesByClass() {
-        return FXCollections.observableMap(inputFileContentByClassMap);
     }
 }

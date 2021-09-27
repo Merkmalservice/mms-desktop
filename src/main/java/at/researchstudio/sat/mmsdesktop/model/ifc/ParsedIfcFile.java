@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.model.ifc;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
+import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -72,5 +73,76 @@ public class ParsedIfcFile {
 
     public Map<Class<? extends IfcLine>, List<IfcLine>> getDataLinesByClass() {
         return dataLinesByClass;
+    }
+
+    public Feature getRelatedFeature(IfcLine ifcLine) {
+        String name;
+        if (ifcLine instanceof IfcNamedPropertyLineInterface) {
+            name = ((IfcNamedPropertyLineInterface) ifcLine).getName();
+        } else {
+            name = null;
+        }
+
+        if (Objects.nonNull(name)) {
+            String convertedName = Utils.convertIFCStringToUtf8(name);
+            Optional<Feature> optionalFeature =
+                    features.stream().filter(f -> convertedName.equals(f.getName())).findFirst();
+
+            if (optionalFeature.isPresent()) {
+                return optionalFeature.get();
+            }
+        }
+
+        return null;
+    }
+
+    public List<IfcPropertySetLine> getRelatedPropertySetLines(IfcLine ifcLine) {
+        return getPropertySetLines().parallelStream()
+                .filter(
+                        entryIfcLine -> {
+                            if (Objects.nonNull(entryIfcLine)) {
+                                return entryIfcLine.getPropertyIds().contains(ifcLine.getId());
+                            }
+                            return false;
+                        })
+                .collect(Collectors.toList());
+    }
+
+    public List<IfcPropertySetLine> getPropertySetLines() {
+        return dataLinesByClass.get(IfcPropertySetLine.class).parallelStream()
+                .map(l -> (IfcPropertySetLine) l)
+                .collect(Collectors.toList());
+    }
+
+    public List<IfcLine> getAllLinesReferencing(IfcLine ifcLine) {
+        return dataLines.entrySet().parallelStream()
+                .map(Map.Entry::getValue)
+                .filter(Objects::nonNull)
+                .filter(dataLine -> dataLine.isReferencing(ifcLine))
+                .collect(Collectors.toList());
+    }
+
+    public List<IfcLine> getRelatedObjectLines(IfcRelDefinesByPropertiesLine ifcLine) {
+        return ifcLine.getRelatedObjectIds().stream()
+                .map(dataLines::get)
+                .collect(Collectors.toList());
+    }
+
+    public List<IfcLine> getPropertySetChildLines(IfcPropertySetLine ifcLine) {
+        return ifcLine.getPropertyIds().stream().map(dataLines::get).collect(Collectors.toList());
+    }
+
+    public List<IfcRelDefinesByPropertiesLine> getRelDefinesByPropertiesLinesReferencing(
+            IfcPropertySetLine ifcLine) {
+        return dataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
+                .map(l -> (IfcRelDefinesByPropertiesLine) l)
+                .filter(
+                        entryIfcLine -> {
+                            if (Objects.nonNull(entryIfcLine)) {
+                                return entryIfcLine.getPropertySetId() == ifcLine.getId();
+                            }
+                            return false;
+                        })
+                .collect(Collectors.toList());
     }
 }

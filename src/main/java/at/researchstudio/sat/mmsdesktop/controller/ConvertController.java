@@ -77,12 +77,8 @@ public class ConvertController implements Initializable {
                         ((observableValue, oldValue, selectedIfcLine) -> {
                             selectedIfcLineView.setVisible(Objects.nonNull(selectedIfcLine));
                             selectedIfcLineView.setManaged(Objects.nonNull(selectedIfcLine));
-                            ifcLineView.setExtractedFeatures(
-                                    stateService.getConvertState().getInputFileExtractedFeatures());
-                            ifcLineView.setIfcDataLines(
-                                    stateService.getConvertState().getInputFileDataLines());
-                            ifcLineView.setIfcDataLinesByClass(
-                                    stateService.getConvertState().getInputFileDataLinesByClass());
+                            ifcLineView.setParsedIfcFile(
+                                    stateService.getConvertState().parsedIfcFileProperty());
                             ifcLineView.setIfcLine(selectedIfcLine);
                         }));
 
