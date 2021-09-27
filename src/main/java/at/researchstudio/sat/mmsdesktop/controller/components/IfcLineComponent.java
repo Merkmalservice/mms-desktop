@@ -47,7 +47,7 @@ public class IfcLineComponent extends HBox {
         this.ifcLine = ifcLine;
         this.getChildren().clear();
 
-        lineNumber.setText(this.ifcLine.getId());
+        lineNumber.setText(this.ifcLine.getStringId());
         getChildren().add(lineNumber);
 
         if (ifcLine instanceof IfcNamedPropertyLineInterface) {

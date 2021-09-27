@@ -29,7 +29,7 @@ public class ConvertState {
     private final ObservableList<IfcLine> inputFileContent;
     private final FilteredList<IfcLine> filteredInputFileContent;
 
-    private final HashMap<String, IfcLine> inputFileContentMap;
+    private final HashMap<Integer, IfcLine> inputFileContentMap;
     private final ObservableList<FeatureLabel> extractedFeatures;
     private final HashMap<Class<? extends IfcLine>, List<IfcLine>> inputFileContentByClassMap;
 
@@ -151,7 +151,7 @@ public class ConvertState {
         return filteredInputFileContent;
     }
 
-    public ObservableMap<String, IfcLine> getInputFileDataLines() {
+    public ObservableMap<Integer, IfcLine> getInputFileDataLines() {
         return FXCollections.observableMap(inputFileContentMap);
     }
 

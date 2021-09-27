@@ -42,7 +42,7 @@ public class IfcPropertyBuilder {
                         NullPointerException.class,
                         IllegalArgumentException.class);
 
-        if (Objects.nonNull(line.getUnitId())) {
+        if (line.getUnitId() != 0) {
             this.unit = getIfcUnitWithId(line.getUnitId(), projectUnits);
             if (Objects.isNull(this.unit)) {
                 logger.warn(
@@ -87,7 +87,7 @@ public class IfcPropertyBuilder {
                         NullPointerException.class,
                         IllegalArgumentException.class);
 
-        if (Objects.nonNull(line.getUnitId())) {
+        if (line.getUnitId() != 0) {
             this.unit = getIfcUnitWithId(line.getUnitId(), projectUnits);
             if (Objects.isNull(this.unit)) {
                 logger.warn(
@@ -169,6 +169,10 @@ public class IfcPropertyBuilder {
 
     public IfcProperty build() {
         return new IfcProperty(this.name, this.type, this.unit);
+    }
+
+    private static IfcUnit getIfcUnitWithId(int id, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+        return getIfcUnitWithId("#" + id, projectUnits);
     }
 
     private static IfcUnit getIfcUnitWithId(

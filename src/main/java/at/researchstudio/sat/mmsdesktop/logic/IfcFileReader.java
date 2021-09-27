@@ -103,7 +103,7 @@ public class IfcFileReader {
         Map<Class<? extends IfcLine>, List<IfcLine>> ifcLinesGrouped =
                 lines.parallelStream().collect(Collectors.groupingBy(IfcLine::getClass));
 
-        String projectUnitLineId = null;
+        int projectUnitLineId = 0;
 
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(IfcProjectLine.class, Collections.emptyList())) {
@@ -115,15 +115,15 @@ public class IfcFileReader {
             projectUnitLineId = projectLine.getUnitAssignmentId();
         }
 
-        if (Objects.isNull(projectUnitLineId)) {
+        if (projectUnitLineId == 0) {
             throw new IOException("File: " + ifcFile.getPath() + " is not a valid ifc step file");
         }
 
-        List<String> defaultProjectUnitIds = Collections.emptyList();
+        List<Integer> defaultProjectUnitIds = Collections.emptyList();
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(
                         IfcUnitAssignmentLine.class, Collections.emptyList())) {
-            if (line.getId().equals(projectUnitLineId)) {
+            if (line.getId() == projectUnitLineId) {
                 defaultProjectUnitIds = ((IfcUnitAssignmentLine) line).getUnitIds();
             }
         }
@@ -140,19 +140,24 @@ public class IfcFileReader {
             IfcSIUnitLine unitLine = (IfcSIUnitLine) line;
             projectUnits.add(
                     new IfcSIUnit(
-                            unitLine.getId(),
+                            unitLine.getStringId(),
                             unitLine.getType(),
                             unitLine.getMeasure(),
                             unitLine.getPrefix(),
                             defaultProjectUnitIds.contains(unitLine.getId())));
         }
 
+        List<IfcUnit> projectSIUnits =
+                projectUnits.stream()
+                        .filter(unit -> unit instanceof IfcSIUnit)
+                        .collect(Collectors.toList());
+
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(IfcDerivedUnitLine.class, Collections.emptyList())) {
             IfcDerivedUnitLine unitLine = (IfcDerivedUnitLine) line;
             IfcDerivedUnit tempDerivedUnit =
                     new IfcDerivedUnit(
-                            unitLine.getId(),
+                            unitLine.getStringId(),
                             unitLine.getType(),
                             unitLine.getName(),
                             defaultProjectUnitIds.contains(unitLine.getId()));
@@ -165,9 +170,9 @@ public class IfcFileReader {
 
             for (IfcLine l : relevantDerivedUnitElements) {
                 IfcDerivedUnitElementLine derivedUnitElementLine = (IfcDerivedUnitElementLine) l;
-                for (IfcUnit unit : projectUnits) {
-                    if (derivedUnitElementLine.getUnitId().equals(unit.getId())
-                            && unit instanceof IfcSIUnit) {
+
+                for (IfcUnit unit : projectSIUnits) {
+                    if (unit.getId().equals(derivedUnitElementLine.getUnitIdString())) {
                         tempDerivedUnit.addDerivedUnitElement(
                                 (IfcSIUnit) unit, derivedUnitElementLine.getExponent());
                     }
@@ -213,7 +218,7 @@ public class IfcFileReader {
             for (IfcLine el :
                     ifcLinesGrouped.getOrDefault(
                             IfcPropertyEnumerationLine.class, Collections.emptyList())) {
-                if (el.getId().equals(propertyLine.getEnumId())) {
+                if (el.getId() == propertyLine.getEnumId()) {
                     enumLine = (IfcPropertyEnumerationLine) el;
                     break;
                 }

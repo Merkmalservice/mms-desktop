@@ -16,7 +16,8 @@ public class IfcPropertyEnumerationLine extends IfcLine {
             Pattern.compile("(?<type>.*)\\('?(?<value>[^']*)'?\\)");
 
     private String name;
-    private String unitId;
+    private int unitId;
+    private String unitIdString;
     private List<String> values;
 
     public IfcPropertyEnumerationLine(String line) {
@@ -44,15 +45,22 @@ public class IfcPropertyEnumerationLine extends IfcLine {
                                     })
                             .collect(Collectors.toList());
 
-            unitId = StringUtils.trimToNull(matcher.group("unitId"));
-            unitId = Objects.nonNull(unitId) ? "#" + unitId : unitId;
+            unitIdString = StringUtils.trimToNull(matcher.group("unitId"));
+            if (Objects.nonNull(unitIdString)) {
+                unitId = Integer.parseInt(unitIdString);
+                unitIdString = "#" + unitIdString;
+            }
         } else {
             throw new IllegalArgumentException("IfcPropertyEnumeration invalid: " + line);
         }
     }
 
-    public String getUnitId() {
+    public int getUnitId() {
         return unitId;
+    }
+
+    public String getUnitIdString() {
+        return unitIdString;
     }
 
     public String getName() {

@@ -9,7 +9,7 @@ import org.springframework.lang.NonNull;
 
 public class ParsedIfcFile {
     private final List<IfcLine> lines;
-    private final Map<String, IfcLine> dataLines;
+    private final Map<Integer, IfcLine> dataLines;
     private final Map<Class<? extends IfcLine>, List<IfcLine>> dataLinesByClass;
     private Set<IfcProperty> extractedProperties;
     private Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap;
@@ -28,11 +28,11 @@ public class ParsedIfcFile {
         if (Objects.nonNull(lines) && lines.size() > 0) {
             this.dataLines =
                     lines.stream()
-                            .filter(line -> Objects.nonNull(line) && Objects.nonNull(line.getId()))
+                            .filter(line -> Objects.nonNull(line) && line.getId() != 0)
                             .collect(Collectors.toMap(IfcLine::getId, line -> line));
             this.dataLinesByClass =
                     lines.stream()
-                            .filter(line -> Objects.nonNull(line) && Objects.nonNull(line.getId()))
+                            .filter(line -> Objects.nonNull(line) && line.getId() != 0)
                             .collect(Collectors.groupingBy(IfcLine::getClass));
         } else {
             this.dataLines = Collections.emptyMap();
@@ -66,7 +66,7 @@ public class ParsedIfcFile {
         this.features = features;
     }
 
-    public Map<String, IfcLine> getDataLines() {
+    public Map<Integer, IfcLine> getDataLines() {
         return dataLines;
     }
 

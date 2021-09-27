@@ -4,10 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcUnitAssignmentLine extends IfcLine {
-    List<String> unitIds;
+    List<Integer> unitIds;
 
     private static final Pattern extractPattern =
             Pattern.compile("(?>#[0-9]*= IFCUNITASSIGNMENT\\(\\((?<unitIds>.*)\\)\\))");
@@ -19,13 +20,16 @@ public class IfcUnitAssignmentLine extends IfcLine {
 
         if (matcher.find()) {
             String unitIdsString = StringUtils.trim(matcher.group("unitIds"));
-            unitIds = Arrays.asList(unitIdsString.split(","));
+            unitIds =
+                    Arrays.stream(unitIdsString.split(","))
+                            .map(unitIdString -> Integer.parseInt(unitIdString.substring(1)))
+                            .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("IfcUnitAssignmentLine invalid: " + line);
         }
     }
 
-    public List<String> getUnitIds() {
+    public List<Integer> getUnitIds() {
         return unitIds;
     }
 }

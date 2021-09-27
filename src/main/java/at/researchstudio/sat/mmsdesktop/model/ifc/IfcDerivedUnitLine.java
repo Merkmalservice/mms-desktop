@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcDerivedUnitLine extends IfcLine {
@@ -11,7 +12,7 @@ public class IfcDerivedUnitLine extends IfcLine {
             Pattern.compile(
                     "(?>#[0-9]*= IFCDERIVEDUNIT\\(\\((?<unitIds>.*)\\),.(?<type>.*).,(('(?<name>.*)')|\\$)\\))");
 
-    private List<String> unitElementIds;
+    private List<Integer> unitElementIds;
     private String type;
     private String name;
 
@@ -23,13 +24,16 @@ public class IfcDerivedUnitLine extends IfcLine {
             type = StringUtils.trim(matcher.group("type"));
             name = StringUtils.trim(matcher.group("name"));
             String unitIdsString = StringUtils.trim(matcher.group("unitIds"));
-            unitElementIds = Arrays.asList(unitIdsString.split(","));
+            unitElementIds =
+                    Arrays.asList(unitIdsString.split(",")).stream()
+                            .map(unitIdString -> Integer.parseInt(unitIdString.substring(1)))
+                            .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("IfcDerivedUnitLine invalid: " + line);
         }
     }
 
-    public List<String> getUnitElementIds() {
+    public List<Integer> getUnitElementIds() {
         return unitElementIds;
     }
 

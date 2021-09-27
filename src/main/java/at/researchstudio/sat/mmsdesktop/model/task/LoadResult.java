@@ -22,7 +22,7 @@ public class LoadResult implements Serializable {
         return parsedIfcFile.getLines();
     }
 
-    public Map<String, IfcLine> getDataLines() {
+    public Map<Integer, IfcLine> getDataLines() {
         return parsedIfcFile.getDataLines();
     }
 

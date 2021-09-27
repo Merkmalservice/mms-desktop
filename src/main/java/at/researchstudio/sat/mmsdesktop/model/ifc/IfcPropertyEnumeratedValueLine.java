@@ -17,7 +17,7 @@ public class IfcPropertyEnumeratedValueLine extends IfcLine
                     "(?>#[0-9]*= IFCPROPERTYENUMERATEDVALUE\\('(?<name>.*)',((?<description>[^,]*)|\\$),\\((?<values>.*)\\),(.(?<enumId>.*)|\\$)\\))");
 
     private String name;
-    private String enumId;
+    private int enumId;
     private List<String> values;
 
     public IfcPropertyEnumeratedValueLine(String line) {
@@ -43,9 +43,9 @@ public class IfcPropertyEnumeratedValueLine extends IfcLine
                                         }
                                     })
                             .collect(Collectors.toList());
-            enumId = StringUtils.trimToNull(matcher.group("enumId"));
-            if (Objects.nonNull(enumId)) {
-                enumId = "#" + enumId;
+            String _enumId = StringUtils.trimToNull(matcher.group("enumId"));
+            if (Objects.nonNull(_enumId)) {
+                enumId = Integer.parseInt(_enumId);
             }
         } else {
             throw new IllegalArgumentException("IfcPropertyEnumeratedValue invalid: " + line);
@@ -56,7 +56,7 @@ public class IfcPropertyEnumeratedValueLine extends IfcLine
         return name;
     }
 
-    public String getEnumId() {
+    public int getEnumId() {
         return enumId;
     }
 

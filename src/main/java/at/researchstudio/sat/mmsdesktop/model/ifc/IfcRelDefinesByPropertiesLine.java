@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcRelDefinesByPropertiesLine extends IfcLine {
@@ -12,11 +13,11 @@ public class IfcRelDefinesByPropertiesLine extends IfcLine {
                     "(?>#[0-9]*= IFCRELDEFINESBYPROPERTIES\\('(?<globalId>.*)',(?<historyId>[^,]*),(('(?<name>.*)')|\\$),((?<description>[^$]*)|\\$),\\((?<relatedObjectIds>.*)\\),(?<propertySetId>[^,]*)\\))");
 
     public String globalId;
-    public String historyId;
-    public String propertySetId;
+    public int historyId;
+    public int propertySetId;
     public String name;
     public String description;
-    public List<String> relatedObjectIds;
+    public List<Integer> relatedObjectIds;
 
     public IfcRelDefinesByPropertiesLine(String line) {
         super(line);
@@ -24,13 +25,16 @@ public class IfcRelDefinesByPropertiesLine extends IfcLine {
         Matcher matcher = extractPattern.matcher(line);
 
         if (matcher.find()) {
-            globalId = matcher.group("globalId");
-            historyId = matcher.group("historyId");
-            propertySetId = matcher.group("propertySetId");
+            globalId = StringUtils.trim(matcher.group("globalId"));
+            historyId = Integer.parseInt(matcher.group("historyId").substring(1));
+            propertySetId = Integer.parseInt(matcher.group("propertySetId").substring(1));
             name = StringUtils.trim(matcher.group("name"));
             description = StringUtils.trim(matcher.group("description"));
             String relatedObjectIdsString = matcher.group("relatedObjectIds");
-            relatedObjectIds = Arrays.asList(relatedObjectIdsString.split(","));
+            relatedObjectIds =
+                    Arrays.stream(relatedObjectIdsString.split(","))
+                            .map(relatedObjectId -> Integer.parseInt(relatedObjectId.substring(1)))
+                            .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("IfcPropertyEnumeration invalid: " + line);
         }
@@ -40,11 +44,11 @@ public class IfcRelDefinesByPropertiesLine extends IfcLine {
         return globalId;
     }
 
-    public String getHistoryId() {
+    public int getHistoryId() {
         return historyId;
     }
 
-    public String getPropertySetId() {
+    public int getPropertySetId() {
         return propertySetId;
     }
 
@@ -56,7 +60,7 @@ public class IfcRelDefinesByPropertiesLine extends IfcLine {
         return description;
     }
 
-    public List<String> getRelatedObjectIds() {
+    public List<Integer> getRelatedObjectIds() {
         return relatedObjectIds;
     }
 }

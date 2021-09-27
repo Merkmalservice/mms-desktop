@@ -9,7 +9,7 @@ public class IfcProjectLine extends IfcLine {
             Pattern.compile("(?>#[0-9]*= IFCPROJECT\\((?<projectInfo>.*)\\))");
     // <- warning might contain whitespaces, trim needed
 
-    private String unitAssignmentId;
+    private int unitAssignmentId;
 
     public IfcProjectLine(String line) {
         super(line);
@@ -19,13 +19,14 @@ public class IfcProjectLine extends IfcLine {
         if (matcher.find()) {
             String projectInfo = StringUtils.trim(matcher.group("projectInfo"));
             String[] projectInfoArray = projectInfo.split(",");
-            unitAssignmentId = projectInfoArray[projectInfoArray.length - 1];
+            unitAssignmentId =
+                    Integer.parseInt(projectInfoArray[projectInfoArray.length - 1].substring(1));
         } else {
             throw new IllegalArgumentException("IfcProject invalid: " + line);
         }
     }
 
-    public String getUnitAssignmentId() {
+    public int getUnitAssignmentId() {
         return unitAssignmentId;
     }
 }

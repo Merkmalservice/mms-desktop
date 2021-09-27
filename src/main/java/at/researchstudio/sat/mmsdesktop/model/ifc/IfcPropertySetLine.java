@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcPropertySetLine extends IfcLine {
@@ -12,9 +13,9 @@ public class IfcPropertySetLine extends IfcLine {
                     "(?>#[0-9]*= IFCPROPERTYSET\\('(?<globalId>.*)',(?<historyId>[^,]*),'(?<name>.*)',((?<description>[^$]*)|\\$),\\((?<propertyIds>.*)\\)\\))");
     public String name;
     public String globalId;
-    public String historyId;
+    public int historyId;
     public String description;
-    public List<String> propertyIds;
+    public List<Integer> propertyIds;
 
     public IfcPropertySetLine(String line) {
         super(line);
@@ -22,12 +23,17 @@ public class IfcPropertySetLine extends IfcLine {
         Matcher matcher = extractPattern.matcher(line);
 
         if (matcher.find()) {
-            globalId = matcher.group("globalId");
-            historyId = matcher.group("historyId");
+            globalId = StringUtils.trim(matcher.group("globalId"));
+            historyId = Integer.parseInt(matcher.group("historyId").substring(1));
             name = StringUtils.trim(matcher.group("name"));
             description = StringUtils.trim(matcher.group("description"));
             String propertyIdsString = matcher.group("propertyIds");
-            propertyIds = Arrays.asList(propertyIdsString.split(","));
+            propertyIds =
+                    Arrays.stream(propertyIdsString.split(","))
+                            .map(
+                                    propertyIdString ->
+                                            Integer.parseInt(propertyIdString.substring(1)))
+                            .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("IfcPropertySetLine invalid: " + line);
         }
@@ -37,7 +43,7 @@ public class IfcPropertySetLine extends IfcLine {
         return name;
     }
 
-    public String getHistoryId() {
+    public int getHistoryId() {
         return historyId;
     }
 
@@ -45,7 +51,7 @@ public class IfcPropertySetLine extends IfcLine {
         return description;
     }
 
-    public List<String> getPropertyIds() {
+    public List<Integer> getPropertyIds() {
         return propertyIds;
     }
 

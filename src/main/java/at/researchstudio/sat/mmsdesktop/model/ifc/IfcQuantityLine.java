@@ -16,7 +16,8 @@ public class IfcQuantityLine extends IfcLine implements IfcNamedPropertyLineInte
     private String name;
     private String description;
     private Double value;
-    private String unitId;
+    private String unitIdString;
+    private int unitId;
 
     public IfcQuantityLine(String line) {
         super(line);
@@ -58,7 +59,11 @@ public class IfcQuantityLine extends IfcLine implements IfcNamedPropertyLineInte
         return value;
     }
 
-    public String getUnitId() {
+    public int getUnitId() {
         return unitId;
+    }
+
+    public String getUnitIdString() {
+        return unitIdString;
     }
 }

@@ -1,13 +1,15 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
 public class IfcLine {
-    private String line;
-    private String id;
+    private int id;
+    private final String line;
+    private String stringId;
 
     public IfcLine(String line) {
         this.line = line;
         if (line.startsWith("#")) {
-            id = line.split("=")[0];
+            stringId = line.split("=")[0];
+            id = Integer.parseInt(stringId.substring(1));
         }
     }
 
@@ -15,8 +17,12 @@ public class IfcLine {
         return line;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
+    }
+
+    public String getStringId() {
+        return stringId;
     }
 
     @Override

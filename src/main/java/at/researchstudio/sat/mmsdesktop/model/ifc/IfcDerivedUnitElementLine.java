@@ -5,7 +5,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcDerivedUnitElementLine extends IfcLine {
-    private String unitId;
+    private int unitId;
+    private String unitIdString;
     private int exponent;
 
     private static final Pattern extractPattern =
@@ -18,7 +19,8 @@ public class IfcDerivedUnitElementLine extends IfcLine {
         Matcher matcher = extractPattern.matcher(line);
 
         if (matcher.find()) {
-            unitId = StringUtils.trim(matcher.group("unitId"));
+            unitIdString = StringUtils.trim(matcher.group("unitId"));
+            unitId = Integer.parseInt(unitIdString.substring(1));
             String exponentString = StringUtils.trim(matcher.group("exponent"));
             exponent = Integer.parseInt(exponentString);
         } else {
@@ -26,8 +28,12 @@ public class IfcDerivedUnitElementLine extends IfcLine {
         }
     }
 
-    public String getUnitId() {
+    public int getUnitId() {
         return unitId;
+    }
+
+    public String getUnitIdString() {
+        return unitIdString;
     }
 
     public int getExponent() {

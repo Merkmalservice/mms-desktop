@@ -27,7 +27,7 @@ public class IfcLineView extends VBox {
     private final ResourceBundle resourceBundle;
     private IfcLine ifcLine;
 
-    private ObservableMap<String, IfcLine> ifcDataLines;
+    private ObservableMap<Integer, IfcLine> ifcDataLines;
     private ObservableList<FeatureLabel> extractedFeatures;
     private ObservableMap<Class<? extends IfcLine>, List<IfcLine>> ifcDataLinesByClass;
 
@@ -309,7 +309,7 @@ public class IfcLineView extends VBox {
                 .filter(
                         entryIfcLine -> {
                             if (Objects.nonNull(entryIfcLine)) {
-                                return entryIfcLine.getPropertySetId().equals(ifcLine.getId());
+                                return entryIfcLine.getPropertySetId() == ifcLine.getId();
                             }
                             return false;
                         })
@@ -320,11 +320,11 @@ public class IfcLineView extends VBox {
         return ifcLine;
     }
 
-    public ObservableMap<String, IfcLine> getIfcDataLines() {
+    public ObservableMap<Integer, IfcLine> getIfcDataLines() {
         return ifcDataLines;
     }
 
-    public void setIfcDataLines(ObservableMap<String, IfcLine> ifcDataLines) {
+    public void setIfcDataLines(ObservableMap<Integer, IfcLine> ifcDataLines) {
         this.ifcDataLines = ifcDataLines;
     }
 
