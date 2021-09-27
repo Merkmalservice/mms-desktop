@@ -9,17 +9,9 @@ import java.util.Map;
 
 public class LoadResult implements Serializable {
     private final ParsedIfcFile parsedIfcFile;
-    private final List<IfcLine> lines;
-    private final Map<String, IfcLine> dataLines;
-    private final Map<Class<? extends IfcLine>, List<IfcLine>> dataLinesByClass;
-    private final List<Feature> extractedFeatures;
 
     public LoadResult(ParsedIfcFile parsedIfcFile) {
         this.parsedIfcFile = parsedIfcFile;
-        this.lines = parsedIfcFile.getLines();
-        this.dataLines = parsedIfcFile.getDataLines();
-        this.dataLinesByClass = parsedIfcFile.getDataLinesByClass();
-        this.extractedFeatures = parsedIfcFile.getFeatures();
     }
 
     public ParsedIfcFile getParsedIfcFile() {
@@ -27,18 +19,18 @@ public class LoadResult implements Serializable {
     }
 
     public List<IfcLine> getLines() {
-        return lines;
+        return parsedIfcFile.getLines();
     }
 
     public Map<String, IfcLine> getDataLines() {
-        return dataLines;
+        return parsedIfcFile.getDataLines();
     }
 
     public Map<Class<? extends IfcLine>, List<IfcLine>> getDataLinesByClass() {
-        return dataLinesByClass;
+        return parsedIfcFile.getDataLinesByClass();
     }
 
     public List<Feature> getExtractedFeatures() {
-        return extractedFeatures;
+        return parsedIfcFile.getFeatures();
     }
 }
