@@ -198,8 +198,7 @@ public class IfcPropertyBuilder {
 
             if (Objects.nonNull(units)) {
                 if (units.size() == 1) {
-                    IfcUnit ifcUnit = units.get(0);
-                    return ifcUnit;
+                    return units.get(0);
                 } else {
                     Optional<IfcUnit> defaultUnit =
                             units.stream().filter(IfcUnit::isProjectDefault).findFirst();

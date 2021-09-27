@@ -8,7 +8,7 @@ public class ProjectResult {
     private List<User> users;
     private List<Standard> standards;
 
-    public ProjectResult(String id, String name, List user, List standards) {
+    public ProjectResult(String id, String name, List<User> user, List<Standard> standards) {
         this.id = id;
         this.name = name;
         this.users = user;
@@ -35,7 +35,7 @@ public class ProjectResult {
         return users.size();
     }
 
-    public void setUsers(List users) {
+    public void setUsers(List<User> users) {
         this.users = users;
     }
 
@@ -43,11 +43,11 @@ public class ProjectResult {
         return this.users.size();
     }
 
-    public List getStandards() {
+    public List<Standard> getStandards() {
         return standards;
     }
 
-    public void setStandards(List standards) {
+    public void setStandards(List<Standard> standards) {
         this.standards = standards;
     }
 

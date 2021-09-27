@@ -212,6 +212,7 @@ public class IfcLineView extends VBox {
             refLinesBox.setSpacing(10);
             refLinesBox.setPadding(new Insets(10, 10, 10, 10));
             refLinesBox.getChildren().add(new JFXSpinner());
+
             Task<List<Node>> refLineTask =
                     new Task<>() {
                         @Override

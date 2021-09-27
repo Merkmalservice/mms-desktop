@@ -122,8 +122,14 @@ public class ParsedIfcFile {
                 .collect(Collectors.toList());
     }
 
+    public List<IfcLine> getAllReferencedLines(IfcLine ifcLine) {
+        return ifcLine.getReferencingIds().parallelStream()
+                .map(dataLines::get)
+                .collect(Collectors.toList());
+    }
+
     public List<IfcLine> getRelatedObjectLines(IfcRelDefinesByPropertiesLine ifcLine) {
-        return ifcLine.getRelatedObjectIds().stream()
+        return ifcLine.getRelatedObjectIds().parallelStream()
                 .map(dataLines::get)
                 .collect(Collectors.toList());
     }

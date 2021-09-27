@@ -15,7 +15,7 @@ public class DataService {
     public static String callGraphQlEndpoint(String queryString, String idTokenString)
             throws Exception {
         HttpPost post = new HttpPost("https://merkmalservice.at/backend/graphql");
-        Header headers[] = {
+        Header[] headers = {
             new BasicHeader("Content-type", "application/json"),
             new BasicHeader("Accept", "application/json"),
             new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + idTokenString)
