@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcProjectLine extends IfcLine {
+    public static final String IDENTIFIER = "IFCPROJECT(";
     private static final Pattern extractPattern =
             Pattern.compile("(?>#[0-9]*= IFCPROJECT\\((?<projectInfo>.*)\\))");
     // <- warning might contain whitespaces, trim needed

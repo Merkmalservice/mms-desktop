@@ -4,6 +4,7 @@ import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
+import at.researchstudio.sat.mmsdesktop.model.ifc.element.IfcBuiltElementLine;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.lang.NonNull;
@@ -28,12 +29,14 @@ public class ParsedIfcFile {
 
         if (Objects.nonNull(lines) && lines.size() > 0) {
             this.dataLines =
-                    lines.stream()
-                            .filter(line -> Objects.nonNull(line) && line.getId() != 0)
+                    lines.parallelStream()
+                            .filter(Objects::nonNull)
+                            .filter(IfcLine::hasId)
                             .collect(Collectors.toMap(IfcLine::getId, line -> line));
             this.dataLinesByClass =
-                    lines.stream()
-                            .filter(line -> Objects.nonNull(line) && line.getId() != 0)
+                    lines.parallelStream()
+                            .filter(Objects::nonNull)
+                            .filter(IfcLine::hasId)
                             .collect(Collectors.groupingBy(IfcLine::getClass));
         } else {
             this.dataLines = Collections.emptyMap();
@@ -150,5 +153,14 @@ public class ParsedIfcFile {
                             return false;
                         })
                 .collect(Collectors.toList());
+    }
+
+    public Map<? extends Class<? extends IfcLine>, List<IfcLine>> getBuiltElementLines() {
+        return dataLinesByClass.entrySet().stream()
+                .filter(
+                        entry -> {
+                            return IfcBuiltElementLine.class.isAssignableFrom(entry.getKey());
+                        })
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

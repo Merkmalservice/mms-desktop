@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.mmsdesktop.controller.components.BuiltElementLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView;
 import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
@@ -41,7 +42,9 @@ public class ConvertController implements Initializable {
     @FXML private Label centerProgressProgressInfo;
     @FXML private JFXListView<IfcLine> fullFileContentList;
     @FXML private JFXListView<IfcLine> filteredFileContentList;
+    @FXML private JFXListView<IfcLine> filteredFileContentList2;
     @FXML private JFXListView<FeatureLabel> extractedFeaturesList;
+    @FXML private JFXListView<BuiltElementLabel> extractedBuiltElementsList;
     @FXML private BorderPane selectedIfcLineView;
     @FXML private IfcLineView ifcLineView;
 
@@ -82,6 +85,25 @@ public class ConvertController implements Initializable {
                             ifcLineView.setIfcLine(selectedIfcLine);
                         }));
 
+        extractedBuiltElementsList
+                .getSelectionModel()
+                .selectedItemProperty()
+                .addListener(
+                        (observable, deSelectedBuiltElement, selectedBuiltElement) ->
+                                stateService
+                                        .getConvertState()
+                                        .getFilteredInputFileContent()
+                                        .setPredicate(
+                                                ifcLine -> {
+                                                    if (Objects.isNull(selectedBuiltElement)) {
+                                                        return true;
+                                                    }
+
+                                                    return ifcLine.getClass()
+                                                            == selectedBuiltElement
+                                                                    .getBuiltElementClass();
+                                                }));
+
         extractedFeaturesList
                 .getSelectionModel()
                 .selectedItemProperty()
@@ -118,6 +140,13 @@ public class ConvertController implements Initializable {
                                 stateService.getConvertState().setSelectedIfcLine(selectedIfcLine));
 
         filteredFileContentList
+                .getSelectionModel()
+                .selectedItemProperty()
+                .addListener(
+                        (observable, deSelectedIfcLine, selectedIfcLine) ->
+                                stateService.getConvertState().setSelectedIfcLine(selectedIfcLine));
+
+        filteredFileContentList2
                 .getSelectionModel()
                 .selectedItemProperty()
                 .addListener(
@@ -185,6 +214,10 @@ public class ConvertController implements Initializable {
 
     public ObservableList<FeatureLabel> getFileContentFeatures() {
         return stateService.getConvertState().getInputFileExtractedFeatures();
+    }
+
+    public ObservableList<BuiltElementLabel> getFileContentBuiltElements() {
+        return stateService.getConvertState().getInputFileExtractedBuiltElements();
     }
 
     public ObservableList<IfcLine> getFileContentFiltered() {

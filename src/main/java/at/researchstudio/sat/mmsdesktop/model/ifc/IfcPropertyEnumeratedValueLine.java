@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class IfcPropertyEnumeratedValueLine extends IfcLine
         implements IfcNamedPropertyLineInterface {
+    public static final String IDENTIFIER = "IFCPROPERTYENUMERATEDVALUE(";
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCPROPERTYENUMERATEDVALUE\\('(?<name>.*)',((?<description>[^,]*)|\\$),\\((?<values>.*)\\),(.(?<enumId>.*)|\\$)\\))");

@@ -13,6 +13,7 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
+import at.researchstudio.sat.mmsdesktop.model.ifc.element.*;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.IfcPropertyBuilder;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
@@ -49,34 +50,17 @@ public class IfcFileReader {
             while (it.hasNext()) {
                 String line = it.nextLine();
                 try {
-                    if (line.contains("IFCPROPERTYSINGLEVALUE(")) {
+                    // TODO: MAYBE IMPLEMENT A DYNAMIC APPROACH IN ORDER
+                    if (line.contains(IfcSinglePropertyValueLine.IDENTIFIER)) {
                         lines.add(new IfcSinglePropertyValueLine(line));
-                    } else if (line.contains("IFCSIUNIT(")) {
-                        lines.add(new IfcSIUnitLine(line));
-                    } else if (line.contains("IFCPROPERTYENUMERATION(")) {
-                        lines.add(new IfcPropertyEnumerationLine(line));
-                    } else if (line.contains("IFCPROPERTYENUMERATEDVALUE(")) {
-                        lines.add(new IfcPropertyEnumeratedValueLine(line));
-                    } else if (line.contains("IFCRELDEFINESBYPROPERTIES(")) {
-                        lines.add(new IfcRelDefinesByPropertiesLine(line));
-                    } else if (line.contains("IFCDERIVEDUNITELEMENT(")) {
-                        lines.add(new IfcDerivedUnitElementLine(line));
-                    } else if (line.contains("IFCDERIVEDUNIT(")) {
-                        lines.add(new IfcDerivedUnitLine(line));
-                    } else if (line.contains("IFCPROPERTYSET(")) {
-                        lines.add(new IfcPropertySetLine(line));
-                    } else if (line.contains("IFCUNITASSIGNMENT(")) {
-                        lines.add(new IfcUnitAssignmentLine(line));
-                    } else if (line.contains("IFCPROJECT(")) {
-                        lines.add(new IfcProjectLine(line));
                     } else if (line.contains("IFCQUANTITY")) {
-                        if (line.contains("IFCQUANTITYLENGTH(")) {
+                        if (line.contains(IfcQuantityLengthLine.IDENTIFIER)) {
                             lines.add(new IfcQuantityLengthLine(line));
-                        } else if (line.contains("IFCQUANTITYAREA(")) {
+                        } else if (line.contains(IfcQuantityAreaLine.IDENTIFIER)) {
                             lines.add(new IfcQuantityAreaLine(line));
-                        } else if (line.contains("IFCQUANTITYVOLUME(")) {
+                        } else if (line.contains(IfcQuantityVolumeLine.IDENTIFIER)) {
                             lines.add(new IfcQuantityVolumeLine(line));
-                        } else if (line.contains("IFCQUANTITYCOUNT(")) {
+                        } else if (line.contains(IfcQuantityCountLine.IDENTIFIER)) {
                             lines.add(new IfcQuantityCountLine(line));
                         } else {
                             sb.append("Couldnt parse Line: ")
@@ -85,6 +69,88 @@ public class IfcFileReader {
                                     .append(System.lineSeparator());
                             lines.add(new IfcQuantityLine(line));
                         }
+                    } else if (line.contains(IfcBuildingElementProxyLine.IDENTIFIER)) {
+                        lines.add(new IfcBuildingElementProxyLine(line));
+                    } else if (line.contains(IfcRelDefinesByPropertiesLine.IDENTIFIER)) {
+                        lines.add(new IfcRelDefinesByPropertiesLine(line));
+                    } else if (line.contains(IfcSIUnitLine.IDENTIFIER)) {
+                        lines.add(new IfcSIUnitLine(line));
+                    } else if (line.contains(IfcPropertyEnumerationLine.IDENTIFIER)) {
+                        lines.add(new IfcPropertyEnumerationLine(line));
+                    } else if (line.contains(IfcPropertyEnumeratedValueLine.IDENTIFIER)) {
+                        lines.add(new IfcPropertyEnumeratedValueLine(line));
+                    } else if (line.contains(IfcDerivedUnitElementLine.IDENTIFIER)) {
+                        lines.add(new IfcDerivedUnitElementLine(line));
+                    } else if (line.contains(IfcDerivedUnitLine.IDENTIFIER)) {
+                        lines.add(new IfcDerivedUnitLine(line));
+                    } else if (line.contains(IfcPropertySetLine.IDENTIFIER)) {
+                        lines.add(new IfcPropertySetLine(line));
+                    } else if (line.contains(IfcUnitAssignmentLine.IDENTIFIER)) {
+                        lines.add(new IfcUnitAssignmentLine(line));
+                    } else if (line.contains(IfcProjectLine.IDENTIFIER)) {
+                        lines.add(new IfcProjectLine(line));
+                    } else if (line.contains(IfcBeamStandardCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcBeamStandardCaseLine(line));
+                    } else if (line.contains(IfcBearingLine.IDENTIFIER)) {
+                        lines.add(new IfcBearingLine(line));
+                    } else if (line.contains(IfcCaissonFoundationLine.IDENTIFIER)) {
+                        lines.add(new IfcCaissonFoundationLine(line));
+                    } else if (line.contains(IfcChimneyLine.IDENTIFIER)) {
+                        lines.add(new IfcChimneyLine(line));
+                    } else if (line.contains(IfcColumnStandardCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcColumnStandardCaseLine(line));
+                    } else if (line.contains(IfcCourseLine.IDENTIFIER)) {
+                        lines.add(new IfcCourseLine(line));
+                    } else if (line.contains(IfcCoveringLine.IDENTIFIER)) {
+                        lines.add(new IfcCoveringLine(line));
+                    } else if (line.contains(IfcCurtainWallLine.IDENTIFIER)) {
+                        lines.add(new IfcCurtainWallLine(line));
+                    } else if (line.contains(IfcDoorStandardCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcDoorStandardCaseLine(line));
+                    } else if (line.contains(IfcEarthworksFillLine.IDENTIFIER)) {
+                        lines.add(new IfcEarthworksFillLine(line));
+                    } else if (line.contains(IfcFootingLine.IDENTIFIER)) {
+                        lines.add(new IfcFootingLine(line));
+                    } else if (line.contains(IfcKerbLine.IDENTIFIER)) {
+                        lines.add(new IfcKerbLine(line));
+                    } else if (line.contains(IfcMemberStandardCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcMemberStandardCaseLine(line));
+                    } else if (line.contains(IfcMooringDeviceLine.IDENTIFIER)) {
+                        lines.add(new IfcMooringDeviceLine(line));
+                    } else if (line.contains(IfcNavigatorElementLine.IDENTIFIER)) {
+                        lines.add(new IfcNavigatorElementLine(line));
+                    } else if (line.contains(IfcPileLine.IDENTIFIER)) {
+                        lines.add(new IfcPileLine(line));
+                    } else if (line.contains(IfcPlateStandardCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcPlateStandardCaseLine(line));
+                    } else if (line.contains(IfcRailingLine.IDENTIFIER)) {
+                        lines.add(new IfcRailingLine(line));
+                    } else if (line.contains(IfcRampFlightLine.IDENTIFIER)) {
+                        lines.add(new IfcRampFlightLine(line));
+                    } else if (line.contains(IfcRampLine.IDENTIFIER)) {
+                        lines.add(new IfcRampLine(line));
+                    } else if (line.contains(IfcReinforcedSoilLine.IDENTIFIER)) {
+                        lines.add(new IfcReinforcedSoilLine(line));
+                    } else if (line.contains(IfcRoofLine.IDENTIFIER)) {
+                        lines.add(new IfcRoofLine(line));
+                    } else if (line.contains(IfcShadingDeviceLine.IDENTIFIER)) {
+                        lines.add(new IfcShadingDeviceLine(line));
+                    } else if (line.contains(IfcSlabElementedCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcSlabElementedCaseLine(line));
+                    } else if (line.contains(IfcSlabStandardCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcSlabStandardCaseLine(line));
+                    } else if (line.contains(IfcStairFlightLine.IDENTIFIER)) {
+                        lines.add(new IfcStairFlightLine(line));
+                    } else if (line.contains(IfcStairLine.IDENTIFIER)) {
+                        lines.add(new IfcStairLine(line));
+                    } else if (line.contains(IfcTrackElementLine.IDENTIFIER)) {
+                        lines.add(new IfcTrackElementLine(line));
+                    } else if (line.contains(IfcWallElementedCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcWallElementedCaseLine(line));
+                    } else if (line.contains(IfcWallStandardCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcWallStandardCaseLine(line));
+                    } else if (line.contains(IfcWindowStandardCaseLine.IDENTIFIER)) {
+                        lines.add(new IfcWindowStandardCaseLine(line));
                     } else {
                         lines.add(new IfcLine(line));
                     }

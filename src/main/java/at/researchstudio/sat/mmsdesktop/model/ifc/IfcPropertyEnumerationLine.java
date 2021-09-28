@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcPropertyEnumerationLine extends IfcLine {
+    public static final String IDENTIFIER = "IFCPROPERTYENUMERATION(";
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCPROPERTYENUMERATION\\('(?<name>.*)',\\((?<values>.*)\\),((?<unitId>.*)|\\$)\\))");

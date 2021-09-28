@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcUnitAssignmentLine extends IfcLine {
+    public static final String IDENTIFIER = "IFCUNITASSIGNMENT(";
     List<Integer> unitIds;
 
     private static final Pattern extractPattern =

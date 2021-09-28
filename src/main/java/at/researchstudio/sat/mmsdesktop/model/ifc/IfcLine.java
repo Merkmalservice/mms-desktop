@@ -38,6 +38,10 @@ public class IfcLine {
         return id;
     }
 
+    public boolean hasId() {
+        return id != 0;
+    }
+
     public String getStringId() {
         return stringId;
     }

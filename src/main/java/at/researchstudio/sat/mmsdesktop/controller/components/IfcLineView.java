@@ -34,6 +34,7 @@ public class IfcLineView extends VBox {
 
     private final Accordion accordion;
     private final TitledPane correspondingFeaturePane;
+    private final TitledPane referencingLinesPane;
     private final TitledPane referencedLinesPane;
 
     public IfcLineView() {
@@ -50,9 +51,14 @@ public class IfcLineView extends VBox {
                         resourceBundle.getString("label.line.correspondingFeature"),
                         new Label(resourceBundle.getString("label.notPresent")));
         correspondingFeaturePane.setFont(pt16SystemBoldFont);
-        referencedLinesPane =
+        referencingLinesPane =
                 new TitledPane(
                         resourceBundle.getString("label.line.referencingLines"),
+                        new Label(resourceBundle.getString("label.notPresent")));
+        referencingLinesPane.setFont(pt16SystemBoldFont);
+        referencedLinesPane =
+                new TitledPane(
+                        resourceBundle.getString("label.line.referencedLines"),
                         new Label(resourceBundle.getString("label.notPresent")));
         referencedLinesPane.setFont(pt16SystemBoldFont);
     }
@@ -129,6 +135,10 @@ public class IfcLineView extends VBox {
                                                                 .getRelDefinesByPropertiesLinesReferencing(
                                                                         l);
 
+                                        parsedIfcFile
+                                                .get()
+                                                .getBuiltElementLines(); // TODO: FIGURE OUT
+
                                         if (!relDefinesByPropertiesLines.isEmpty()) {
                                             for (IfcRelDefinesByPropertiesLine
                                                     relDefinesByPropertiesLine :
@@ -204,14 +214,13 @@ public class IfcLineView extends VBox {
                     correspondingFeaturePane.setContent(featureView);
                 }
             }
-            accordion.getPanes().add(referencedLinesPane);
-            getChildren().add(accordion);
+            accordion.getPanes().add(referencingLinesPane);
 
-            // TODO: MAYBE ADD PROGRESS BAR FOR REF LINES
-            VBox refLinesBox = new VBox();
-            refLinesBox.setSpacing(10);
-            refLinesBox.setPadding(new Insets(10, 10, 10, 10));
-            refLinesBox.getChildren().add(new JFXSpinner());
+            // TODO: MAYBE ADD PROGRESS BAR FOR REFERENCING LINES
+            VBox referencingLinesBox = new VBox();
+            referencingLinesBox.setSpacing(10);
+            referencingLinesBox.setPadding(new Insets(10, 10, 10, 10));
+            referencingLinesBox.getChildren().add(new JFXSpinner());
 
             Task<List<Node>> refLineTask =
                     new Task<>() {
@@ -233,14 +242,52 @@ public class IfcLineView extends VBox {
                         }
                     };
 
-            referencedLinesPane.setContent(refLinesBox);
+            referencingLinesPane.setContent(referencingLinesBox);
             refLineTask.setOnSucceeded(
                     t -> {
-                        refLinesBox.getChildren().clear();
-                        refLinesBox.getChildren().addAll(refLineTask.getValue());
+                        referencingLinesBox.getChildren().clear();
+                        referencingLinesBox.getChildren().addAll(refLineTask.getValue());
                     });
 
             new Thread(refLineTask).start();
+
+            // TODO: MAYBE ADD PROGRESS BAR FOR REFERENCED LINES
+            VBox referencedLinesBox = new VBox();
+            referencedLinesBox.setSpacing(10);
+            referencedLinesBox.setPadding(new Insets(10, 10, 10, 10));
+            referencedLinesBox.getChildren().add(new JFXSpinner());
+
+            accordion.getPanes().add(referencedLinesPane);
+            getChildren().add(accordion);
+
+            Task<List<Node>> referencedLineTask =
+                    new Task<>() {
+                        @Override
+                        protected List<Node> call() {
+                            List<IfcLine> lines =
+                                    parsedIfcFile.get().getAllReferencedLines(ifcLine);
+                            List<Node> elements = new ArrayList<>();
+
+                            if (!lines.isEmpty()) {
+                                for (IfcLine referencedLine : lines) {
+                                    elements.add(new IfcLineComponent(referencedLine));
+                                }
+                            } else {
+                                elements.add(
+                                        new Label(resourceBundle.getString("label.notPresent")));
+                            }
+                            return elements;
+                        }
+                    };
+
+            referencedLinesPane.setContent(referencedLinesBox);
+            referencedLineTask.setOnSucceeded(
+                    t -> {
+                        referencedLinesBox.getChildren().clear();
+                        referencedLinesBox.getChildren().addAll(referencedLineTask.getValue());
+                    });
+
+            new Thread(referencedLineTask).start();
         }
     }
 
