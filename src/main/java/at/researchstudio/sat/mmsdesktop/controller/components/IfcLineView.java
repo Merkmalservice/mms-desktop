@@ -99,12 +99,18 @@ public class IfcLineView extends VBox {
                             this.parsedIfcFile
                                     .get()
                                     .getDataLines()
-                                    .get(relDefinesByPropertiesLine.getPropertySetId());
+                                    .get(relDefinesByPropertiesLine.getRelatedSetId());
                     if (propertySetLine instanceof IfcPropertySetLine) {
                         IfcPropertySetComponent propSetsBox =
                                 new IfcPropertySetComponent(
                                         (IfcPropertySetLine) propertySetLine, parsedIfcFile.get());
                         getChildren().add(propSetsBox);
+                    } else if (propertySetLine instanceof IfcElementQuantityLine) {
+                        IfcElementQuantityComponent elementQuantityBox =
+                                new IfcElementQuantityComponent(
+                                        (IfcElementQuantityLine) propertySetLine,
+                                        parsedIfcFile.get());
+                        getChildren().add(elementQuantityBox);
                     } else {
                         getChildren().add(new IfcLineComponent(propertySetLine));
                     }

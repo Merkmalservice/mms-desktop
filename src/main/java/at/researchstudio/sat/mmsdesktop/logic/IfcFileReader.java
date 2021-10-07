@@ -51,7 +51,17 @@ public class IfcFileReader {
                 String line = it.nextLine();
                 try {
                     // TODO: MAYBE IMPLEMENT A DYNAMIC APPROACH IN ORDER
-                    if (line.contains(IfcSinglePropertyValueLine.IDENTIFIER)) {
+                    if (line.contains(IfcCartesianPointLine.IDENTIFIER)) {
+                        lines.add(new IfcCartesianPointLine(line));
+                    } else if (line.contains(IfcDirectionLine.IDENTIFIER)) {
+                        lines.add(new IfcDirectionLine(line));
+                    } else if (line.contains(IfcFaceLine.IDENTIFIER)) {
+                        lines.add(new IfcFaceLine(line));
+                    } else if (line.contains(IfcFaceOuterBoundLine.IDENTIFIER)) {
+                        lines.add(new IfcFaceOuterBoundLine(line));
+                    } else if (line.contains(IfcPolyLoopLine.IDENTIFIER)) {
+                        lines.add(new IfcPolyLoopLine(line));
+                    } else if (line.contains(IfcSinglePropertyValueLine.IDENTIFIER)) {
                         lines.add(new IfcSinglePropertyValueLine(line));
                     } else if (line.contains("IFCQUANTITY")) {
                         if (line.contains(IfcQuantityLengthLine.IDENTIFIER)) {
@@ -97,6 +107,8 @@ public class IfcFileReader {
                         lines.add(new IfcDerivedUnitElementLine(line));
                     } else if (line.contains(IfcDerivedUnitLine.IDENTIFIER)) {
                         lines.add(new IfcDerivedUnitLine(line));
+                    } else if (line.contains(IfcElementQuantityLine.IDENTIFIER)) {
+                        lines.add(new IfcElementQuantityLine(line));
                     } else if (line.contains(IfcPropertySetLine.IDENTIFIER)) {
                         lines.add(new IfcPropertySetLine(line));
                     } else if (line.contains(IfcUnitAssignmentLine.IDENTIFIER)) {
@@ -170,12 +182,14 @@ public class IfcFileReader {
                     }
                 } catch (IllegalArgumentException e) {
                     // TODO: FIX PARSING OR IGNORE
-                    taskProgressListener.notifyProgress(
-                            null, "Couldnt parse Line: " + line + " adding it as IfcLine", 0);
+                    if (updateProgress) {
+                        taskProgressListener.notifyProgress(
+                                null, "Couldnt parse Line: " + line + " adding it as IfcLine", 0);
+                    }
                     lines.add(new IfcLine(line));
                 }
             }
-            if (sb.length() > 0) {
+            if (updateProgress && sb.length() > 0) {
                 taskProgressListener.notifyProgress(null, sb.toString(), 0);
             }
         }

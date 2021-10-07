@@ -15,7 +15,8 @@ public class IfcRelDefinesByPropertiesLine extends IfcLine {
 
     public String globalId;
     public int historyId;
-    public int propertySetId;
+    public int relatedSetId;
+    // elementQuantity or propertySet
     public String name;
     public String description;
     public List<Integer> relatedObjectIds;
@@ -28,7 +29,7 @@ public class IfcRelDefinesByPropertiesLine extends IfcLine {
         if (matcher.find()) {
             globalId = StringUtils.trim(matcher.group("globalId"));
             historyId = Integer.parseInt(matcher.group("historyId").substring(1));
-            propertySetId = Integer.parseInt(matcher.group("propertySetId").substring(1));
+            relatedSetId = Integer.parseInt(matcher.group("propertySetId").substring(1));
             name = StringUtils.trim(matcher.group("name"));
             description = StringUtils.trim(matcher.group("description"));
             String relatedObjectIdsString = matcher.group("relatedObjectIds");
@@ -49,8 +50,8 @@ public class IfcRelDefinesByPropertiesLine extends IfcLine {
         return historyId;
     }
 
-    public int getPropertySetId() {
-        return propertySetId;
+    public int getRelatedSetId() {
+        return relatedSetId;
     }
 
     public String getName() {

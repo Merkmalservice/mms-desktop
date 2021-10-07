@@ -1,11 +1,13 @@
 package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.merkmalservice.utils.Utils;
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcElementQuantityLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcPropertySetLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import com.jfoenix.controls.JFXSpinner;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -15,12 +17,13 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-public class IfcPropertySetComponent extends VBox {
+public class IfcElementQuantityComponent extends VBox {
 
     private static final Font pt16SystemBoldFont = new Font("System Bold", 16);
 
-    public IfcPropertySetComponent(
-            final IfcPropertySetLine propertySet, final ParsedIfcFile parsedIfcFile) {
+    // TODO: FIGURE OUT THIS VIEW TOO
+    public IfcElementQuantityComponent(
+            final IfcElementQuantityLine elementQuantity, final ParsedIfcFile parsedIfcFile) {
         this.setSpacing(10);
         this.setPadding(new Insets(10, 10, 10, 10));
         this.getChildren().add(new JFXSpinner());
@@ -43,18 +46,18 @@ public class IfcPropertySetComponent extends VBox {
                     protected List<Node> call() {
                         List<Node> propSetNodes = new ArrayList<>();
 
-                        String name = propertySet.getName();
+                        String name = elementQuantity.getName();
                         String convertedPropSetName =
                                 Objects.nonNull(name)
                                         ? Utils.convertIFCStringToUtf8(name)
                                         : "NO NAME";
                         Label titleLabel = new Label(convertedPropSetName);
                         titleLabel.setFont(pt16SystemBoldFont);
-                        titleLabel.setTooltip(new Tooltip(propertySet.getLine()));
+                        titleLabel.setTooltip(new Tooltip(elementQuantity.getLine()));
                         propSetNodes.add(titleLabel);
 
                         List<IfcLine> propertySetChildLines =
-                                parsedIfcFile.getPropertySetChildLines(propertySet);
+                                parsedIfcFile.getElementQuantityChildLines(elementQuantity);
 
                         if (!propertySetChildLines.isEmpty()) {
                             for (IfcLine childLine : propertySetChildLines) {

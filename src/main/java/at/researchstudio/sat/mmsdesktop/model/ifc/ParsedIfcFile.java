@@ -141,6 +141,10 @@ public class ParsedIfcFile {
         return ifcLine.getPropertyIds().stream().map(dataLines::get).collect(Collectors.toList());
     }
 
+    public List<IfcLine> getElementQuantityChildLines(IfcElementQuantityLine ifcLine) {
+        return ifcLine.getPropertyIds().stream().map(dataLines::get).collect(Collectors.toList());
+    }
+
     public List<IfcRelDefinesByPropertiesLine> getRelDefinesByPropertiesLinesReferencing(
             IfcPropertySetLine ifcLine) {
         return dataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
@@ -148,7 +152,7 @@ public class ParsedIfcFile {
                 .filter(
                         entryIfcLine ->
                                 Objects.nonNull(entryIfcLine)
-                                        && entryIfcLine.getPropertySetId() == ifcLine.getId())
+                                        && entryIfcLine.getRelatedSetId() == ifcLine.getId())
                 .collect(Collectors.toList());
     }
 
