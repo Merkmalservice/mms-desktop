@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.model.ifc;
 
 import static at.researchstudio.sat.mmsdesktop.model.ifc.IfcPropertyEnumerationLine.ENUM_VALUE_PATTERN;
 
+import at.researchstudio.sat.mmsdesktop.util.Utils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -46,7 +47,7 @@ public class IfcPropertyEnumeratedValueLine extends IfcLine
                             .collect(Collectors.toList());
             String _enumId = StringUtils.trimToNull(matcher.group("enumId"));
             if (Objects.nonNull(_enumId)) {
-                enumId = Integer.parseInt(_enumId);
+                enumId = Utils.executeOrDefaultOnException(() -> Integer.parseInt(_enumId), 0);
             }
         } else {
             throw new IllegalArgumentException("IfcPropertyEnumeratedValue invalid: " + line);

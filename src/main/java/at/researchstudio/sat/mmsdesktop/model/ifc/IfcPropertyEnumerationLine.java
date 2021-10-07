@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
+import at.researchstudio.sat.mmsdesktop.util.Utils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -48,7 +49,7 @@ public class IfcPropertyEnumerationLine extends IfcLine {
 
             unitIdString = StringUtils.trimToNull(matcher.group("unitId"));
             if (Objects.nonNull(unitIdString)) {
-                unitId = Integer.parseInt(unitIdString);
+                unitId = Utils.executeOrDefaultOnException(() -> Integer.parseInt(unitIdString), 0);
                 unitIdString = "#" + unitIdString;
             }
         } else {
