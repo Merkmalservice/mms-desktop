@@ -69,6 +69,20 @@ public class IfcFileReader {
                                     .append(System.lineSeparator());
                             lines.add(new IfcQuantityLine(line));
                         }
+                    } else if (line.contains(IfcBeamLine.IDENTIFIER)) {
+                        lines.add(new IfcBeamLine(line));
+                    } else if (line.contains(IfcColumnLine.IDENTIFIER)) {
+                        lines.add(new IfcColumnLine(line));
+                    } else if (line.contains(IfcDoorLine.IDENTIFIER)) {
+                        lines.add(new IfcDoorLine(line));
+                    } else if (line.contains(IfcPlateLine.IDENTIFIER)) {
+                        lines.add(new IfcPlateLine(line));
+                    } else if (line.contains(IfcSlabLine.IDENTIFIER)) {
+                        lines.add(new IfcSlabLine(line));
+                    } else if (line.contains(IfcWallLine.IDENTIFIER)) {
+                        lines.add(new IfcWallLine(line));
+                    } else if (line.contains(IfcWindowLine.IDENTIFIER)) {
+                        lines.add(new IfcWindowLine(line));
                     } else if (line.contains(IfcBuildingElementProxyLine.IDENTIFIER)) {
                         lines.add(new IfcBuildingElementProxyLine(line));
                     } else if (line.contains(IfcRelDefinesByPropertiesLine.IDENTIFIER)) {

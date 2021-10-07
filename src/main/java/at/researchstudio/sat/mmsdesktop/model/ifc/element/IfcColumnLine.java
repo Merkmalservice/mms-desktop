@@ -1,6 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc.element;
 
-public abstract class IfcColumnLine extends IfcBuiltElementLine {
+public class IfcColumnLine extends IfcBuiltElementLine {
+    public static final String IDENTIFIER = "IFCCOLUMN(";
+
     public IfcColumnLine(String line) {
         super(line);
     }
