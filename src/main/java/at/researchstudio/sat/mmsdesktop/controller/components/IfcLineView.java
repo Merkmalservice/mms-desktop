@@ -3,6 +3,7 @@ package at.researchstudio.sat.mmsdesktop.controller.components;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
+import at.researchstudio.sat.mmsdesktop.model.ifc.element.IfcBuiltElementLine;
 import com.jfoenix.controls.JFXSpinner;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
@@ -85,7 +86,30 @@ public class IfcLineView extends VBox {
                 && Objects.nonNull(ifcLine)) {
             getChildren().add(selectedLineLabel);
             addLineToView(ifcLine);
+            if (ifcLine instanceof IfcBuiltElementLine) {
+                List<IfcRelDefinesByPropertiesLine> relDefinesByPropertiesLines =
+                        this.parsedIfcFile
+                                .get()
+                                .getRelDefinesByPropertiesLinesReferencing(
+                                        (IfcBuiltElementLine) ifcLine);
 
+                for (IfcRelDefinesByPropertiesLine relDefinesByPropertiesLine :
+                        relDefinesByPropertiesLines) {
+                    IfcLine propertySetLine =
+                            this.parsedIfcFile
+                                    .get()
+                                    .getDataLines()
+                                    .get(relDefinesByPropertiesLine.getPropertySetId());
+                    if (propertySetLine instanceof IfcPropertySetLine) {
+                        IfcPropertySetComponent propSetsBox =
+                                new IfcPropertySetComponent(
+                                        (IfcPropertySetLine) propertySetLine, parsedIfcFile.get());
+                        getChildren().add(propSetsBox);
+                    } else {
+                        getChildren().add(new IfcLineComponent(propertySetLine));
+                    }
+                }
+            }
             if (ifcLine instanceof IfcNamedPropertyLineInterface) {
                 accordion.getPanes().add(correspondingFeaturePane);
                 List<IfcPropertySetLine> relatedPropertySets =
@@ -93,112 +117,25 @@ public class IfcLineView extends VBox {
 
                 if (!relatedPropertySets.isEmpty()) {
 
-                    for (IfcPropertySetLine l : relatedPropertySets) {
-                        VBox propSetsBox = new VBox();
-                        propSetsBox.setSpacing(10);
-                        propSetsBox.setPadding(new Insets(10, 10, 10, 10));
+                    for (IfcPropertySetLine relatedPropertySet : relatedPropertySets) {
+                        IfcPropertySetComponent propSetsBox =
+                                new IfcPropertySetComponent(
+                                        relatedPropertySet, parsedIfcFile.get());
 
-                        String propSetName = l.getName();
+                        String propSetName = relatedPropertySet.getName();
                         String convertedPropSetName =
                                 Objects.nonNull(propSetName)
                                         ? Utils.convertIFCStringToUtf8(propSetName)
                                         : "NO NAME";
                         TitledPane propSetPane =
                                 new TitledPane(
-                                        "'" + convertedPropSetName + "'/" + l.getId(),
+                                        "'"
+                                                + convertedPropSetName
+                                                + "'/"
+                                                + relatedPropertySet.getId(),
                                         propSetsBox); // TODO: Better Key
                         propSetPane.setFont(pt16SystemBoldFont);
                         accordion.getPanes().add(propSetPane);
-
-                        propSetsBox.getChildren().add(new JFXSpinner());
-
-                        Task<List<Node>> propSetTask =
-                                new Task<>() {
-                                    @Override
-                                    protected List<Node> call() {
-                                        List<Node> propSetNodes = new ArrayList<>();
-
-                                        propSetNodes.add(new IfcLineComponent(l));
-
-                                        Label relDefinesLabel =
-                                                new Label(
-                                                        resourceBundle.getString(
-                                                                "label.line.relDefinesLines"));
-                                        relDefinesLabel.setFont(pt16SystemBoldFont);
-                                        relDefinesLabel.setWrapText(true);
-                                        propSetNodes.add(relDefinesLabel);
-
-                                        List<IfcRelDefinesByPropertiesLine>
-                                                relDefinesByPropertiesLines =
-                                                        parsedIfcFile
-                                                                .get()
-                                                                .getRelDefinesByPropertiesLinesReferencing(
-                                                                        l);
-
-                                        parsedIfcFile
-                                                .get()
-                                                .getBuiltElementLines(); // TODO: FIGURE OUT
-
-                                        if (!relDefinesByPropertiesLines.isEmpty()) {
-                                            for (IfcRelDefinesByPropertiesLine
-                                                    relDefinesByPropertiesLine :
-                                                            relDefinesByPropertiesLines) {
-                                                propSetNodes.add(
-                                                        new IfcLineComponent(
-                                                                relDefinesByPropertiesLine));
-
-                                                List<IfcLine> relatedObjectLines =
-                                                        parsedIfcFile
-                                                                .get()
-                                                                .getRelatedObjectLines(
-                                                                        relDefinesByPropertiesLine);
-
-                                                Label relatedObjectsLabel =
-                                                        new Label(
-                                                                resourceBundle.getString(
-                                                                        "label.line.correspondingObjects"));
-                                                relatedObjectsLabel.setFont(pt16SystemBoldFont);
-                                                relatedObjectsLabel.setWrapText(true);
-                                                propSetNodes.add(relatedObjectsLabel);
-
-                                                if (!relatedObjectLines.isEmpty()) {
-                                                    for (IfcLine relatedObjectLine :
-                                                            relatedObjectLines) {
-                                                        propSetNodes.add(
-                                                                new IfcLineComponent(
-                                                                        relatedObjectLine));
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        Label siblingPropertiesLabel =
-                                                new Label(
-                                                        resourceBundle.getString(
-                                                                "label.line.siblingsOfLine"));
-                                        siblingPropertiesLabel.setFont(pt16SystemBoldFont);
-                                        siblingPropertiesLabel.setWrapText(true);
-                                        propSetNodes.add(siblingPropertiesLabel);
-
-                                        List<IfcLine> propertySetChildLines =
-                                                parsedIfcFile.get().getPropertySetChildLines(l);
-
-                                        if (!propertySetChildLines.isEmpty()) {
-                                            for (IfcLine childLine : propertySetChildLines) {
-                                                propSetNodes.add(new IfcLineComponent(childLine));
-                                            }
-                                        }
-
-                                        return propSetNodes;
-                                    }
-                                };
-
-                        propSetTask.setOnSucceeded(
-                                t -> {
-                                    propSetsBox.getChildren().clear();
-                                    propSetsBox.getChildren().addAll(propSetTask.getValue());
-                                });
-                        new Thread(propSetTask).start();
                     }
                 }
 

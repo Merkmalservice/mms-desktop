@@ -146,21 +146,33 @@ public class ParsedIfcFile {
         return dataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
                 .map(l -> (IfcRelDefinesByPropertiesLine) l)
                 .filter(
-                        entryIfcLine -> {
-                            if (Objects.nonNull(entryIfcLine)) {
-                                return entryIfcLine.getPropertySetId() == ifcLine.getId();
-                            }
-                            return false;
-                        })
+                        entryIfcLine ->
+                                Objects.nonNull(entryIfcLine)
+                                        && entryIfcLine.getPropertySetId() == ifcLine.getId())
                 .collect(Collectors.toList());
     }
 
-    public Map<? extends Class<? extends IfcLine>, List<IfcLine>> getBuiltElementLines() {
-        return dataLinesByClass.entrySet().stream()
+    public List<IfcRelDefinesByPropertiesLine> getRelDefinesByPropertiesLinesReferencing(
+            IfcBuiltElementLine ifcLine) {
+        return dataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
+                .map(l -> (IfcRelDefinesByPropertiesLine) l)
                 .filter(
-                        entry -> {
-                            return IfcBuiltElementLine.class.isAssignableFrom(entry.getKey());
-                        })
+                        entryIfcLine ->
+                                Objects.nonNull(entryIfcLine)
+                                        && entryIfcLine
+                                                .getRelatedObjectIds()
+                                                .contains(ifcLine.getId()))
+                .collect(Collectors.toList());
+    }
+
+    public Map<? extends Class<? extends IfcLine>, List<IfcLine>>
+            getIfcLineClassesWithOccurences() {
+        return dataLinesByClass.entrySet().stream()
+                //                .filter(
+                //                        entry -> {
+                //                            return
+                // IfcBuiltElementLine.class.isAssignableFrom(entry.getKey());
+                //                        })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

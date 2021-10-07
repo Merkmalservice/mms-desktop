@@ -1,8 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.state;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
-import at.researchstudio.sat.mmsdesktop.controller.components.BuiltElementLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.FeatureLabel;
+import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineClassLabel;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import java.util.*;
@@ -31,7 +31,7 @@ public class ConvertState {
     private final FilteredList<IfcLine> filteredInputFileContent;
 
     private final ObservableList<FeatureLabel> extractedFeatures;
-    private final ObservableList<BuiltElementLabel> extractedBuiltElements;
+    private final ObservableList<IfcLineClassLabel> extractedIfcLineClasses;
 
     public ConvertState() {
         this.showInitial = new SimpleBooleanProperty(true);
@@ -40,7 +40,7 @@ public class ConvertState {
         this.inputFileContent = FXCollections.observableArrayList();
         this.filteredInputFileContent = new FilteredList<>(inputFileContent);
         this.extractedFeatures = FXCollections.observableArrayList();
-        this.extractedBuiltElements = FXCollections.observableArrayList();
+        this.extractedIfcLineClasses = FXCollections.observableArrayList();
         this.selectedIfcLine = new SimpleObjectProperty<>();
         this.selectedFeature = new SimpleObjectProperty<>();
         this.parsedIfcFile = new SimpleObjectProperty<>();
@@ -89,7 +89,7 @@ public class ConvertState {
     public void setLoadResult(Task<LoadResult> task) {
         this.inputFileContent.clear();
         this.extractedFeatures.clear();
-        this.extractedBuiltElements.clear();
+        this.extractedIfcLineClasses.clear();
 
         if (Objects.isNull(task.getException())) {
             this.parsedIfcFile.setValue(task.getValue().getParsedIfcFile());
@@ -99,9 +99,10 @@ public class ConvertState {
                             .sorted(Comparator.comparing(Feature::getName))
                             .map(FeatureLabel::new)
                             .collect(Collectors.toList()));
-            this.extractedBuiltElements.addAll(
-                    task.getValue().getParsedIfcFile().getBuiltElementLines().keySet().stream()
-                            .map(entry -> new BuiltElementLabel(entry))
+            this.extractedIfcLineClasses.addAll(
+                    task.getValue().getParsedIfcFile().getDataLinesByClass().entrySet().stream()
+                            .map(IfcLineClassLabel::new)
+                            .sorted(Comparator.comparing(IfcLineClassLabel::getCount))
                             .collect(Collectors.toList()));
         } else {
             // TODO: BETTER ERROR HANDLING
@@ -109,7 +110,7 @@ public class ConvertState {
             this.parsedIfcFile.setValue(null);
             this.inputFileContent.setAll(Collections.emptyList());
             this.extractedFeatures.addAll(Collections.emptyList());
-            this.extractedBuiltElements.addAll(Collections.emptyList());
+            this.extractedIfcLineClasses.addAll(Collections.emptyList());
             //
             // this.extractLogOutput.setValue(Throwables.getStackTraceAsString(task.getException()));
             //            this.extractJsonOutput.setValue("[]");
@@ -152,8 +153,8 @@ public class ConvertState {
         return extractedFeatures;
     }
 
-    public ObservableList<BuiltElementLabel> getInputFileExtractedBuiltElements() {
-        return extractedBuiltElements;
+    public ObservableList<IfcLineClassLabel> getInputFileExtractedIfcLineClasses() {
+        return extractedIfcLineClasses;
     }
 
     public FilteredList<IfcLine> getFilteredInputFileContent() {

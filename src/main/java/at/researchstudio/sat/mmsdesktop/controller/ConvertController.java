@@ -1,7 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
-import at.researchstudio.sat.mmsdesktop.controller.components.BuiltElementLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.FeatureLabel;
+import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineClassLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView;
 import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
@@ -44,7 +44,7 @@ public class ConvertController implements Initializable {
     @FXML private JFXListView<IfcLine> filteredFileContentList;
     @FXML private JFXListView<IfcLine> filteredFileContentList2;
     @FXML private JFXListView<FeatureLabel> extractedFeaturesList;
-    @FXML private JFXListView<BuiltElementLabel> extractedBuiltElementsList;
+    @FXML private JFXListView<IfcLineClassLabel> extractedBuiltElementsList;
     @FXML private BorderPane selectedIfcLineView;
     @FXML private IfcLineView ifcLineView;
 
@@ -101,7 +101,7 @@ public class ConvertController implements Initializable {
 
                                                     return ifcLine.getClass()
                                                             == selectedBuiltElement
-                                                                    .getBuiltElementClass();
+                                                                    .getIfcLineClass();
                                                 }));
 
         extractedFeaturesList
@@ -216,8 +216,8 @@ public class ConvertController implements Initializable {
         return stateService.getConvertState().getInputFileExtractedFeatures();
     }
 
-    public ObservableList<BuiltElementLabel> getFileContentBuiltElements() {
-        return stateService.getConvertState().getInputFileExtractedBuiltElements();
+    public ObservableList<IfcLineClassLabel> getFileContentBuiltElements() {
+        return stateService.getConvertState().getInputFileExtractedIfcLineClasses();
     }
 
     public ObservableList<IfcLine> getFileContentFiltered() {
