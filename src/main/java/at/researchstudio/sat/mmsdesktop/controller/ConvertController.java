@@ -7,6 +7,7 @@ import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import at.researchstudio.sat.mmsdesktop.util.FeatureUtils;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
@@ -121,15 +122,9 @@ public class ConvertController implements Initializable {
                                                                             .getName()))
                                                         return true;
 
-                                                    String translatedName =
-                                                            at.researchstudio.sat.merkmalservice
-                                                                    .utils.Utils
-                                                                    .convertUtf8ToIFCString(
-                                                                            selectedIfcFeature
-                                                                                    .getFeature()
-                                                                                    .getName());
-                                                    return ifcLine.getLine()
-                                                            .contains("'" + translatedName + "'");
+                                                    return FeatureUtils.isFeatureWithinLine(
+                                                            selectedIfcFeature.getFeature(),
+                                                            ifcLine);
                                                 }));
 
         fullFileContentList

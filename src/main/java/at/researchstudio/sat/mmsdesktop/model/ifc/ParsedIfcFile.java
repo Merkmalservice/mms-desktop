@@ -5,6 +5,7 @@ import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.element.IfcBuiltElementLine;
+import at.researchstudio.sat.mmsdesktop.util.FeatureUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.lang.NonNull;
@@ -111,9 +112,27 @@ public class ParsedIfcFile {
                 .collect(Collectors.toList());
     }
 
+    public List<IfcElementQuantityLine> getRelatedElementQuantityLines(IfcLine ifcLine) {
+        return getElementQuantityLines().parallelStream()
+                .filter(
+                        entryIfcLine -> {
+                            if (Objects.nonNull(entryIfcLine)) {
+                                return entryIfcLine.getPropertyIds().contains(ifcLine.getId());
+                            }
+                            return false;
+                        })
+                .collect(Collectors.toList());
+    }
+
     public List<IfcPropertySetLine> getPropertySetLines() {
         return dataLinesByClass.get(IfcPropertySetLine.class).parallelStream()
                 .map(l -> (IfcPropertySetLine) l)
+                .collect(Collectors.toList());
+    }
+
+    public List<IfcElementQuantityLine> getElementQuantityLines() {
+        return dataLinesByClass.get(IfcElementQuantityLine.class).parallelStream()
+                .map(l -> (IfcElementQuantityLine) l)
                 .collect(Collectors.toList());
     }
 
@@ -167,6 +186,39 @@ public class ParsedIfcFile {
                                                 .getRelatedObjectIds()
                                                 .contains(ifcLine.getId()))
                 .collect(Collectors.toList());
+    }
+
+    public void printFeaturesWithPropertySetName() {
+        // TODO: REMOVE THIS IT IS SOLELY FOR DEBUG PURPOSES
+        features.forEach(
+                f -> {
+                    Set<String> propertySetNames = new HashSet<>();
+
+                    lines.forEach(
+                            ifcLine -> {
+                                if (ifcLine instanceof IfcNamedPropertyLineInterface
+                                        && FeatureUtils.isFeatureWithinLine(f, ifcLine)) {
+                                    getRelatedPropertySetLines(ifcLine)
+                                            .forEach(
+                                                    ifcPropertySetLine -> {
+                                                        propertySetNames.add(
+                                                                ifcPropertySetLine.getName());
+                                                    });
+                                    getElementQuantityLines()
+                                            .forEach(
+                                                    ifcElementQuantityLine -> {
+                                                        propertySetNames.add(
+                                                                ifcElementQuantityLine.getName());
+                                                    });
+                                }
+                            });
+                    System.out.println(f + " within PropertySets:");
+                    propertySetNames.forEach(
+                            propertySetName -> {
+                                System.out.println("\t" + propertySetName);
+                            });
+                    System.out.println("#########################");
+                });
     }
 
     public Map<? extends Class<? extends IfcLine>, List<IfcLine>>

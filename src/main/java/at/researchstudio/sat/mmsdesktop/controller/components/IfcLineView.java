@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
+import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.ifc.element.IfcBuiltElementLine;
 import com.jfoenix.controls.JFXSpinner;
@@ -15,7 +16,6 @@ import javafx.scene.control.Accordion;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +28,6 @@ public class IfcLineView extends VBox {
 
     private ObjectProperty<ParsedIfcFile> parsedIfcFile;
 
-    private static final Font pt16Font = new Font(16);
-    private static final Font pt16SystemBoldFont = new Font("System Bold", 16);
-
     private final Label selectedLineLabel;
 
     private final Accordion accordion;
@@ -42,7 +39,7 @@ public class IfcLineView extends VBox {
         this.resourceBundle = ResourceBundle.getBundle("messages", Locale.getDefault());
 
         this.selectedLineLabel = new Label(resourceBundle.getString("label.line.selected"));
-        this.selectedLineLabel.setFont(pt16SystemBoldFont);
+        this.selectedLineLabel.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
         this.selectedLineLabel.setWrapText(true);
 
         accordion = new Accordion();
@@ -51,17 +48,17 @@ public class IfcLineView extends VBox {
                 new TitledPane(
                         resourceBundle.getString("label.line.correspondingFeature"),
                         new Label(resourceBundle.getString("label.notPresent")));
-        correspondingFeaturePane.setFont(pt16SystemBoldFont);
+        correspondingFeaturePane.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
         referencingLinesPane =
                 new TitledPane(
                         resourceBundle.getString("label.line.referencingLines"),
                         new Label(resourceBundle.getString("label.notPresent")));
-        referencingLinesPane.setFont(pt16SystemBoldFont);
+        referencingLinesPane.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
         referencedLinesPane =
                 new TitledPane(
                         resourceBundle.getString("label.line.referencedLines"),
                         new Label(resourceBundle.getString("label.notPresent")));
-        referencedLinesPane.setFont(pt16SystemBoldFont);
+        referencedLinesPane.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
     }
 
     public void setParsedIfcFile(ObjectProperty<ParsedIfcFile> parsedIfcFile) {
@@ -140,8 +137,35 @@ public class IfcLineView extends VBox {
                                                 + "'/"
                                                 + relatedPropertySet.getId(),
                                         propSetsBox); // TODO: Better Key
-                        propSetPane.setFont(pt16SystemBoldFont);
+                        propSetPane.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
                         accordion.getPanes().add(propSetPane);
+                    }
+                }
+
+                List<IfcElementQuantityLine> relatedElementQuantityLines =
+                        this.parsedIfcFile.get().getRelatedElementQuantityLines(ifcLine);
+
+                if (!relatedElementQuantityLines.isEmpty()) {
+                    for (IfcElementQuantityLine relatedElementQuantity :
+                            relatedElementQuantityLines) {
+                        IfcElementQuantityComponent propSetsBox =
+                                new IfcElementQuantityComponent(
+                                        relatedElementQuantity, parsedIfcFile.get());
+
+                        String elementQuantityName = relatedElementQuantity.getName();
+                        String convertedElementQuantityName =
+                                Objects.nonNull(elementQuantityName)
+                                        ? Utils.convertIFCStringToUtf8(elementQuantityName)
+                                        : "NO NAME";
+                        TitledPane elementQuantityPane =
+                                new TitledPane(
+                                        "'"
+                                                + convertedElementQuantityName
+                                                + "'/"
+                                                + relatedElementQuantity.getId(),
+                                        propSetsBox); // TODO: Better Key
+                        elementQuantityPane.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
+                        accordion.getPanes().add(elementQuantityPane);
                     }
                 }
 

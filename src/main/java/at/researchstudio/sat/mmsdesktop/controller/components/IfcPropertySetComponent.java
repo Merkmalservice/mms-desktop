@@ -1,6 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.merkmalservice.utils.Utils;
+import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcPropertySetLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
@@ -13,12 +14,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 
 public class IfcPropertySetComponent extends VBox {
-
-    private static final Font pt16SystemBoldFont = new Font("System Bold", 16);
-
     public IfcPropertySetComponent(
             final IfcPropertySetLine propertySet, final ParsedIfcFile parsedIfcFile) {
         this.setSpacing(10);
@@ -30,12 +27,14 @@ public class IfcPropertySetComponent extends VBox {
                         new BorderStroke(
                                 Color.BLACK,
                                 BorderStrokeStyle.SOLID,
-                                new CornerRadii(5.0),
+                                ViewConstants.DEFAULT_CORNER_RADIUS,
                                 BorderWidths.DEFAULT)));
         this.setBackground(
                 new Background(
                         new BackgroundFill(
-                                Color.valueOf("#FFFFFF"), new CornerRadii(5.0), new Insets(0.0))));
+                                ViewConstants.PROPERTYSET_COMPONENT_BG,
+                                ViewConstants.DEFAULT_CORNER_RADIUS,
+                                new Insets(0.0))));
 
         Task<List<Node>> propSetTask =
                 new Task<>() {
@@ -49,7 +48,7 @@ public class IfcPropertySetComponent extends VBox {
                                         ? Utils.convertIFCStringToUtf8(name)
                                         : "NO NAME";
                         Label titleLabel = new Label(convertedPropSetName);
-                        titleLabel.setFont(pt16SystemBoldFont);
+                        titleLabel.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
                         titleLabel.setTooltip(new Tooltip(propertySet.getLine()));
                         propSetNodes.add(titleLabel);
 

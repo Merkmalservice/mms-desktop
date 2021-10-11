@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.controller.components;
 
+import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcPropertySetLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcRelDefinesByPropertiesLine;
@@ -14,12 +15,9 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 
 public class IfcRelDefinesByPropertiesComponent extends VBox {
     private final ResourceBundle resourceBundle;
-
-    private static final Font pt16SystemBoldFont = new Font("System Bold", 16);
 
     public IfcRelDefinesByPropertiesComponent(
             final IfcPropertySetLine propertySet, final ParsedIfcFile parsedIfcFile) {
@@ -39,7 +37,7 @@ public class IfcRelDefinesByPropertiesComponent extends VBox {
 
                         Label relDefinesLabel =
                                 new Label(resourceBundle.getString("label.line.relDefinesLines"));
-                        relDefinesLabel.setFont(pt16SystemBoldFont);
+                        relDefinesLabel.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
                         relDefinesLabel.setWrapText(true);
                         propSetNodes.add(relDefinesLabel);
 
@@ -63,7 +61,7 @@ public class IfcRelDefinesByPropertiesComponent extends VBox {
                                         new Label(
                                                 resourceBundle.getString(
                                                         "label.line.correspondingObjects"));
-                                relatedObjectsLabel.setFont(pt16SystemBoldFont);
+                                relatedObjectsLabel.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
                                 relatedObjectsLabel.setWrapText(true);
                                 propSetNodes.add(relatedObjectsLabel);
 
@@ -77,7 +75,7 @@ public class IfcRelDefinesByPropertiesComponent extends VBox {
 
                         Label siblingPropertiesLabel =
                                 new Label(resourceBundle.getString("label.line.siblingsOfLine"));
-                        siblingPropertiesLabel.setFont(pt16SystemBoldFont);
+                        siblingPropertiesLabel.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
                         siblingPropertiesLabel.setWrapText(true);
                         propSetNodes.add(siblingPropertiesLabel);
 

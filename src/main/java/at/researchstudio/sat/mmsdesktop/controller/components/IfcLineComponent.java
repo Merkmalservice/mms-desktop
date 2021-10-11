@@ -1,6 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.merkmalservice.utils.Utils;
+import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import java.util.Objects;
 import javafx.geometry.Insets;
@@ -8,7 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -34,7 +34,7 @@ public class IfcLineComponent extends HBox {
                 new Background(
                         new BackgroundFill(
                                 Color.valueOf("#0000ff0c"),
-                                new CornerRadii(5.0),
+                                ViewConstants.DEFAULT_CORNER_RADIUS,
                                 new Insets(-5.0))));
     }
 

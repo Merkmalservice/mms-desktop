@@ -1,6 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.merkmalservice.model.*;
+import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
 import com.google.gson.Gson;
@@ -32,8 +33,6 @@ public class FeatureView extends VBox {
     private final Label featureQuantityKind;
     private final Label featureUnit;
 
-    private static final Font pt16Font = new Font(16);
-    private static final Font pt16SystemBoldFont = new Font("System Bold", 16);
     private boolean showJson = true;
 
     public FeatureView() {
@@ -53,11 +52,11 @@ public class FeatureView extends VBox {
         featureUnit = new Label();
         featureQuantityKind = new Label();
 
-        featureUnit.setFont(pt16Font);
-        featureQuantityKind.setFont(pt16Font);
+        featureUnit.setFont(ViewConstants.FONT_PT16);
+        featureQuantityKind.setFont(ViewConstants.FONT_PT16);
 
-        unitLabel.setFont(pt16SystemBoldFont);
-        quantityKindLabel.setFont(pt16SystemBoldFont);
+        unitLabel.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
+        quantityKindLabel.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
 
         featureNumericType.add(quantityKindLabel, 0, 0);
         featureNumericType.add(featureQuantityKind, 0, 1);
@@ -76,7 +75,7 @@ public class FeatureView extends VBox {
         getChildren().add(featureEnumType);
 
         Label description = new Label(resourceBundle.getString("label.feature.description"));
-        description.setFont(pt16SystemBoldFont);
+        description.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
         getChildren().add(description);
 
         featureDescriptionMarkdown = new MarkdownView();
