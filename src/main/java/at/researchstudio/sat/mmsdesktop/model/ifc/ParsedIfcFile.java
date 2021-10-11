@@ -7,7 +7,6 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import at.researchstudio.sat.mmsdesktop.model.ifc.element.IfcBuiltElementLine;
-import at.researchstudio.sat.mmsdesktop.util.FeatureUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +42,72 @@ public class ParsedIfcFile {
                             .filter(IfcLine::hasId)
                             .collect(Collectors.groupingBy(IfcLine::getClass));
 
+            this.features =
+                    IfcFileReader.extractFeaturesFromProperties(
+                            this.extractedPropertyMap, extractLog);
+
+            HashMap<String, Set<String>> featureSetFeatureNameMap = new HashMap<>();
+
+            this.dataLinesByClass
+                    .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
+                    .stream()
+                    .map(l -> (IfcPropertySetLine) l)
+                    .forEach(
+                            line -> {
+                                String convertedName = Utils.convertIFCStringToUtf8(line.getName());
+                                Set<String> features;
+                                if (featureSetFeatureNameMap.containsKey(convertedName)) {
+                                    features = featureSetFeatureNameMap.get(convertedName);
+                                } else {
+                                    features = new HashSet<>();
+                                    featureSetFeatureNameMap.put(convertedName, features);
+                                }
+                                features.addAll(
+                                        getPropertySetChildLines(line).parallelStream()
+                                                .filter(
+                                                        l ->
+                                                                l
+                                                                        instanceof
+                                                                        IfcNamedPropertyLineInterface)
+                                                .map(
+                                                        childLine ->
+                                                                Utils.convertIFCStringToUtf8(
+                                                                        ((IfcNamedPropertyLineInterface)
+                                                                                        childLine)
+                                                                                .getName()))
+                                                .collect(Collectors.toList()));
+                            });
+
+            this.dataLinesByClass
+                    .getOrDefault(IfcElementQuantityLine.class, Collections.emptyList())
+                    .stream()
+                    .map(l -> (IfcElementQuantityLine) l)
+                    .forEach(
+                            line -> {
+                                String convertedName = Utils.convertIFCStringToUtf8(line.getName());
+                                Set<String> features;
+                                if (featureSetFeatureNameMap.containsKey(convertedName)) {
+                                    features = featureSetFeatureNameMap.get(convertedName);
+                                } else {
+                                    features = new HashSet<>();
+                                    featureSetFeatureNameMap.put(convertedName, features);
+                                }
+                                features.addAll(
+                                        getElementQuantityChildLines(line).parallelStream()
+                                                .filter(
+                                                        l ->
+                                                                l
+                                                                        instanceof
+                                                                        IfcNamedPropertyLineInterface)
+                                                .map(
+                                                        childLine ->
+                                                                Utils.convertIFCStringToUtf8(
+                                                                        ((IfcNamedPropertyLineInterface)
+                                                                                        childLine)
+                                                                                .getName()))
+                                                .collect(Collectors.toList()));
+                            });
+
             featureSets =
                     new HashSet<>(); // TODO: FEATURESETS DONT CONTAIN FEATURES YET IMPL: LATER
             featureSets.addAll(
@@ -56,6 +121,27 @@ public class ParsedIfcFile {
                                                     ? new FeatureSet(l.getName())
                                                     : new FeatureSet(
                                                             l.getName(), l.getDescription()))
+                            .peek(
+                                    featureSet ->
+                                            featureSet.setFeatures(
+                                                    featureSetFeatureNameMap
+                                                            .getOrDefault(
+                                                                    featureSet.getName(),
+                                                                    Collections.emptySet())
+                                                            .stream()
+                                                            .map(
+                                                                    featureName -> {
+                                                                        for (Feature f :
+                                                                                this.features) {
+                                                                            if (featureName.equals(
+                                                                                    f.getName())) {
+                                                                                return f;
+                                                                            }
+                                                                        }
+                                                                        return null;
+                                                                    })
+                                                            .filter(Objects::nonNull)
+                                                            .collect(Collectors.toList())))
                             .collect(Collectors.toSet()));
             featureSets.addAll(
                     this.dataLinesByClass
@@ -68,10 +154,28 @@ public class ParsedIfcFile {
                                                     ? new FeatureSet(l.getName())
                                                     : new FeatureSet(
                                                             l.getName(), l.getDescription()))
+                            .peek(
+                                    featureSet ->
+                                            featureSet.setFeatures(
+                                                    featureSetFeatureNameMap
+                                                            .getOrDefault(
+                                                                    featureSet.getName(),
+                                                                    Collections.emptySet())
+                                                            .stream()
+                                                            .map(
+                                                                    featureName -> {
+                                                                        for (Feature f :
+                                                                                this.features) {
+                                                                            if (featureName.equals(
+                                                                                    f.getName())) {
+                                                                                return f;
+                                                                            }
+                                                                        }
+                                                                        return null;
+                                                                    })
+                                                            .filter(Objects::nonNull)
+                                                            .collect(Collectors.toList())))
                             .collect(Collectors.toSet()));
-            this.features =
-                    IfcFileReader.extractFeaturesFromProperties(
-                            this.extractedPropertyMap, extractLog);
         } else {
             this.dataLines = Collections.emptyMap();
             this.dataLinesByClass = Collections.emptyMap();
@@ -155,13 +259,17 @@ public class ParsedIfcFile {
     }
 
     public List<IfcPropertySetLine> getPropertySetLines() {
-        return dataLinesByClass.get(IfcPropertySetLine.class).parallelStream()
+        return dataLinesByClass
+                .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
+                .parallelStream()
                 .map(l -> (IfcPropertySetLine) l)
                 .collect(Collectors.toList());
     }
 
     public List<IfcElementQuantityLine> getElementQuantityLines() {
-        return dataLinesByClass.get(IfcElementQuantityLine.class).parallelStream()
+        return dataLinesByClass
+                .getOrDefault(IfcElementQuantityLine.class, Collections.emptyList())
+                .parallelStream()
                 .map(l -> (IfcElementQuantityLine) l)
                 .collect(Collectors.toList());
     }
@@ -196,7 +304,9 @@ public class ParsedIfcFile {
 
     public List<IfcRelDefinesByPropertiesLine> getRelDefinesByPropertiesLinesReferencing(
             IfcPropertySetLine ifcLine) {
-        return dataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
+        return dataLinesByClass
+                .getOrDefault(IfcRelDefinesByPropertiesLine.class, Collections.emptyList())
+                .parallelStream()
                 .map(l -> (IfcRelDefinesByPropertiesLine) l)
                 .filter(
                         entryIfcLine ->
@@ -207,7 +317,9 @@ public class ParsedIfcFile {
 
     public List<IfcRelDefinesByPropertiesLine> getRelDefinesByPropertiesLinesReferencing(
             IfcBuiltElementLine ifcLine) {
-        return dataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
+        return dataLinesByClass
+                .getOrDefault(IfcRelDefinesByPropertiesLine.class, Collections.emptyList())
+                .parallelStream()
                 .map(l -> (IfcRelDefinesByPropertiesLine) l)
                 .filter(
                         entryIfcLine ->
@@ -216,39 +328,6 @@ public class ParsedIfcFile {
                                                 .getRelatedObjectIds()
                                                 .contains(ifcLine.getId()))
                 .collect(Collectors.toList());
-    }
-
-    public void printFeaturesWithPropertySetName() {
-        // TODO: REMOVE THIS IT IS SOLELY FOR DEBUG PURPOSES
-        features.forEach(
-                f -> {
-                    Set<String> propertySetNames = new HashSet<>();
-
-                    lines.forEach(
-                            ifcLine -> {
-                                if (ifcLine instanceof IfcNamedPropertyLineInterface
-                                        && FeatureUtils.isFeatureWithinLine(f, ifcLine)) {
-                                    getRelatedPropertySetLines(ifcLine)
-                                            .forEach(
-                                                    ifcPropertySetLine -> {
-                                                        propertySetNames.add(
-                                                                ifcPropertySetLine.getName());
-                                                    });
-                                    getElementQuantityLines()
-                                            .forEach(
-                                                    ifcElementQuantityLine -> {
-                                                        propertySetNames.add(
-                                                                ifcElementQuantityLine.getName());
-                                                    });
-                                }
-                            });
-                    System.out.println(f + " within PropertySets:");
-                    propertySetNames.forEach(
-                            propertySetName -> {
-                                System.out.println("\t" + propertySetName);
-                            });
-                    System.out.println("#########################");
-                });
     }
 
     public Map<? extends Class<? extends IfcLine>, List<IfcLine>>

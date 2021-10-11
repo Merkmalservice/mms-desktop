@@ -1,0 +1,14 @@
+<?import javafx.scene.layout.AnchorPane?>
+<?import com.jfoenix.controls.JFXListView?>
+<AnchorPane
+            xmlns="http://javafx.com/javafx/16"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="at.researchstudio.sat.mmsdesktop.controller.components.FeatureSetComponentController"
+            fx:id="parentPane">
+    <JFXListView fx:id="featureSetList"
+                 items="${controller.sortedExtractedFeatures}"
+                 AnchorPane.topAnchor="0.0"
+                 AnchorPane.rightAnchor="0.0"
+                 AnchorPane.bottomAnchor="0.0"
+                 AnchorPane.leftAnchor="0.0" />
+</AnchorPane>

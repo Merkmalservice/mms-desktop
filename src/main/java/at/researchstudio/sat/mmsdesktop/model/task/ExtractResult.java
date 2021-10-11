@@ -1,22 +1,24 @@
 package at.researchstudio.sat.mmsdesktop.model.task;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
+import at.researchstudio.sat.mmsdesktop.controller.components.FeatureSetControl;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 // TODO: REFACTOR THIS -> ExtractResult is based upon ALL files, this might be confusing somehow
 public class ExtractResult implements Serializable {
-    private final Set<FeatureSet> extractedUniqueFeatureSetNames;
+    private final Set<FeatureSet> extractedUniqueFeatureSets;
     private final List<Feature> extractedFeatures;
     private final String logOutput;
 
     public ExtractResult(
             List<Feature> extractedFeatures,
-            Set<FeatureSet> extractedUniqueFeatureSetNames,
+            Set<FeatureSet> extractedUniqueFeatureSets,
             String logOutput) {
-        this.extractedUniqueFeatureSetNames = extractedUniqueFeatureSetNames;
+        this.extractedUniqueFeatureSets = extractedUniqueFeatureSets;
         this.extractedFeatures = extractedFeatures;
         this.logOutput = logOutput;
     }
@@ -25,8 +27,10 @@ public class ExtractResult implements Serializable {
         return extractedFeatures;
     }
 
-    public Set<FeatureSet> getExtractedUniqueFeatureSetNames() {
-        return extractedUniqueFeatureSetNames;
+    public Set<FeatureSetControl> getExtractedUniqueFeatureSetControls() {
+        return extractedUniqueFeatureSets.stream()
+                .map(FeatureSetControl::new)
+                .collect(Collectors.toSet());
     }
 
     public String getLogOutput() {

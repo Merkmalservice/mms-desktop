@@ -199,11 +199,8 @@ public class ExtractController implements Initializable {
 
         centerResultUniqueValuesToggle
                 .selectedProperty()
-                .addListener(
-                        (observable, oldValue, newValue) ->
-                                stateService
-                                        .getExtractState()
-                                        .includeDescriptionInJsonOutput(newValue));
+                .bindBidirectional(
+                        stateService.getExtractState().includeDescriptionInJsonOutputProperty());
 
         snackbar = new JFXSnackbar(parentPane);
     }
@@ -237,7 +234,7 @@ public class ExtractController implements Initializable {
             try {
                 Utils.writeToJson(
                         file.getAbsolutePath(),
-                        stateService.getExtractState().getExtractedFeatures(),
+                        stateService.getExtractState().getFilteredExtractedFeatures(),
                         centerResultUniqueValuesToggle.selectedProperty().getValue());
 
                 final String message =

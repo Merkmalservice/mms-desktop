@@ -143,6 +143,9 @@
                         AnchorPane.topAnchor="0.0"
                         AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
                         AnchorPane.leftAnchor="0.0">
+                <left>
+                    <fx:include source="components/featureSetComponent.fxml" />
+                </left>
                 <center>
                     <AnchorPane>
                         <JFXTabPane AnchorPane.topAnchor="0.0"

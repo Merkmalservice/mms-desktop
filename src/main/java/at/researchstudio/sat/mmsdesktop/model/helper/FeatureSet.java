@@ -2,8 +2,8 @@ package at.researchstudio.sat.mmsdesktop.model.helper;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
-
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 // TODO: MAYBE IMPLEMENT PropertySet/ElementQuantity, but not sure yet, also move this to the
@@ -11,10 +11,11 @@ import java.util.Objects;
 public class FeatureSet {
     private final String name;
     private String description;
-    private ArrayList<Feature> features;
+    private List<Feature> features;
 
     public FeatureSet(String name) {
         this.name = Utils.convertIFCStringToUtf8(name);
+        this.features = Collections.emptyList();
     }
 
     public FeatureSet(String name, String description) {
@@ -26,7 +27,7 @@ public class FeatureSet {
         this.description = description;
     }
 
-    public void setFeatures(ArrayList<Feature> features) {
+    public void setFeatures(List<Feature> features) {
         this.features = features;
     }
 
@@ -38,7 +39,7 @@ public class FeatureSet {
         return description;
     }
 
-    public ArrayList<Feature> getFeatures() {
+    public List<Feature> getFeatures() {
         return features;
     }
 
