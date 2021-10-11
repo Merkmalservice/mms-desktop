@@ -372,10 +372,8 @@ public class IfcFileReader {
                     null, "Extracted " + extractedProperties.size() + " IfcProperties", 0);
         }
 
-        ParsedIfcFile parsedIfcFile = new ParsedIfcFile(lines, extractedProperties);
         StringBuilder extractLog = new StringBuilder();
-        parsedIfcFile.setFeatures(
-                extractFeaturesFromProperties(parsedIfcFile.getExtractedPropertyMap(), extractLog));
+        ParsedIfcFile parsedIfcFile = new ParsedIfcFile(lines, extractedProperties, extractLog);
 
         if (updateProgress) {
             taskProgressListener.notifyProgress(null, extractLog.toString(), 0);

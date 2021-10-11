@@ -4,25 +4,28 @@ import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
+import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
+import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import at.researchstudio.sat.mmsdesktop.model.ifc.element.IfcBuiltElementLine;
 import at.researchstudio.sat.mmsdesktop.util.FeatureUtils;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 
 public class ParsedIfcFile {
     private final List<IfcLine> lines;
     private final Map<Integer, IfcLine> dataLines;
     private final Map<Class<? extends IfcLine>, List<IfcLine>> dataLinesByClass;
-    private Set<IfcProperty> extractedProperties;
-    private Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap;
-    private List<Feature> features;
+    private final Set<IfcProperty> extractedProperties;
+    private final Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap;
+    private final List<Feature> features;
+    private final Set<FeatureSet> featureSets;
 
-    public ParsedIfcFile(List<IfcLine> lines) {
-        this(lines, new HashSet<>());
-    }
-
-    public ParsedIfcFile(List<IfcLine> lines, @NonNull Set<IfcProperty> extractedProperties) {
+    public ParsedIfcFile(
+            List<IfcLine> lines,
+            @NonNull Set<IfcProperty> extractedProperties,
+            StringBuilder extractLog) {
         this.lines = lines;
         this.extractedProperties = extractedProperties;
         this.extractedPropertyMap =
@@ -39,9 +42,42 @@ public class ParsedIfcFile {
                             .filter(Objects::nonNull)
                             .filter(IfcLine::hasId)
                             .collect(Collectors.groupingBy(IfcLine::getClass));
+
+            featureSets =
+                    new HashSet<>(); // TODO: FEATURESETS DONT CONTAIN FEATURES YET IMPL: LATER
+            featureSets.addAll(
+                    this.dataLinesByClass
+                            .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
+                            .parallelStream()
+                            .map(l -> (IfcPropertySetLine) l)
+                            .map(
+                                    l ->
+                                            StringUtils.isEmpty(l.getDescription())
+                                                    ? new FeatureSet(l.getName())
+                                                    : new FeatureSet(
+                                                            l.getName(), l.getDescription()))
+                            .collect(Collectors.toSet()));
+            featureSets.addAll(
+                    this.dataLinesByClass
+                            .getOrDefault(IfcElementQuantityLine.class, Collections.emptyList())
+                            .parallelStream()
+                            .map(l -> (IfcElementQuantityLine) l)
+                            .map(
+                                    l ->
+                                            StringUtils.isEmpty(l.getDescription())
+                                                    ? new FeatureSet(l.getName())
+                                                    : new FeatureSet(
+                                                            l.getName(), l.getDescription()))
+                            .collect(Collectors.toSet()));
+            this.features =
+                    IfcFileReader.extractFeaturesFromProperties(
+                            this.extractedPropertyMap, extractLog);
         } else {
             this.dataLines = Collections.emptyMap();
             this.dataLinesByClass = Collections.emptyMap();
+
+            this.featureSets = Collections.emptySet();
+            this.features = Collections.emptyList();
         }
     }
 
@@ -57,18 +93,12 @@ public class ParsedIfcFile {
         return extractedPropertyMap;
     }
 
-    public void setExtractedProperties(@NonNull Set<IfcProperty> extractedProperties) {
-        this.extractedProperties = extractedProperties;
-        this.extractedPropertyMap =
-                extractedProperties.stream().collect(Collectors.groupingBy(IfcProperty::getType));
-    }
-
     public List<Feature> getFeatures() {
         return features;
     }
 
-    public void setFeatures(List<Feature> features) {
-        this.features = features;
+    public Set<FeatureSet> getFeatureSets() {
+        return featureSets;
     }
 
     public Map<Integer, IfcLine> getDataLines() {

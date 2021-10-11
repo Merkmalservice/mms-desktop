@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.state;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.ExcludeDescriptionStrategy;
+import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
@@ -41,6 +42,8 @@ public class ExtractState {
     private final FilteredList<Feature> filteredExtractedFeatures;
     private final SortedList<Feature> sortedExtractedFeatures;
 
+    private final ObservableList<FeatureSet> extractedFeatureSets;
+
     public ExtractState() {
         this.showInitial = new SimpleBooleanProperty(true);
         this.showExtractProcess = new SimpleBooleanProperty(false);
@@ -52,6 +55,8 @@ public class ExtractState {
         this.extractedFeatures = FXCollections.observableArrayList();
         this.filteredExtractedFeatures = new FilteredList<>(extractedFeatures);
         this.sortedExtractedFeatures = new SortedList<>(filteredExtractedFeatures);
+
+        this.extractedFeatureSets = FXCollections.observableArrayList();
     }
 
     public BooleanProperty selectedExtractFilesPresentProperty() {
@@ -115,6 +120,7 @@ public class ExtractState {
 
     public void setExtractResult(Task<ExtractResult> task) {
         this.extractedFeatures.setAll(task.getValue().getExtractedFeatures());
+        this.extractedFeatureSets.setAll(task.getValue().getExtractedUniqueFeatureSetNames());
         if (Objects.isNull(task.getException())) {
             Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
             this.extractLogOutput.setValue(task.getValue().getLogOutput());
@@ -139,6 +145,7 @@ public class ExtractState {
         this.sortedExtractedFeatures.clear();
         this.extractLogOutput.set("");
         this.extractJsonOutput.set("[]");
+        this.extractedFeatureSets.clear();
     }
 
     public ObservableList<Feature> getExtractedFeatures() {
@@ -147,6 +154,10 @@ public class ExtractState {
 
     public SortedList<Feature> getSortedExtractedFeatures() {
         return sortedExtractedFeatures;
+    }
+
+    public ObservableList<FeatureSet> getExtractedUniqueFeatureSets() {
+        return extractedFeatureSets;
     }
 
     public FilteredList<Feature> getFilteredExtractedFeatures() {

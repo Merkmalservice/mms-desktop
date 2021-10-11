@@ -8,6 +8,7 @@ import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcSIUnit;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.*;
+import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.*;
@@ -45,7 +46,10 @@ public class PropertyExtractor {
                 final int fileCount = extractFiles.size();
                 final int max = fileCount * 2;
                 List<Feature> extractedFeatures = new ArrayList<>();
-                int extractedProperties = 0;
+                int extractedFeaturesCount = 0;
+
+                Set<FeatureSet> extractedFeatureSets = new HashSet<>();
+                int extractedFeatureSetsCount = 0;
 
                 Map<Class<? extends FileWrapper>, List<FileWrapper>> extractFilesMap =
                         extractFiles.stream().collect(Collectors.groupingBy(FileWrapper::getClass));
@@ -79,7 +83,7 @@ public class PropertyExtractor {
                                     .append(" Features")
                                     .append(System.lineSeparator());
                             extractedFeatures.addAll(extractedFeaturesFromJsonFile);
-                            extractedProperties += extractedFeaturesFromJsonFile.size();
+                            extractedFeaturesCount += extractedFeaturesFromJsonFile.size();
                             convertedFileCount++;
                         } catch (Exception e) {
                             logOutput
@@ -216,12 +220,15 @@ public class PropertyExtractor {
                             IfcFileWrapper ifcFile = (IfcFileWrapper) extractFile;
 
                             List<Feature> extractedFeaturesFromIfcFile;
+                            Set<FeatureSet> extractedFeatureSetsFromIfcFile;
+
                             if (USE_NEWEXTRACTION) {
                                 ParsedIfcFile parsedIfcFile =
                                         IfcFileReader.readIfcFile(
                                                 (IfcFileWrapper) extractFile, taskProgressListener);
 
                                 extractedFeaturesFromIfcFile = parsedIfcFile.getFeatures();
+                                extractedFeatureSetsFromIfcFile = parsedIfcFile.getFeatureSets();
                             } else {
                                 Model model =
                                         IFC2ModelConverter.readFromFile(
@@ -237,18 +244,26 @@ public class PropertyExtractor {
                                 extractedFeaturesFromIfcFile =
                                         IfcFileReader.extractFeaturesFromProperties(
                                                 extractedPropertyMap, logOutput);
+                                extractedFeatureSetsFromIfcFile = Collections.emptySet();
                             }
                             logOutput
                                     .append("Extracted ")
                                     .append(extractedFeaturesFromIfcFile.size())
                                     .append(" Features")
                                     .append(System.lineSeparator())
+                                    .append("Extracted ")
+                                    .append(extractedFeatureSetsFromIfcFile.size())
+                                    .append(" FeatureSets")
+                                    .append(System.lineSeparator())
                                     .append(
                                             "-------------------------------------------------------------------------------")
                                     .append(System.lineSeparator())
                                     .append(System.lineSeparator());
-                            extractedProperties += extractedFeaturesFromIfcFile.size();
+                            extractedFeaturesCount += extractedFeaturesFromIfcFile.size();
                             extractedFeatures.addAll(extractedFeaturesFromIfcFile);
+
+                            extractedFeatureSetsCount += extractedFeatureSetsFromIfcFile.size();
+                            extractedFeatureSets.addAll(extractedFeatureSetsFromIfcFile);
 
                             updateMessage(logOutput.toString());
                             convertedFileCount++;
@@ -285,7 +300,7 @@ public class PropertyExtractor {
                                 "-------------------------------------------------------------------------------")
                         .append(System.lineSeparator())
                         .append("Extracted ")
-                        .append(extractedProperties)
+                        .append(extractedFeaturesCount)
                         .append(" out of the ")
                         .append(fileCount)
                         .append(" ifcFiles")
@@ -312,7 +327,8 @@ public class PropertyExtractor {
                     updateMessage(logOutput.toString());
                 }
 
-                return new ExtractResult(extractedFeatures, logOutput.toString());
+                return new ExtractResult(
+                        extractedFeatures, extractedFeatureSets, logOutput.toString());
             }
         };
     }
