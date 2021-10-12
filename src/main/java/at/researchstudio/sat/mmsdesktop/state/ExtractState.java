@@ -9,10 +9,7 @@ import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import com.google.gson.GsonBuilder;
 import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -44,6 +41,7 @@ public class ExtractState {
 
     private final BooleanProperty extractedFeatureSetsPresent;
     private final ObservableList<FeatureSetControl> extractedFeatureSets;
+    private final SortedList<FeatureSetControl> sortedFeatureSets;
 
     private final BooleanProperty includeDescriptionInJsonOutput;
 
@@ -62,6 +60,14 @@ public class ExtractState {
 
         this.extractedFeatureSets = FXCollections.observableArrayList();
         this.extractedFeatureSetsPresent = new SimpleBooleanProperty(false);
+        this.sortedFeatureSets = new SortedList<>(extractedFeatureSets);
+        this.sortedFeatureSets.setComparator(
+                (o1, o2) -> {
+                    String featureSetName1 = o1.getFeatureSet().getName();
+                    String featureSetName2 = o2.getFeatureSet().getName();
+
+                    return featureSetName1.compareToIgnoreCase(featureSetName2);
+                });
 
         this.includeDescriptionInJsonOutput.addListener(
                 (observable, oldValue, newValue) -> {
@@ -191,8 +197,8 @@ public class ExtractState {
         return sortedExtractedFeatures;
     }
 
-    public ObservableList<FeatureSetControl> getExtractedUniqueFeatureSets() {
-        return extractedFeatureSets;
+    public SortedList<FeatureSetControl> getSortedFeatureSets() {
+        return sortedFeatureSets;
     }
 
     public FilteredList<Feature> getFilteredExtractedFeatures() {

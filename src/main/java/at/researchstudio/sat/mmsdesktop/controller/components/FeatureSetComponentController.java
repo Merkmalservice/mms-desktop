@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.SelectionMode;
@@ -73,7 +73,7 @@ public class FeatureSetComponentController implements Initializable {
                                                         }));
     }
 
-    public ObservableList<FeatureSetControl> getSortedExtractedFeatures() {
-        return stateService.getExtractState().getExtractedUniqueFeatureSets();
+    public SortedList<FeatureSetControl> getSortedFeatureSets() {
+        return stateService.getExtractState().getSortedFeatureSets();
     }
 }

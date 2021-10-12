@@ -6,7 +6,7 @@
             fx:controller="at.researchstudio.sat.mmsdesktop.controller.components.FeatureSetComponentController"
             fx:id="parentPane">
     <JFXListView fx:id="featureSetList"
-                 items="${controller.sortedExtractedFeatures}"
+                 items="${controller.sortedFeatureSets}"
                  AnchorPane.topAnchor="0.0"
                  AnchorPane.rightAnchor="0.0"
                  AnchorPane.bottomAnchor="0.0"
