@@ -11,9 +11,7 @@ import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -25,9 +23,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ExtractState {
-    private final BooleanProperty showInitial;
-    private final BooleanProperty showExtractProcess;
-    private final BooleanProperty showExtracted;
+    public static final int INITIAL = 0;
+    public static final int PROCESSING = 1;
+    public static final int EXTRACTED = 2;
+
+    private final IntegerProperty state;
 
     private final ObservableList<FileWrapper> selectedExtractFiles;
     private final BooleanProperty selectedExtractFilesPresent;
@@ -46,9 +46,8 @@ public class ExtractState {
     private final BooleanProperty includeDescriptionInJsonOutput;
 
     public ExtractState() {
-        this.showInitial = new SimpleBooleanProperty(true);
-        this.showExtractProcess = new SimpleBooleanProperty(false);
-        this.showExtracted = new SimpleBooleanProperty(false);
+        this.state = new SimpleIntegerProperty(INITIAL);
+
         this.includeDescriptionInJsonOutput = new SimpleBooleanProperty(true);
         this.selectedExtractFiles = FXCollections.observableArrayList();
         this.selectedExtractFilesPresent = new SimpleBooleanProperty(false);
@@ -104,16 +103,8 @@ public class ExtractState {
         return extractedFeatureSetsPresent;
     }
 
-    public BooleanProperty showInitialProperty() {
-        return showInitial;
-    }
-
-    public BooleanProperty showExtractProcessProperty() {
-        return showExtractProcess;
-    }
-
-    public BooleanProperty showExtractedProperty() {
-        return showExtracted;
+    public IntegerProperty stateProperty() {
+        return state;
     }
 
     public ObservableList<FileWrapper> getSelectedExtractFiles() {
@@ -137,21 +128,15 @@ public class ExtractState {
     }
 
     public void showExtractedView() {
-        showInitial.setValue(false);
-        showExtractProcess.setValue(false);
-        showExtracted.setValue(true);
+        state.setValue(EXTRACTED);
     }
 
     public void showInitialView() {
-        showExtractProcess.setValue(false);
-        showExtracted.setValue(false);
-        showInitial.setValue(true);
+        state.setValue(INITIAL);
     }
 
     public void showProcessView() {
-        showExtracted.setValue(false);
-        showInitial.setValue(false);
-        showExtractProcess.setValue(true);
+        state.setValue(PROCESSING);
     }
 
     public void resetSelectedExtractFiles() {

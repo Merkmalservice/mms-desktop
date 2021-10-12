@@ -4,6 +4,7 @@ import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import at.researchstudio.sat.mmsdesktop.state.ExtractState;
 import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
@@ -78,40 +79,92 @@ public class ExtractController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        topPickFiles.visibleProperty().bind(stateService.getExtractState().showInitialProperty());
-        topPickFiles.managedProperty().bind(stateService.getExtractState().showInitialProperty());
+        topPickFiles
+                .visibleProperty()
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.INITIAL));
+        topPickFiles
+                .managedProperty()
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.INITIAL));
         centerPickFiles
                 .visibleProperty()
-                .bind(stateService.getExtractState().showInitialProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.INITIAL));
         centerPickFiles
                 .managedProperty()
-                .bind(stateService.getExtractState().showInitialProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.INITIAL));
         bottomPickFiles
                 .visibleProperty()
-                .bind(stateService.getExtractState().showInitialProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.INITIAL));
         bottomPickFiles
                 .managedProperty()
-                .bind(stateService.getExtractState().showInitialProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.INITIAL));
 
         centerProgress
                 .visibleProperty()
-                .bind(stateService.getExtractState().showExtractProcessProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.PROCESSING));
         centerProgress
                 .managedProperty()
-                .bind(stateService.getExtractState().showExtractProcessProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.PROCESSING));
 
         centerResults
                 .visibleProperty()
-                .bind(stateService.getExtractState().showExtractedProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.EXTRACTED));
         centerResults
                 .managedProperty()
-                .bind(stateService.getExtractState().showExtractedProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.EXTRACTED));
         bottomResults
                 .visibleProperty()
-                .bind(stateService.getExtractState().showExtractedProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.EXTRACTED));
         bottomResults
                 .managedProperty()
-                .bind(stateService.getExtractState().showExtractedProperty());
+                .bind(
+                        stateService
+                                .getExtractState()
+                                .stateProperty()
+                                .isEqualTo(ExtractState.EXTRACTED));
 
         topPickFilesClearList
                 .disableProperty()
