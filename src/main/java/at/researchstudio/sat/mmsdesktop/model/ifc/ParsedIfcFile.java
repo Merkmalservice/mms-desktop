@@ -329,15 +329,4 @@ public class ParsedIfcFile {
                                                 .contains(ifcLine.getId()))
                 .collect(Collectors.toList());
     }
-
-    public Map<? extends Class<? extends IfcLine>, List<IfcLine>>
-            getIfcLineClassesWithOccurences() {
-        return dataLinesByClass.entrySet().stream()
-                //                .filter(
-                //                        entry -> {
-                //                            return
-                // IfcBuiltElementLine.class.isAssignableFrom(entry.getKey());
-                //                        })
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
 }

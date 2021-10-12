@@ -18,7 +18,12 @@ public class LoginController implements Initializable {
     @FXML private VBox loginProcessing;
     @FXML private BorderPane parentPane;
 
-    @Autowired public AuthService authService;
+    private final AuthService authService;
+
+    @Autowired
+    public LoginController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {}

@@ -25,7 +25,7 @@
                     <Font size="18.0"/>
                 </font>
             </Label>
-            <HBox spacing="10" fx:id="topLoadProjects">
+            <HBox spacing="10">
                 <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
                            onAction="#handleLoadProjectsAction" prefHeight="32.0" prefWidth="220.0"
                            ripplerFill="WHITE"
@@ -46,7 +46,7 @@
     </top>
     <center>
         <AnchorPane>
-            <TableView fx:id="centerLoadedProjects" AnchorPane.topAnchor="0.0"
+            <TableView AnchorPane.topAnchor="0.0"
                        AnchorPane.rightAnchor="0.0"
                        AnchorPane.bottomAnchor="0.0"
                        AnchorPane.leftAnchor="0.0" items="${controller.loadedProjects}">

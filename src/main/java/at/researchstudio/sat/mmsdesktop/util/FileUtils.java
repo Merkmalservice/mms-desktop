@@ -33,7 +33,7 @@ public class FileUtils {
     /**
      * Returns true if given file has ifc extension
      *
-     * @param file
+     * @param file to check
      * @return true if file is an ifc file, false if it isnt
      */
     public static boolean isIfcFile(File file) {

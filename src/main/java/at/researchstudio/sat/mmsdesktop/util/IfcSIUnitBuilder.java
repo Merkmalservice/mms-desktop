@@ -7,11 +7,11 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import org.apache.jena.query.QuerySolution;
 
 public class IfcSIUnitBuilder {
-    private IfcUnitType type;
-    private IfcUnitMeasure measure;
-    private IfcUnitMeasurePrefix prefix;
-    private String uri;
-    private boolean projectDefault;
+    private final IfcUnitType type;
+    private final IfcUnitMeasure measure;
+    private final IfcUnitMeasurePrefix prefix;
+    private final String uri;
+    private final boolean projectDefault;
 
     public IfcSIUnitBuilder(QuerySolution qs) {
         this.uri =

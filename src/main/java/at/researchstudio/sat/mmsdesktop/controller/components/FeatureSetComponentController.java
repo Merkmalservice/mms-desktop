@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 @FxmlView("featureTableComponent.fxml")
 public class FeatureSetComponentController implements Initializable {
     private final ReactiveStateService stateService;
-    private ResourceBundle resourceBundle;
 
     @FXML public AnchorPane parentPane;
     @FXML private JFXListView<FeatureSetControl> featureSetList;
@@ -31,8 +30,6 @@ public class FeatureSetComponentController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resourceBundle) {
-        this.resourceBundle = resourceBundle;
-
         this.parentPane
                 .visibleProperty()
                 .bind(stateService.getExtractState().extractedFeatureSetsPresentProperty());

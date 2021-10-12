@@ -27,7 +27,7 @@ public class IfcRelDefinesByPropertiesComponent extends VBox {
         this.setPadding(new Insets(10, 10, 10, 10));
         this.getChildren().add(new JFXSpinner());
 
-        Task<List<Node>> relDefinesByPropertiesTask =
+        Task<List<Node>> task =
                 new Task<>() {
                     @Override
                     protected List<Node> call() {
@@ -44,9 +44,6 @@ public class IfcRelDefinesByPropertiesComponent extends VBox {
                         List<IfcRelDefinesByPropertiesLine> relDefinesByPropertiesLines =
                                 parsedIfcFile.getRelDefinesByPropertiesLinesReferencing(
                                         propertySet);
-
-                        parsedIfcFile.getIfcLineClassesWithOccurences(); // TODO: FIGURE
-                        // OUT
 
                         if (!relDefinesByPropertiesLines.isEmpty()) {
                             for (IfcRelDefinesByPropertiesLine relDefinesByPropertiesLine :
@@ -92,11 +89,15 @@ public class IfcRelDefinesByPropertiesComponent extends VBox {
                     }
                 };
 
-        relDefinesByPropertiesTask.setOnSucceeded(
+        task.setOnSucceeded(
                 t -> {
                     this.getChildren().clear();
-                    this.getChildren().addAll(relDefinesByPropertiesTask.getValue());
+                    this.getChildren().addAll(task.getValue());
                 });
-        new Thread(relDefinesByPropertiesTask).start();
+        task.setOnFailed(
+                event -> {
+                    // TODO: MAYBE SHOW DIALOG INSTEAD
+                });
+        new Thread(task).start();
     }
 }

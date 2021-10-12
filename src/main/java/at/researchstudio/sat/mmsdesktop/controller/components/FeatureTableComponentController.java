@@ -8,7 +8,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -24,12 +23,11 @@ import org.springframework.stereotype.Component;
 @FxmlView("featureTableComponent.fxml")
 public class FeatureTableComponentController implements Initializable {
     private final ReactiveStateService stateService;
-    private ResourceBundle resourceBundle;
 
-    @FXML private TableColumn centerResultFeaturesTableTypeColumn;
-    @FXML private TableColumn centerResultFeaturesTableQuantityKindColumn;
-    @FXML private TableColumn centerResultFeaturesTableUnitColumn;
-    @FXML private TableView centerResultFeaturesTable;
+    @FXML private TableView<Feature> featuresTable;
+    @FXML private TableColumn typeColumn;
+    @FXML private TableColumn<Feature, String> quantityKindColumn;
+    @FXML private TableColumn<Feature, String> unitColumn;
 
     @Autowired
     public FeatureTableComponentController(ReactiveStateService stateService) {
@@ -38,17 +36,14 @@ public class FeatureTableComponentController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resourceBundle) {
-        this.resourceBundle = resourceBundle;
-
         stateService
                 .getExtractState()
                 .getSortedExtractedFeatures()
                 .comparatorProperty()
-                .bind(centerResultFeaturesTable.comparatorProperty());
+                .bind(featuresTable.comparatorProperty());
 
-        centerResultFeaturesTableTypeColumn.setCellFactory(
-                c -> new IconLabelTableCell<>(resourceBundle));
-        centerResultFeaturesTableTypeColumn.setCellValueFactory(
+        typeColumn.setCellFactory(c -> new IconLabelTableCell<>(resourceBundle));
+        typeColumn.setCellValueFactory(
                 (Callback<
                                 TableColumn.CellDataFeatures<Feature, String>,
                                 SimpleObjectProperty<Feature>>)
@@ -61,41 +56,38 @@ public class FeatureTableComponentController implements Initializable {
                             }
                         });
 
-        centerResultFeaturesTableUnitColumn.setCellValueFactory(
-                (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
-                        p -> {
-                            if (p.getValue() != null) {
-                                Feature f = p.getValue();
+        unitColumn.setCellValueFactory(
+                p -> {
+                    if (p.getValue() != null) {
+                        Feature f = p.getValue();
 
-                                if (f instanceof NumericFeature) {
-                                    return new SimpleStringProperty(
-                                            MessageUtils.getKeyForUnit(
-                                                    resourceBundle,
-                                                    ((NumericFeature) f).getUnit()));
-                                }
-                            }
+                        if (f instanceof NumericFeature) {
+                            return new SimpleStringProperty(
+                                    MessageUtils.getKeyForUnit(
+                                            resourceBundle, ((NumericFeature) f).getUnit()));
+                        }
+                    }
 
-                            return new SimpleStringProperty("");
-                        });
+                    return new SimpleStringProperty("");
+                });
 
-        centerResultFeaturesTableQuantityKindColumn.setCellValueFactory(
-                (Callback<TableColumn.CellDataFeatures<Feature, String>, ObservableValue<String>>)
-                        p -> {
-                            if (p.getValue() != null) {
-                                Feature f = p.getValue();
+        quantityKindColumn.setCellValueFactory(
+                p -> {
+                    if (p.getValue() != null) {
+                        Feature f = p.getValue();
 
-                                if (f instanceof NumericFeature) {
-                                    return new SimpleStringProperty(
-                                            MessageUtils.getKeyForQuantityKind(
-                                                    resourceBundle,
-                                                    ((NumericFeature) f).getQuantityKind()));
-                                }
-                            }
+                        if (f instanceof NumericFeature) {
+                            return new SimpleStringProperty(
+                                    MessageUtils.getKeyForQuantityKind(
+                                            resourceBundle,
+                                            ((NumericFeature) f).getQuantityKind()));
+                        }
+                    }
 
-                            return new SimpleStringProperty("");
-                        });
+                    return new SimpleStringProperty("");
+                });
 
-        centerResultFeaturesTable.setRowFactory(
+        featuresTable.setRowFactory(
                 tv -> {
                     TableRow<Feature> row = new TableRow<>();
                     row.setOnMouseClicked(

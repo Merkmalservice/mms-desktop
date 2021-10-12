@@ -189,34 +189,28 @@ public class IfcLineView extends VBox {
             referencingLinesBox.setPadding(new Insets(10, 10, 10, 10));
             referencingLinesBox.getChildren().add(new JFXSpinner());
 
-            Task<List<Node>> refLineTask =
+            Task<List<Node>> referencingLinesTask =
                     new Task<>() {
                         @Override
                         protected List<Node> call() {
                             List<IfcLine> lines =
                                     parsedIfcFile.get().getAllLinesReferencing(ifcLine);
-                            List<Node> elements = new ArrayList<>();
-
-                            if (!lines.isEmpty()) {
-                                for (IfcLine relatedLine : lines) {
-                                    elements.add(new IfcLineComponent(relatedLine));
-                                }
-                            } else {
-                                elements.add(
-                                        new Label(resourceBundle.getString("label.notPresent")));
-                            }
-                            return elements;
+                            return createLineComponents(lines);
                         }
                     };
 
             referencingLinesPane.setContent(referencingLinesBox);
-            refLineTask.setOnSucceeded(
+            referencingLinesTask.setOnSucceeded(
                     t -> {
                         referencingLinesBox.getChildren().clear();
-                        referencingLinesBox.getChildren().addAll(refLineTask.getValue());
+                        referencingLinesBox.getChildren().addAll(referencingLinesTask.getValue());
+                    });
+            referencingLinesTask.setOnFailed(
+                    event -> {
+                        // TODO: MAYBE DIALOG INSTEAD
                     });
 
-            new Thread(refLineTask).start();
+            new Thread(referencingLinesTask).start();
 
             // TODO: MAYBE ADD PROGRESS BAR FOR REFERENCED LINES
             VBox referencedLinesBox = new VBox();
@@ -233,17 +227,7 @@ public class IfcLineView extends VBox {
                         protected List<Node> call() {
                             List<IfcLine> lines =
                                     parsedIfcFile.get().getAllReferencedLines(ifcLine);
-                            List<Node> elements = new ArrayList<>();
-
-                            if (!lines.isEmpty()) {
-                                for (IfcLine referencedLine : lines) {
-                                    elements.add(new IfcLineComponent(referencedLine));
-                                }
-                            } else {
-                                elements.add(
-                                        new Label(resourceBundle.getString("label.notPresent")));
-                            }
-                            return elements;
+                            return createLineComponents(lines);
                         }
                     };
 
@@ -253,9 +237,26 @@ public class IfcLineView extends VBox {
                         referencedLinesBox.getChildren().clear();
                         referencedLinesBox.getChildren().addAll(referencedLineTask.getValue());
                     });
+            referencedLineTask.setOnFailed(
+                    event -> {
+                        // TODO: MAYBE DIALOG INSTEAD
+                    });
 
             new Thread(referencedLineTask).start();
         }
+    }
+
+    private List<Node> createLineComponents(List<IfcLine> lines) {
+        List<Node> elements = new ArrayList<>();
+
+        if (!lines.isEmpty()) {
+            for (IfcLine relatedLine : lines) {
+                elements.add(new IfcLineComponent(relatedLine));
+            }
+        } else {
+            elements.add(new Label(resourceBundle.getString("label.notPresent")));
+        }
+        return elements;
     }
 
     public IfcLine getIfcLine() {

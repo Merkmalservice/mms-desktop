@@ -17,8 +17,8 @@ public class IfcPropertyBuilder {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private String name;
-    private IfcPropertyType type;
+    private final String name;
+    private final IfcPropertyType type;
     private IfcUnit unit;
 
     public IfcPropertyBuilder(IfcQuantityLine line, Map<IfcUnitType, List<IfcUnit>> projectUnits) {

@@ -36,7 +36,7 @@ public class IfcPropertySetComponent extends VBox {
                                 ViewConstants.DEFAULT_CORNER_RADIUS,
                                 new Insets(0.0))));
 
-        Task<List<Node>> propSetTask =
+        Task<List<Node>> task =
                 new Task<>() {
                     @Override
                     protected List<Node> call() {
@@ -65,11 +65,15 @@ public class IfcPropertySetComponent extends VBox {
                     }
                 };
 
-        propSetTask.setOnSucceeded(
+        task.setOnSucceeded(
                 t -> {
                     this.getChildren().clear();
-                    this.getChildren().addAll(propSetTask.getValue());
+                    this.getChildren().addAll(task.getValue());
                 });
-        new Thread(propSetTask).start();
+        task.setOnFailed(
+                event -> {
+                    // TODO: MAYBE SHOW DIALOG INSTEAD
+                });
+        new Thread(task).start();
     }
 }

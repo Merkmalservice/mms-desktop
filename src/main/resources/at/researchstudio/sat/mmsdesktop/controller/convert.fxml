@@ -11,7 +11,6 @@
 <?import com.jfoenix.controls.JFXListView?>
 <?import com.jfoenix.controls.JFXProgressBar?>
 <?import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView?>
-<?import com.jfoenix.controls.JFXComboBox?>
 <?import com.jfoenix.controls.JFXTabPane?>
 <BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/16"

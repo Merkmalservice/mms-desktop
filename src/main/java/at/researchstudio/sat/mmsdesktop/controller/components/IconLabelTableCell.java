@@ -8,8 +8,8 @@ import org.kordamp.ikonli.bootstrapicons.BootstrapIcons;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 public class IconLabelTableCell<T> extends TableCell<T, Feature> {
-    FontIcon fontIcon;
-    ResourceBundle resourceBundle;
+    private final FontIcon fontIcon;
+    private final ResourceBundle resourceBundle;
 
     public IconLabelTableCell(ResourceBundle resourceBundle) {
         this(resourceBundle, null);

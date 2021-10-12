@@ -42,7 +42,6 @@ public class ProjectsController implements Initializable {
 
     @FXML
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
-        System.out.println("Loading Projects");
         String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
         URL josnUrl = Resources.getResource("graphql/query-projects.json");
         try {

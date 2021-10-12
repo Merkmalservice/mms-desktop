@@ -6,10 +6,10 @@ import java.util.Objects;
 import org.apache.jena.query.QuerySolution;
 
 public class IfcDerivedUnitBuilder {
-    private IfcUnitType type;
+    private final IfcUnitType type;
     private String userDefinedLabel;
-    private String uri;
-    private boolean projectDefault;
+    private final String uri;
+    private final boolean projectDefault;
 
     public IfcDerivedUnitBuilder(QuerySolution qs) {
         this.uri =
