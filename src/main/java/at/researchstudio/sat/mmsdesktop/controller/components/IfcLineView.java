@@ -16,6 +16,7 @@ import javafx.scene.control.Accordion;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.VBox;
+import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -207,6 +208,10 @@ public class IfcLineView extends VBox {
                     });
             referencingLinesTask.setOnFailed(
                     event -> {
+                        logger.error("IfcLineView referencingLinesTask failed:");
+                        logger.error(
+                                Throwables.getStackTraceAsString(
+                                        referencingLinesTask.getException()));
                         // TODO: MAYBE DIALOG INSTEAD
                     });
 
@@ -239,6 +244,10 @@ public class IfcLineView extends VBox {
                     });
             referencedLineTask.setOnFailed(
                     event -> {
+                        logger.error("IfcLineView referencedLineTask failed:");
+                        logger.error(
+                                Throwables.getStackTraceAsString(
+                                        referencedLineTask.getException()));
                         // TODO: MAYBE DIALOG INSTEAD
                     });
 

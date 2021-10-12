@@ -1,11 +1,15 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.mmsdesktop.controller.components.FeatureView;
+import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView;
 import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import at.researchstudio.sat.mmsdesktop.view.components.JFXStepButton;
 import com.jfoenix.controls.JFXButton;
 import java.lang.invoke.MethodHandles;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -16,6 +20,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.slf4j.Logger;
@@ -30,11 +35,24 @@ public class MainController implements Initializable {
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final AuthService authService;
     private final ReactiveStateService stateService;
+
+    public JFXButton convertButton;
+    public JFXButton extractButton;
+    public JFXStepButton convertButtonStepFile;
+    public JFXStepButton convertButtonStepProject;
+    public JFXStepButton convertButtonStepConvert;
+
     @FXML private MenuBar menuBar;
     @FXML private MenuItem menuBarLogin;
     @FXML private MenuItem menuBarLogout;
     @FXML private BorderPane mainPane;
     @FXML private JFXButton projectsButton;
+
+    @FXML private BorderPane selectedIfcLineView;
+    @FXML private IfcLineView ifcLineView;
+
+    @FXML private BorderPane selectedFeaturePreview;
+    @FXML private FeatureView featureView;
 
     @Autowired
     public MainController(AuthService authService, ReactiveStateService stateService) {
@@ -50,8 +68,86 @@ public class MainController implements Initializable {
         projectsButton
                 .disableProperty()
                 .bind(stateService.getLoginState().loggedInProperty().not());
-        mainPane.centerProperty()
-                .bind(stateService.getViewState().visibleCenterPanePropertyProperty());
+        mainPane.centerProperty().bind(stateService.getViewState().visibleCenterPaneProperty());
+
+        stateService
+                .getViewState()
+                .convertViewProperty()
+                .addListener(
+                        ((observable, oldValue, newValue) -> {
+                            if (newValue) {
+                                convertButton.setTextFill(Color.WHITE);
+                            } else {
+                                convertButton.setTextFill(new Color(1, 1, 1, 0.5));
+                            }
+                        }));
+        convertButtonStepFile
+                .visibleProperty()
+                .bind(stateService.getViewState().convertViewProperty());
+        convertButtonStepProject
+                .visibleProperty()
+                .bind(stateService.getViewState().convertViewProperty());
+        convertButtonStepConvert
+                .visibleProperty()
+                .bind(stateService.getViewState().convertViewProperty());
+        convertButtonStepFile
+                .managedProperty()
+                .bind(stateService.getViewState().convertViewProperty());
+        convertButtonStepProject
+                .managedProperty()
+                .bind(stateService.getViewState().convertViewProperty());
+        convertButtonStepConvert
+                .managedProperty()
+                .bind(stateService.getViewState().convertViewProperty());
+
+        convertButtonStepFile
+                .stateProperty()
+                .bind(stateService.getConvertState().stepFileStatusProperty());
+        convertButtonStepProject
+                .stateProperty()
+                .bind(stateService.getConvertState().stepProjectStatusProperty());
+        convertButtonStepConvert
+                .stateProperty()
+                .bind(stateService.getConvertState().stepConvertStatusProperty());
+
+        stateService
+                .getViewState()
+                .extractViewProperty()
+                .addListener(
+                        ((observable, oldValue, newValue) -> {
+                            if (newValue) {
+                                extractButton.setTextFill(Color.WHITE);
+                            } else {
+                                extractButton.setTextFill(new Color(1, 1, 1, 0.5));
+                            }
+                        }));
+
+        stateService
+                .getConvertState()
+                .selectedIfcLineProperty()
+                .addListener(
+                        ((observableValue, oldValue, selectedIfcLine) -> {
+                            selectedIfcLineView.setVisible(Objects.nonNull(selectedIfcLine));
+                            selectedIfcLineView.setManaged(Objects.nonNull(selectedIfcLine));
+                            ifcLineView.setParsedIfcFile(
+                                    stateService.getConvertState().parsedIfcFileProperty());
+                            ifcLineView.setIfcLine(selectedIfcLine);
+                        }));
+
+        stateService
+                .getSelectedFeatureState()
+                .featureProperty()
+                .addListener(
+                        (observable, oldFeature, newFeature) -> {
+                            featureView.setFeature(newFeature);
+                            if (Objects.nonNull(newFeature)) {
+                                selectedFeaturePreview.setVisible(true);
+                                selectedFeaturePreview.setManaged(true);
+                            } else {
+                                selectedFeaturePreview.setVisible(false);
+                                selectedFeaturePreview.setManaged(false);
+                            }
+                        });
     }
 
     /**
@@ -167,6 +263,16 @@ public class MainController implements Initializable {
     @FXML
     private void handleLoadProjectsAction(final ActionEvent event) {
         stateService.getViewState().switchCenterPane(ProjectsController.class);
+    }
+
+    @FXML
+    public void handleCloseLineAction(ActionEvent actionEvent) {
+        stateService.getConvertState().closeSelectedIfcLine();
+    }
+
+    @FXML
+    public void handleCloseSelectedFeatureAction(ActionEvent actionEvent) {
+        stateService.getSelectedFeatureState().clearSelectedFeature();
     }
 
     /** Perform functionality associated with "About" menu selection or CTRL-A. */

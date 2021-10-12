@@ -6,6 +6,7 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.IfcElementQuantityLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import com.jfoenix.controls.JFXSpinner;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -16,8 +17,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import org.apache.jena.ext.com.google.common.base.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IfcElementQuantityComponent extends VBox {
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     public IfcElementQuantityComponent(
             final IfcElementQuantityLine elementQuantity, final ParsedIfcFile parsedIfcFile) {
         this.setSpacing(10);
@@ -74,6 +81,8 @@ public class IfcElementQuantityComponent extends VBox {
                 });
         task.setOnFailed(
                 event -> {
+                    logger.error("IfcElementQuantityComponent Task failed:");
+                    logger.error(Throwables.getStackTraceAsString(task.getException()));
                     // TODO: MAYBE SHOW DIALOG INSTEAD
                 });
         new Thread(task).start();

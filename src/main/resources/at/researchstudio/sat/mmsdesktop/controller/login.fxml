@@ -11,7 +11,7 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="at.researchstudio.sat.mmsdesktop.controller.LoginController">
     <BorderPane.margin>
-        <Insets bottom="10.0" left="25.0" right="25.0" top="10.0"/>
+        <Insets bottom="10.0" left="25.0" right="10.0" top="10.0"/>
     </BorderPane.margin>
     <center>
         <HBox alignment="CENTER">

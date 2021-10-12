@@ -6,6 +6,7 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.IfcPropertySetLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcRelDefinesByPropertiesLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import com.jfoenix.controls.JFXSpinner;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -15,8 +16,14 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import org.apache.jena.ext.com.google.common.base.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IfcRelDefinesByPropertiesComponent extends VBox {
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private final ResourceBundle resourceBundle;
 
     public IfcRelDefinesByPropertiesComponent(
@@ -96,6 +103,8 @@ public class IfcRelDefinesByPropertiesComponent extends VBox {
                 });
         task.setOnFailed(
                 event -> {
+                    logger.error("IfcRelDefinesByPropertiesComponent task failed:");
+                    logger.error(Throwables.getStackTraceAsString(task.getException()));
                     // TODO: MAYBE SHOW DIALOG INSTEAD
                 });
         new Thread(task).start();

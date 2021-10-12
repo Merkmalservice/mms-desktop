@@ -12,7 +12,7 @@
             xmlns="http://javafx.com/javafx/16"
             fx:controller="at.researchstudio.sat.mmsdesktop.controller.ProjectsController">
     <BorderPane.margin>
-        <Insets bottom="10.0" left="25.0" right="25.0" top="10.0"/>
+        <Insets bottom="10.0" left="25.0" right="10.0" top="10.0"/>
     </BorderPane.margin>
     <top>
         <VBox spacing="10">

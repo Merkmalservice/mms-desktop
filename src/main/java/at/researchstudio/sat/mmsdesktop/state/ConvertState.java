@@ -5,12 +5,10 @@ import at.researchstudio.sat.mmsdesktop.controller.components.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineClassLabel;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
+import at.researchstudio.sat.mmsdesktop.view.components.JFXStepButton;
 import java.util.*;
 import java.util.stream.Collectors;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -19,12 +17,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ConvertState {
-    private final BooleanProperty showInitial;
-    private final BooleanProperty showLoadProgress;
-    private final BooleanProperty showInputFile;
-
     private final ObjectProperty<IfcLine> selectedIfcLine;
-    private final ObjectProperty<Feature> selectedFeature;
     private final ObjectProperty<ParsedIfcFile> parsedIfcFile;
 
     private final ObservableList<IfcLine> inputFileContent;
@@ -33,35 +26,44 @@ public class ConvertState {
     private final ObservableList<FeatureLabel> extractedFeatures;
     private final ObservableList<IfcLineClassLabel> extractedIfcLineClasses;
 
+    private final IntegerProperty stepFileStatus;
+    private final IntegerProperty stepProjectStatus;
+    private final IntegerProperty stepConvertStatus;
+
     public ConvertState() {
-        this.showInitial = new SimpleBooleanProperty(true);
-        this.showLoadProgress = new SimpleBooleanProperty(false);
-        this.showInputFile = new SimpleBooleanProperty(false);
+        this.stepFileStatus = new SimpleIntegerProperty(JFXStepButton.ACTIVE);
+        this.stepProjectStatus = new SimpleIntegerProperty(JFXStepButton.DISABLED);
+        this.stepConvertStatus = new SimpleIntegerProperty(JFXStepButton.DISABLED);
+
         this.inputFileContent = FXCollections.observableArrayList();
         this.filteredInputFileContent = new FilteredList<>(inputFileContent);
         this.extractedFeatures = FXCollections.observableArrayList();
         this.extractedIfcLineClasses = FXCollections.observableArrayList();
         this.selectedIfcLine = new SimpleObjectProperty<>();
-        this.selectedFeature = new SimpleObjectProperty<>();
         this.parsedIfcFile = new SimpleObjectProperty<>();
     }
 
     public void showInitialView() {
-        showLoadProgress.setValue(false);
-        showInputFile.setValue(false);
-        showInitial.setValue(true);
+        stepFileStatus.setValue(JFXStepButton.ACTIVE);
+        stepProjectStatus.setValue(JFXStepButton.DISABLED);
+        stepConvertStatus.setValue(JFXStepButton.DISABLED);
     }
 
     public void showLoadProgressView() {
-        showInputFile.setValue(false);
-        showInitial.setValue(false);
-        showLoadProgress.setValue(true);
+        stepFileStatus.setValue(JFXStepButton.PROCESSING);
+        stepProjectStatus.setValue(JFXStepButton.DISABLED);
+        stepConvertStatus.setValue(JFXStepButton.DISABLED);
     }
 
-    public void showConvertView() {
-        showLoadProgress.setValue(false);
-        showInputFile.setValue(true);
-        showInitial.setValue(false);
+    public void showConvertView(boolean success) {
+        stepFileStatus.setValue(success ? JFXStepButton.COMPLETE : JFXStepButton.FAILED);
+
+        if (success) {
+            stepProjectStatus.setValue(JFXStepButton.OPEN);
+        } else {
+            stepProjectStatus.setValue(JFXStepButton.DISABLED);
+        }
+        stepConvertStatus.setValue(JFXStepButton.DISABLED);
     }
 
     public void resetSelectedConvertFile() {
@@ -70,23 +72,11 @@ public class ConvertState {
         showInitialView();
     }
 
-    public BooleanProperty showLoadProgressProperty() {
-        return showLoadProgress;
-    }
-
-    public BooleanProperty showInitialProperty() {
-        return showInitial;
-    }
-
-    public BooleanProperty showInputFileProperty() {
-        return showInputFile;
-    }
-
     public ObservableList<IfcLine> getInputFileContent() {
         return inputFileContent;
     }
 
-    public void setLoadResult(Task<LoadResult> task) {
+    public void setFileStepResult(Task<LoadResult> task) {
         this.inputFileContent.clear();
         this.extractedFeatures.clear();
         this.extractedIfcLineClasses.clear();
@@ -104,6 +94,7 @@ public class ConvertState {
                             .map(IfcLineClassLabel::new)
                             .sorted(Comparator.comparing(IfcLineClassLabel::getCount))
                             .collect(Collectors.toList()));
+            showConvertView(true);
         } else {
             // TODO: BETTER ERROR HANDLING
             // String errorMessage = task.getException().getMessage();
@@ -111,6 +102,7 @@ public class ConvertState {
             this.inputFileContent.setAll(Collections.emptyList());
             this.extractedFeatures.addAll(Collections.emptyList());
             this.extractedIfcLineClasses.addAll(Collections.emptyList());
+            showConvertView(false);
             //
             // this.extractLogOutput.setValue(Throwables.getStackTraceAsString(task.getException()));
             //            this.extractJsonOutput.setValue("[]");
@@ -121,28 +113,12 @@ public class ConvertState {
         selectedIfcLine.setValue(ifcLine);
     }
 
-    public void setSelectedFeature(Feature feature) {
-        //        System.out.println("BLAARGH: " + feature);
-        //        List<IfcLine> filteredList = inputFileContent
-        //                .stream().filter(ifcLine -> ifcLine
-        //                        .getLine()
-        //
-        // .contains(Utils.convertUtf8ToIFCString(feature.getName()))).collect(
-        //                        Collectors.toList());
-        //        System.out.println("FILTERED LISTSIZE: " + filteredList.size());
-        selectedFeature.setValue(feature);
-    }
-
     public void closeSelectedIfcLine() {
         setSelectedIfcLine(null);
     }
 
     public ObjectProperty<IfcLine> selectedIfcLineProperty() {
         return selectedIfcLine;
-    }
-
-    public ObjectProperty<Feature> selectedFeatureProperty() {
-        return selectedFeature;
     }
 
     public ObjectProperty<ParsedIfcFile> parsedIfcFileProperty() {
@@ -159,5 +135,17 @@ public class ConvertState {
 
     public FilteredList<IfcLine> getFilteredInputFileContent() {
         return filteredInputFileContent;
+    }
+
+    public IntegerProperty stepFileStatusProperty() {
+        return stepFileStatus;
+    }
+
+    public IntegerProperty stepProjectStatusProperty() {
+        return stepProjectStatus;
+    }
+
+    public IntegerProperty stepConvertStatusProperty() {
+        return stepConvertStatus;
     }
 }

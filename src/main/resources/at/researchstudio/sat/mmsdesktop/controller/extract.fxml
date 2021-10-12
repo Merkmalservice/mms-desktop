@@ -13,7 +13,7 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="at.researchstudio.sat.mmsdesktop.controller.ExtractController">
     <BorderPane.margin>
-        <Insets bottom="10.0" left="25.0" right="25.0" top="10.0"/>
+        <Insets bottom="10.0" left="25.0" right="10.0" top="10.0"/>
     </BorderPane.margin>
     <top>
         <VBox spacing="10">
@@ -168,51 +168,6 @@
                                     <center>
                                         <fx:include source="components/featureTableComponent.fxml" />
                                     </center>
-                                    <right>
-                                        <BorderPane fx:id="selectedFeaturePreview" visible="false"
-                                                    managed="false">
-                                            <top>
-                                                <HBox spacing="10" alignment="CENTER_LEFT">
-                                                    <padding>
-                                                        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-                                                    </padding>
-                                                    <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
-                                                               onAction="#handleCloseSelectedFeatureAction"
-                                                               style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
-                                                               ripplerFill="WHITE"
-                                                               textFill="#c1fff9">
-                                                        <tooltip>
-                                                            <Tooltip text="%label.close"/>
-                                                        </tooltip>
-                                                        <graphic>
-                                                            <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-x"
-                                                                      iconSize="24"/>
-                                                        </graphic>
-                                                        <padding>
-                                                            <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
-                                                        </padding>
-                                                    </JFXButton>
-                                                    <Label style="-fx-font-weight: bold;"  HBox.hgrow="ALWAYS"
-                                                           text="%label.detailview">
-                                                        <font>
-                                                            <Font size="18.0"/>
-                                                        </font>
-                                                    </Label>
-                                                </HBox>
-                                            </top>
-                                            <center>
-                                                <ScrollPane style="-fx-background-color:transparent;"  hbarPolicy="NEVER">
-                                                    <GridPane>
-                                                        <FeatureView fx:id="featureView" maxWidth="350" minWidth="350" spacing="10" GridPane.hgrow="ALWAYS">
-                                                            <padding>
-                                                                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-                                                            </padding>
-                                                        </FeatureView>
-                                                    </GridPane>
-                                                </ScrollPane>
-                                            </center>
-                                        </BorderPane>
-                                    </right>
                                 </BorderPane>
                             </Tab>
                             <Tab text="%label.extractedFeaturesJson">

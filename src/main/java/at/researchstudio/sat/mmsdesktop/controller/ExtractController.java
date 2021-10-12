@@ -1,7 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
 import at.researchstudio.sat.merkmalservice.utils.Utils;
-import at.researchstudio.sat.mmsdesktop.controller.components.FeatureView;
 import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
@@ -64,8 +63,7 @@ public class ExtractController implements Initializable {
     @FXML private JFXTextField centerResultFeaturesSearch;
     @FXML private HBox bottomResults;
     @FXML private HBox bottomPickFiles;
-    @FXML private BorderPane selectedFeaturePreview;
-    @FXML private FeatureView featureView;
+
     private FileChooser saveFileChooser;
     private FileChooser saveLogFileChooser;
     private FileChooser fileChooser;
@@ -128,21 +126,6 @@ public class ExtractController implements Initializable {
         centerResultFeaturesJson
                 .textProperty()
                 .bind(stateService.getExtractState().extractJsonOutput());
-
-        stateService
-                .getSelectedFeatureState()
-                .featureProperty()
-                .addListener(
-                        (observable, oldFeature, newFeature) -> {
-                            featureView.setFeature(newFeature);
-                            if (Objects.nonNull(newFeature)) {
-                                selectedFeaturePreview.setVisible(true);
-                                selectedFeaturePreview.setManaged(true);
-                            } else {
-                                selectedFeaturePreview.setVisible(false);
-                                selectedFeaturePreview.setManaged(false);
-                            }
-                        });
 
         this.resourceBundle = resourceBundle;
 
@@ -335,11 +318,6 @@ public class ExtractController implements Initializable {
         centerProgressLog.textProperty().bind(task.messageProperty());
 
         new Thread(task).start();
-    }
-
-    @FXML
-    public void handleCloseSelectedFeatureAction(ActionEvent actionEvent) {
-        stateService.getSelectedFeatureState().clearSelectedFeature();
     }
 
     public ObservableList<FileWrapper> getSelectedExtractFiles() {
