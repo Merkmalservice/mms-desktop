@@ -103,7 +103,7 @@
                             <Tab text="TODO: CHOOSE PROJECT">
                                 <fx:include source="components/projectPickerComponent.fxml" />
                             </Tab>
-                            <Tab text="%label.info">
+                            <Tab text="%label.convert.inspect">
                                 <BorderPane>
                                     <left>
                                         <AnchorPane>
@@ -126,7 +126,7 @@
                                     </center>
                                 </BorderPane>
                             </Tab>
-                            <Tab text="%label.convert.inspect">
+                            <Tab text="%label.features">
                                 <BorderPane>
                                     <left>
                                         <AnchorPane>

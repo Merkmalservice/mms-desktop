@@ -5,22 +5,22 @@ import at.researchstudio.sat.mmsdesktop.controller.ConvertController;
 import at.researchstudio.sat.mmsdesktop.controller.ExtractController;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.scene.Node;
 import net.rgielen.fxweaver.core.FxWeaver;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ViewState {
+    public static final int CONVERT = 0;
+    public static final int EXTRACT = 1;
+    public static final int OTHER = 2; // not all views need to be represented
+
     private final ObjectProperty<Node> visibleCenterPane;
     private final FxWeaver fxWeaver;
     private final ResourceBundle resourceBundle;
 
-    private BooleanProperty convertView;
-    private BooleanProperty extractView;
+    private IntegerProperty active;
 
     public ViewState(FxWeaver fxWeaver) {
         this.fxWeaver = fxWeaver;
@@ -29,9 +29,7 @@ public class ViewState {
         visibleCenterPane =
                 new SimpleObjectProperty<>(
                         fxWeaver.loadView(AboutController.class, resourceBundle));
-
-        convertView = new SimpleBooleanProperty(false);
-        extractView = new SimpleBooleanProperty(false);
+        active = new SimpleIntegerProperty(OTHER);
     }
 
     public Node getVisibleCenterPane() {
@@ -39,13 +37,12 @@ public class ViewState {
     }
 
     public void switchCenterPane(Class controllerClass) {
-        convertView.setValue(false);
-        extractView.setValue(false);
-
         if (ConvertController.class.isAssignableFrom(controllerClass)) {
-            convertView.setValue(true);
+            active.setValue(CONVERT);
         } else if (ExtractController.class.isAssignableFrom(controllerClass)) {
-            extractView.setValue(true);
+            active.setValue(EXTRACT);
+        } else {
+            active.setValue(OTHER);
         }
 
         visibleCenterPane.setValue(fxWeaver.loadView(controllerClass, resourceBundle));
@@ -55,11 +52,7 @@ public class ViewState {
         return visibleCenterPane;
     }
 
-    public BooleanProperty convertViewProperty() {
-        return convertView;
-    }
-
-    public BooleanProperty extractViewProperty() {
-        return extractView;
+    public IntegerProperty activeProperty() {
+        return active;
     }
 }

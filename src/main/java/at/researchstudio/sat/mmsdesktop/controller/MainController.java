@@ -1,11 +1,13 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.controller.components.FeatureView;
 import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineView;
 import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import at.researchstudio.sat.mmsdesktop.state.ViewState;
 import at.researchstudio.sat.mmsdesktop.view.components.JFXStepButton;
 import com.jfoenix.controls.JFXButton;
 import java.lang.invoke.MethodHandles;
@@ -20,7 +22,6 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.slf4j.Logger;
@@ -72,33 +73,43 @@ public class MainController implements Initializable {
 
         stateService
                 .getViewState()
-                .convertViewProperty()
+                .activeProperty()
                 .addListener(
-                        ((observable, oldValue, newValue) -> {
-                            if (newValue) {
-                                convertButton.setTextFill(Color.WHITE);
-                            } else {
-                                convertButton.setTextFill(new Color(1, 1, 1, 0.5));
+                        ((observable, oldValue, newActiveValue) -> {
+                            convertButton.setTextFill(ViewConstants.MENU_COLOR_INACTIVE);
+                            extractButton.setTextFill(ViewConstants.MENU_COLOR_INACTIVE);
+
+                            switch (newActiveValue.intValue()) {
+                                case ViewState.CONVERT:
+                                    convertButton.setTextFill(ViewConstants.MENU_COLOR_ACTIVE);
+                                    break;
+                                case ViewState.EXTRACT:
+                                    extractButton.setTextFill(ViewConstants.MENU_COLOR_ACTIVE);
+                                    break;
+                                case ViewState.OTHER:
+                                default:
+                                    break;
                             }
                         }));
+
         convertButtonStepFile
                 .visibleProperty()
-                .bind(stateService.getViewState().convertViewProperty());
+                .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
         convertButtonStepProject
                 .visibleProperty()
-                .bind(stateService.getViewState().convertViewProperty());
+                .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
         convertButtonStepConvert
                 .visibleProperty()
-                .bind(stateService.getViewState().convertViewProperty());
+                .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
         convertButtonStepFile
                 .managedProperty()
-                .bind(stateService.getViewState().convertViewProperty());
+                .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
         convertButtonStepProject
                 .managedProperty()
-                .bind(stateService.getViewState().convertViewProperty());
+                .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
         convertButtonStepConvert
                 .managedProperty()
-                .bind(stateService.getViewState().convertViewProperty());
+                .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
 
         convertButtonStepFile
                 .stateProperty()
@@ -109,18 +120,6 @@ public class MainController implements Initializable {
         convertButtonStepConvert
                 .stateProperty()
                 .bind(stateService.getConvertState().stepConvertStatusProperty());
-
-        stateService
-                .getViewState()
-                .extractViewProperty()
-                .addListener(
-                        ((observable, oldValue, newValue) -> {
-                            if (newValue) {
-                                extractButton.setTextFill(Color.WHITE);
-                            } else {
-                                extractButton.setTextFill(new Color(1, 1, 1, 0.5));
-                            }
-                        }));
 
         stateService
                 .getConvertState()

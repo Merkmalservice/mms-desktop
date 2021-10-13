@@ -152,7 +152,7 @@
                                     AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
                                     AnchorPane.leftAnchor="0.0"
                                     style="-fx-cursor: hand;">
-                            <Tab text="%label.extractedFeatures">
+                            <Tab text="%label.features">
                                 <BorderPane>
                                     <top>
                                         <JFXTextField fx:id="centerResultFeaturesSearch"

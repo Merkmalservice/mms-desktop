@@ -5,7 +5,6 @@ import at.researchstudio.sat.mmsdesktop.controller.components.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineClassLabel;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
-import at.researchstudio.sat.mmsdesktop.view.components.JFXStepButton;
 import java.util.*;
 import java.util.stream.Collectors;
 import javafx.beans.property.*;
@@ -17,6 +16,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ConvertState {
+    public static final int STEP_OPEN = 0;
+    public static final int STEP_ACTIVE = 1;
+    public static final int STEP_COMPLETE = 2;
+    public static final int STEP_DISABLED = 3;
+    public static final int STEP_FAILED = 4;
+    public static final int STEP_PROCESSING = 5;
+
     private final ObjectProperty<IfcLine> selectedIfcLine;
     private final ObjectProperty<ParsedIfcFile> parsedIfcFile;
 
@@ -31,9 +37,9 @@ public class ConvertState {
     private final IntegerProperty stepConvertStatus;
 
     public ConvertState() {
-        this.stepFileStatus = new SimpleIntegerProperty(JFXStepButton.ACTIVE);
-        this.stepProjectStatus = new SimpleIntegerProperty(JFXStepButton.DISABLED);
-        this.stepConvertStatus = new SimpleIntegerProperty(JFXStepButton.DISABLED);
+        this.stepFileStatus = new SimpleIntegerProperty(ConvertState.STEP_ACTIVE);
+        this.stepProjectStatus = new SimpleIntegerProperty(ConvertState.STEP_DISABLED);
+        this.stepConvertStatus = new SimpleIntegerProperty(ConvertState.STEP_DISABLED);
 
         this.inputFileContent = FXCollections.observableArrayList();
         this.filteredInputFileContent = new FilteredList<>(inputFileContent);
@@ -44,26 +50,26 @@ public class ConvertState {
     }
 
     public void showInitialView() {
-        stepFileStatus.setValue(JFXStepButton.ACTIVE);
-        stepProjectStatus.setValue(JFXStepButton.DISABLED);
-        stepConvertStatus.setValue(JFXStepButton.DISABLED);
+        stepFileStatus.setValue(ConvertState.STEP_ACTIVE);
+        stepProjectStatus.setValue(ConvertState.STEP_DISABLED);
+        stepConvertStatus.setValue(ConvertState.STEP_DISABLED);
     }
 
     public void showLoadProgressView() {
-        stepFileStatus.setValue(JFXStepButton.PROCESSING);
-        stepProjectStatus.setValue(JFXStepButton.DISABLED);
-        stepConvertStatus.setValue(JFXStepButton.DISABLED);
+        stepFileStatus.setValue(ConvertState.STEP_PROCESSING);
+        stepProjectStatus.setValue(ConvertState.STEP_DISABLED);
+        stepConvertStatus.setValue(ConvertState.STEP_DISABLED);
     }
 
     public void showConvertView(boolean success) {
-        stepFileStatus.setValue(success ? JFXStepButton.COMPLETE : JFXStepButton.FAILED);
+        stepFileStatus.setValue(success ? ConvertState.STEP_COMPLETE : ConvertState.STEP_FAILED);
 
         if (success) {
-            stepProjectStatus.setValue(JFXStepButton.OPEN);
+            stepProjectStatus.setValue(ConvertState.STEP_OPEN);
         } else {
-            stepProjectStatus.setValue(JFXStepButton.DISABLED);
+            stepProjectStatus.setValue(ConvertState.STEP_DISABLED);
         }
-        stepConvertStatus.setValue(JFXStepButton.DISABLED);
+        stepConvertStatus.setValue(ConvertState.STEP_DISABLED);
     }
 
     public void resetSelectedConvertFile() {

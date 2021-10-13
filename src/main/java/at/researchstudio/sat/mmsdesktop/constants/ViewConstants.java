@@ -12,4 +12,7 @@ public class ViewConstants {
     public static final Font FONT_PT16_SYSTEM_BOLD = new Font("System Bold", 16);
 
     public static final CornerRadii DEFAULT_CORNER_RADIUS = new CornerRadii(5.0);
+
+    public static final Color MENU_COLOR_INACTIVE = new Color(1, 1, 1, 0.5);
+    public static final Color MENU_COLOR_ACTIVE = Color.WHITE;
 }

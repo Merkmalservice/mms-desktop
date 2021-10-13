@@ -6,9 +6,9 @@ import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import at.researchstudio.sat.mmsdesktop.state.ConvertState;
 import at.researchstudio.sat.mmsdesktop.util.FeatureUtils;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
-import at.researchstudio.sat.mmsdesktop.view.components.JFXStepButton;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
 import java.io.File;
@@ -34,10 +34,12 @@ public class ConvertController implements Initializable {
     private FileChooser fileChooser;
     private final ReactiveStateService stateService;
 
-    @FXML private BorderPane centerInputFile;
     @FXML private BorderPane parentPane;
-    @FXML private HBox topPickFile;
+
     @FXML private HBox topInputFile;
+    @FXML private BorderPane centerInputFile;
+    @FXML private HBox topPickFile;
+
     @FXML private JFXProgressBar centerProgressProgressBar;
     @FXML private BorderPane centerProgress;
     @FXML private Label centerProgressProgressInfo;
@@ -60,42 +62,42 @@ public class ConvertController implements Initializable {
                         stateService
                                 .getConvertState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(JFXStepButton.ACTIVE));
+                                .isEqualTo(ConvertState.STEP_ACTIVE));
         topPickFile
                 .managedProperty()
                 .bind(
                         stateService
                                 .getConvertState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(JFXStepButton.ACTIVE));
+                                .isEqualTo(ConvertState.STEP_ACTIVE));
         topInputFile
                 .visibleProperty()
                 .bind(
                         stateService
                                 .getConvertState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(JFXStepButton.COMPLETE));
+                                .isEqualTo(ConvertState.STEP_COMPLETE));
         topInputFile
                 .managedProperty()
                 .bind(
                         stateService
                                 .getConvertState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(JFXStepButton.COMPLETE));
+                                .isEqualTo(ConvertState.STEP_COMPLETE));
         centerProgress
                 .visibleProperty()
                 .bind(
                         stateService
                                 .getConvertState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(JFXStepButton.PROCESSING));
+                                .isEqualTo(ConvertState.STEP_PROCESSING));
         centerProgress
                 .managedProperty()
                 .bind(
                         stateService
                                 .getConvertState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(JFXStepButton.PROCESSING));
+                                .isEqualTo(ConvertState.STEP_PROCESSING));
 
         centerInputFile
                 .visibleProperty()
@@ -103,14 +105,14 @@ public class ConvertController implements Initializable {
                         stateService
                                 .getConvertState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(JFXStepButton.COMPLETE));
+                                .isEqualTo(ConvertState.STEP_COMPLETE));
         centerInputFile
                 .managedProperty()
                 .bind(
                         stateService
                                 .getConvertState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(JFXStepButton.COMPLETE));
+                                .isEqualTo(ConvertState.STEP_COMPLETE));
 
         extractedBuiltElementsList
                 .getSelectionModel()
@@ -211,7 +213,7 @@ public class ConvertController implements Initializable {
                         stateService
                                 .getConvertState()
                                 .stepFileStatusProperty()
-                                .setValue(JFXStepButton.FAILED);
+                                .setValue(ConvertState.STEP_FAILED);
                     });
             stateService.getConvertState().showLoadProgressView();
             centerProgressProgressBar.progressProperty().bind(task.progressProperty());
