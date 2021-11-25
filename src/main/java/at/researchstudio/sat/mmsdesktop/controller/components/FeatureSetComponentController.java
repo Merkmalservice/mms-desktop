@@ -2,9 +2,6 @@ package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import com.jfoenix.controls.JFXListView;
-import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
 import javafx.collections.ListChangeListener;
 import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
@@ -14,6 +11,10 @@ import javafx.scene.layout.AnchorPane;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.net.URL;
+import java.util.List;
+import java.util.ResourceBundle;
 
 @Component
 @FxmlView("featureTableComponent.fxml")

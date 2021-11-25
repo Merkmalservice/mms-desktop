@@ -3,7 +3,6 @@ package at.researchstudio.sat.mmsdesktop.controller.components;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
-import java.util.Objects;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
@@ -12,6 +11,8 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+
+import java.util.Objects;
 
 public class IfcLineComponent extends HBox {
     private IfcLine ifcLine;

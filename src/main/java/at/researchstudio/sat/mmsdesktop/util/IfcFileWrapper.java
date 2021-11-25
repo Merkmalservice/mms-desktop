@@ -1,14 +1,15 @@
 package at.researchstudio.sat.mmsdesktop.util;
 
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcVersion;
-import java.io.File;
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
 
 public class IfcFileWrapper extends FileWrapper {
     private static final Logger logger =

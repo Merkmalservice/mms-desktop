@@ -6,8 +6,6 @@ import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.ifc.element.IfcBuiltElementLine;
 import com.jfoenix.controls.JFXSpinner;
-import java.lang.invoke.MethodHandles;
-import java.util.*;
 import javafx.beans.property.ObjectProperty;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
@@ -19,6 +17,9 @@ import javafx.scene.layout.VBox;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 
 public class IfcLineView extends VBox {
     private static final Logger logger =

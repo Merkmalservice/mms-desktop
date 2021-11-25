@@ -1,13 +1,14 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
 import com.sandec.mdfx.MarkdownView;
-import java.net.URL;
-import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.BorderPane;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.springframework.stereotype.Component;
+
+import java.net.URL;
+import java.util.ResourceBundle;
 
 @Component
 @FxmlView("about.fxml")

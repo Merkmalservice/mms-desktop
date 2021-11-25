@@ -1,6 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.controller.components;
 
-import at.researchstudio.sat.merkmalservice.model.*;
+import at.researchstudio.sat.merkmalservice.model.EnumFeature;
+import at.researchstudio.sat.merkmalservice.model.Feature;
+import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
@@ -8,9 +10,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jfoenix.controls.JFXTextArea;
 import com.sandec.mdfx.MarkdownView;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -19,6 +18,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+
+import java.util.Locale;
+import java.util.Objects;
+import java.util.ResourceBundle;
 
 public class FeatureView extends VBox {
     private final ResourceBundle resourceBundle;

@@ -1,11 +1,12 @@
 package at.researchstudio.sat.mmsdesktop.model.auth;
 
 import at.researchstudio.sat.mmsdesktop.util.Utils;
-import java.lang.invoke.MethodHandles;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.representations.AccessToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
 
 public class UserSession {
     private static final Logger logger =

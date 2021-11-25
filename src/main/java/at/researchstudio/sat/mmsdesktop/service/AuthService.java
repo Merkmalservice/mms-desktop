@@ -3,13 +3,14 @@ package at.researchstudio.sat.mmsdesktop.service;
 import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
 import at.researchstudio.sat.mmsdesktop.util.JavaFXKeycloakInstalled;
-import java.lang.invoke.MethodHandles;
-import java.util.Locale;
 import javafx.application.HostServices;
 import javafx.concurrent.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.lang.invoke.MethodHandles;
+import java.util.Locale;
 
 @Component
 public class AuthService {

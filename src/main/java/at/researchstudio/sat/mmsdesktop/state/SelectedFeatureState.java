@@ -1,7 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.state;
 
-import at.researchstudio.sat.merkmalservice.model.*;
-import javafx.beans.property.*;
+import at.researchstudio.sat.merkmalservice.model.Feature;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import org.springframework.stereotype.Component;
 
 @Component

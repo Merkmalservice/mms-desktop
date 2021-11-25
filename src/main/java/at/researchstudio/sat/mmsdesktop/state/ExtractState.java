@@ -8,9 +8,6 @@ import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import com.google.gson.GsonBuilder;
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -20,6 +17,13 @@ import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.springframework.stereotype.Component;
+
+import java.io.File;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 public class ExtractState {

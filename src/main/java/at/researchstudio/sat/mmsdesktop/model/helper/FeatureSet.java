@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.model.helper;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;

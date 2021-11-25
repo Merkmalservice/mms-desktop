@@ -6,8 +6,6 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcPropertySetLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import com.jfoenix.controls.JFXSpinner;
-import java.lang.invoke.MethodHandles;
-import java.util.*;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -18,6 +16,11 @@ import javafx.scene.paint.Color;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class IfcPropertySetComponent extends VBox {
     private static final Logger logger =

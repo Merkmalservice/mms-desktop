@@ -1,6 +1,5 @@
 package at.researchstudio.sat.mmsdesktop.service;
 
-import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -10,6 +9,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+
+import java.nio.charset.StandardCharsets;
 
 public class DataService {
     public static String callGraphQlEndpoint(String queryString, String idTokenString)

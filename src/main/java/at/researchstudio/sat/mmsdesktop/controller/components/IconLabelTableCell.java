@@ -1,11 +1,12 @@
 package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.merkmalservice.model.*;
-import java.util.ResourceBundle;
 import javafx.scene.control.TableCell;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.bootstrapicons.BootstrapIcons;
 import org.kordamp.ikonli.javafx.FontIcon;
+
+import java.util.ResourceBundle;
 
 public class IconLabelTableCell<T> extends TableCell<T, Feature> {
     private final FontIcon fontIcon;

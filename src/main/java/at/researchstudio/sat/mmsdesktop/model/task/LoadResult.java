@@ -3,6 +3,7 @@ package at.researchstudio.sat.mmsdesktop.model.task;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;

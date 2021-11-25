@@ -2,8 +2,9 @@ package at.researchstudio.sat.mmsdesktop.util;
 
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcDerivedUnit;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
-import java.util.Objects;
 import org.apache.jena.query.QuerySolution;
+
+import java.util.Objects;
 
 public class IfcDerivedUnitBuilder {
     private final IfcUnitType type;

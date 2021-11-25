@@ -1,7 +1,5 @@
 package at.researchstudio.sat.mmsdesktop;
 
-import java.lang.invoke.MethodHandles;
-import java.util.concurrent.FutureTask;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
@@ -9,6 +7,9 @@ import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.lang.invoke.MethodHandles;
+import java.util.concurrent.FutureTask;
 
 @SpringBootApplication
 public class MerkmalserviceDesktopApplication {
