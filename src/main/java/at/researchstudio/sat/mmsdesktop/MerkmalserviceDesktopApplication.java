@@ -5,7 +5,6 @@ import java.util.concurrent.FutureTask;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
-import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,7 +17,7 @@ public class MerkmalserviceDesktopApplication {
     public static final Thread.UncaughtExceptionHandler ALERT_EXCEPTION_HANDLER =
             (thread, cause) -> {
                 try {
-                    logger.error(Throwables.getStackTraceAsString(cause));
+                    logger.error("Error:", cause);
                     final Runnable showDialog =
                             () -> {
                                 Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -33,10 +32,9 @@ public class MerkmalserviceDesktopApplication {
                         showDialogTask.get();
                     }
                 } catch (Throwable t) {
-                    logger.error(Throwables.getStackTraceAsString(t));
-                } finally {
-                    System.exit(-1);
+                    logger.error("Error", t);
                 }
+                System.exit(-1);
             };
 
     public static void main(String[] args) {

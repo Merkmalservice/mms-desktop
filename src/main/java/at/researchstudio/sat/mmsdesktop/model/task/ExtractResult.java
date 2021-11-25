@@ -1,7 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.model.task;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
-import at.researchstudio.sat.mmsdesktop.controller.components.FeatureSetControl;
+import at.researchstudio.sat.mmsdesktop.gui.component.featureset.FeatureSetBox;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import java.io.Serializable;
 import java.util.List;
@@ -27,9 +27,9 @@ public class ExtractResult implements Serializable {
         return extractedFeatures;
     }
 
-    public Set<FeatureSetControl> getExtractedUniqueFeatureSetControls() {
+    public Set<FeatureSetBox> getExtractedUniqueFeatureSetControls() {
         return extractedUniqueFeatureSets.stream()
-                .map(FeatureSetControl::new)
+                .map(FeatureSetBox::new)
                 .collect(Collectors.toSet());
     }
 

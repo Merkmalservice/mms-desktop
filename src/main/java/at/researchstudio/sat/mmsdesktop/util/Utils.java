@@ -5,6 +5,8 @@ import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -103,5 +105,11 @@ public class Utils {
     public static NumericFeature parseNumericFeature(IfcProperty ifcProperty) {
         return parseNumericFeature(
                 ifcProperty, Utils.extractQudtQuantityKindFromProperty(ifcProperty));
+    }
+
+    public static String stacktraceToString(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
     }
 }

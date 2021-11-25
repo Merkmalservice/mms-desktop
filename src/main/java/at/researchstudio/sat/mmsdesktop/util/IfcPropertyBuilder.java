@@ -8,8 +8,6 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,52 +91,6 @@ public class IfcPropertyBuilder {
                 logger.warn(
                         "Could not find Unit for IfcUnit with Id<{}>, name<{}>, IfcPropertyType<{}>",
                         line.getUnitId(),
-                        this.name,
-                        this.type);
-                logger.warn("within ProjectUnits:");
-                projectUnits.forEach(
-                        (key, value) -> {
-                            logger.warn(key.toString());
-                            Objects.requireNonNullElse(value, Collections.emptyList())
-                                    .forEach(unit -> logger.warn("\t{}", unit));
-                        });
-                logger.warn("###");
-            }
-        } else if (this.type.isMeasureType()) {
-            this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
-            if (Objects.isNull(this.unit)) {
-                logger.warn(
-                        "Could not find Unit for name<{}>, IfcPropertyType<{}>", this.name, type);
-                logger.warn("within ProjectUnits:");
-                projectUnits.forEach(
-                        (key, value) -> {
-                            logger.warn(key.toString());
-                            Objects.requireNonNullElse(value, Collections.emptyList())
-                                    .forEach(unit -> logger.warn("\t{}", unit));
-                        });
-                logger.warn("###");
-            }
-        }
-    }
-
-    public IfcPropertyBuilder(QuerySolution qs, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
-        this.name = Utils.convertIFCStringToUtf8(qs.getLiteral("propName").toString());
-
-        this.type =
-                at.researchstudio.sat.mmsdesktop.util.Utils.executeOrDefaultOnException(
-                        () -> IfcPropertyType.fromString(qs.getResource("propType").getURI()),
-                        IfcPropertyType.UNKNOWN,
-                        NullPointerException.class,
-                        IllegalArgumentException.class);
-
-        Resource propUnitUriResource = qs.getResource("propUnitUri");
-
-        if (Objects.nonNull(propUnitUriResource)) {
-            this.unit = getIfcUnitWithId(propUnitUriResource.getURI(), projectUnits);
-            if (Objects.isNull(this.unit)) {
-                logger.warn(
-                        "Could not find Unit for IfcUnit with Id<{}>, name<{}>, IfcPropertyType<{}>",
-                        propUnitUriResource.getURI(),
                         this.name,
                         this.type);
                 logger.warn("within ProjectUnits:");

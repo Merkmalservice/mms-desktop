@@ -1,5 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.logic;
 
+import static at.researchstudio.sat.mmsdesktop.util.FileUtils.countLines;
+
 import at.researchstudio.sat.merkmalservice.model.BooleanFeature;
 import at.researchstudio.sat.merkmalservice.model.EnumFeature;
 import at.researchstudio.sat.merkmalservice.model.Feature;
@@ -19,7 +21,7 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.element.*;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.IfcPropertyBuilder;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
-import be.ugent.progress.TaskProgressListener;
+import at.researchstudio.sat.mmsdesktop.util.progress.TaskProgressListener;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
@@ -38,178 +40,189 @@ public class IfcFileReader {
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final Map<String, IfcLineParser<?>> ifcLineParsers;
+    public static final int PROGRESS_UPDATES = 200;
 
     static {
+        //noinspection RedundantTypeArguments (explicit type arguments speedup compilation and analysis time)
         ifcLineParsers =
-                Map.ofEntries(
-                        Map.entry(
-                                IfcCartesianPointLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcCartesianPointLine::new)),
-                        Map.entry(
-                                IfcDirectionLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcDirectionLine::new)),
-                        Map.entry(
-                                IfcFaceLine.IDENTIFIER, new IfcLineParserImpl<>(IfcFaceLine::new)),
-                        Map.entry(
-                                IfcFaceOuterBoundLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcFaceOuterBoundLine::new)),
-                        Map.entry(
-                                IfcPolyLoopLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcPolyLoopLine::new)),
-                        Map.entry(
-                                IfcSinglePropertyValueLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcSinglePropertyValueLine::new)),
-                        Map.entry(
-                                IfcQuantityLengthLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcQuantityLengthLine::new)),
-                        Map.entry(
-                                IfcQuantityAreaLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcQuantityAreaLine::new)),
-                        Map.entry(
-                                IfcQuantityVolumeLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcQuantityVolumeLine::new)),
-                        Map.entry(
-                                IfcQuantityCountLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcQuantityCountLine::new)),
-                        Map.entry(
-                                IfcBeamLine.IDENTIFIER, new IfcLineParserImpl<>(IfcBeamLine::new)),
-                        Map.entry(
-                                IfcColumnLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcColumnLine::new)),
-                        Map.entry(
-                                IfcDoorLine.IDENTIFIER, new IfcLineParserImpl<>(IfcDoorLine::new)),
-                        Map.entry(
-                                IfcPlateLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcPlateLine::new)),
-                        Map.entry(
-                                IfcSlabLine.IDENTIFIER, new IfcLineParserImpl<>(IfcSlabLine::new)),
-                        Map.entry(
-                                IfcWallLine.IDENTIFIER, new IfcLineParserImpl<>(IfcWallLine::new)),
-                        Map.entry(
-                                IfcWindowLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcWindowLine::new)),
-                        Map.entry(
-                                IfcBuildingElementProxyLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcBuildingElementProxyLine::new)),
-                        Map.entry(
-                                IfcRelDefinesByPropertiesLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcRelDefinesByPropertiesLine::new)),
-                        Map.entry(
-                                IfcSIUnitLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcSIUnitLine::new)),
-                        Map.entry(
-                                IfcPropertyEnumerationLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcPropertyEnumerationLine::new)),
-                        Map.entry(
-                                IfcPropertyEnumeratedValueLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcPropertyEnumeratedValueLine::new)),
-                        Map.entry(
-                                IfcDerivedUnitElementLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcDerivedUnitElementLine::new)),
-                        Map.entry(
-                                IfcDerivedUnitLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcDerivedUnitLine::new)),
-                        Map.entry(
-                                IfcElementQuantityLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcElementQuantityLine::new)),
-                        Map.entry(
-                                IfcPropertySetLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcPropertySetLine::new)),
-                        Map.entry(
-                                IfcUnitAssignmentLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcUnitAssignmentLine::new)),
-                        Map.entry(
-                                IfcProjectLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcProjectLine::new)),
-                        Map.entry(
-                                IfcBeamStandardCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcBeamStandardCaseLine::new)),
-                        Map.entry(
-                                IfcBearingLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcBearingLine::new)),
-                        Map.entry(
-                                IfcCaissonFoundationLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcCaissonFoundationLine::new)),
-                        Map.entry(
-                                IfcChimneyLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcChimneyLine::new)),
-                        Map.entry(
-                                IfcColumnStandardCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcColumnStandardCaseLine::new)),
-                        Map.entry(
-                                IfcCourseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcCourseLine::new)),
-                        Map.entry(
-                                IfcCoveringLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcCoveringLine::new)),
-                        Map.entry(
-                                IfcCurtainWallLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcCurtainWallLine::new)),
-                        Map.entry(
-                                IfcDoorStandardCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcDoorStandardCaseLine::new)),
-                        Map.entry(
-                                IfcEarthworksFillLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcEarthworksFillLine::new)),
-                        Map.entry(
-                                IfcFootingLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcFootingLine::new)),
-                        Map.entry(
-                                IfcKerbLine.IDENTIFIER, new IfcLineParserImpl<>(IfcKerbLine::new)),
-                        Map.entry(
-                                IfcMemberStandardCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcMemberStandardCaseLine::new)),
-                        Map.entry(
-                                IfcMooringDeviceLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcMooringDeviceLine::new)),
-                        Map.entry(
-                                IfcNavigatorElementLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcNavigatorElementLine::new)),
-                        Map.entry(
-                                IfcPileLine.IDENTIFIER, new IfcLineParserImpl<>(IfcPileLine::new)),
-                        Map.entry(
-                                IfcPlateStandardCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcPlateStandardCaseLine::new)),
-                        Map.entry(
-                                IfcRailingLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcRailingLine::new)),
-                        Map.entry(
-                                IfcRampFlightLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcRampFlightLine::new)),
-                        Map.entry(
-                                IfcRampLine.IDENTIFIER, new IfcLineParserImpl<>(IfcRampLine::new)),
-                        Map.entry(
-                                IfcReinforcedSoilLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcReinforcedSoilLine::new)),
-                        Map.entry(
-                                IfcRoofLine.IDENTIFIER, new IfcLineParserImpl<>(IfcRoofLine::new)),
-                        Map.entry(
-                                IfcShadingDeviceLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcShadingDeviceLine::new)),
-                        Map.entry(
-                                IfcSlabElementedCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcSlabElementedCaseLine::new)),
-                        Map.entry(
-                                IfcSlabStandardCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcSlabStandardCaseLine::new)),
-                        Map.entry(
-                                IfcStairFlightLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcStairFlightLine::new)),
-                        Map.entry(
-                                IfcStairLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcStairLine::new)),
-                        Map.entry(
-                                IfcTrackElementLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcTrackElementLine::new)),
-                        Map.entry(
-                                IfcWallElementedCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcWallElementedCaseLine::new)),
-                        Map.entry(
-                                IfcWallStandardCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcWallStandardCaseLine::new)),
-                        Map.entry(
-                                IfcWindowStandardCaseLine.IDENTIFIER,
-                                new IfcLineParserImpl<>(IfcWindowStandardCaseLine::new)));
+                        Map.<String, IfcLineParser<?>>ofEntries(
+                                        Map.entry(
+                                                        IfcCartesianPointLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcCartesianPointLine::new)),
+                                        Map.entry(
+                                                        IfcDirectionLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcDirectionLine::new)),
+                                        Map.entry(
+                                                        IfcFaceLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcFaceLine::new)),
+                                        Map.entry(
+                                                        IfcFaceOuterBoundLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcFaceOuterBoundLine::new)),
+                                        Map.entry(
+                                                        IfcPolyLoopLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcPolyLoopLine::new)),
+                                        Map.entry(
+                                                        IfcSinglePropertyValueLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcSinglePropertyValueLine::new)),
+                                        Map.entry(
+                                                        IfcQuantityLengthLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcQuantityLengthLine::new)),
+                                        Map.entry(
+                                                        IfcQuantityAreaLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcQuantityAreaLine::new)),
+                                        Map.entry(
+                                                        IfcQuantityVolumeLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcQuantityVolumeLine::new)),
+                                        Map.entry(
+                                                        IfcQuantityCountLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcQuantityCountLine::new)),
+                                        Map.entry(
+                                                        IfcBeamLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcBeamLine::new)),
+                                        Map.entry(
+                                                        IfcColumnLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcColumnLine::new)),
+                                        Map.entry(
+                                                        IfcDoorLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcDoorLine::new)),
+                                        Map.entry(
+                                                        IfcPlateLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcPlateLine::new)),
+                                        Map.entry(
+                                                        IfcSlabLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcSlabLine::new)),
+                                        Map.entry(
+                                                        IfcWallLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcWallLine::new)),
+                                        Map.entry(
+                                                        IfcWindowLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcWindowLine::new)),
+                                        Map.entry(
+                                                        IfcBuildingElementProxyLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcBuildingElementProxyLine::new)),
+                                        Map.entry(
+                                                        IfcRelDefinesByPropertiesLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcRelDefinesByPropertiesLine::new)),
+                                        Map.entry(
+                                                        IfcSIUnitLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcSIUnitLine::new)),
+                                        Map.entry(
+                                                        IfcPropertyEnumerationLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcPropertyEnumerationLine::new)),
+                                        Map.entry(
+                                                        IfcPropertyEnumeratedValueLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcPropertyEnumeratedValueLine::new)),
+                                        Map.entry(
+                                                        IfcDerivedUnitElementLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcDerivedUnitElementLine::new)),
+                                        Map.entry(
+                                                        IfcDerivedUnitLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcDerivedUnitLine::new)),
+                                        Map.entry(
+                                                        IfcElementQuantityLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcElementQuantityLine::new)),
+                                        Map.entry(
+                                                        IfcPropertySetLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcPropertySetLine::new)),
+                                        Map.entry(
+                                                        IfcUnitAssignmentLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcUnitAssignmentLine::new)),
+                                        Map.entry(
+                                                        IfcProjectLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcProjectLine::new)),
+                                        Map.entry(
+                                                        IfcBeamStandardCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcBeamStandardCaseLine::new)),
+                                        Map.entry(
+                                                        IfcBearingLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcBearingLine::new)),
+                                        Map.entry(
+                                                        IfcCaissonFoundationLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcCaissonFoundationLine::new)),
+                                        Map.entry(
+                                                        IfcChimneyLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcChimneyLine::new)),
+                                        Map.entry(
+                                                        IfcColumnStandardCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcColumnStandardCaseLine::new)),
+                                        Map.entry(
+                                                        IfcCourseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcCourseLine::new)),
+                                        Map.entry(
+                                                        IfcCoveringLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcCoveringLine::new)),
+                                        Map.entry(
+                                                        IfcCurtainWallLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcCurtainWallLine::new)),
+                                        Map.entry(
+                                                        IfcDoorStandardCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcDoorStandardCaseLine::new)),
+                                        Map.entry(
+                                                        IfcEarthworksFillLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcEarthworksFillLine::new)),
+                                        Map.entry(
+                                                        IfcFootingLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcFootingLine::new)),
+                                        Map.entry(
+                                                        IfcKerbLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcKerbLine::new)),
+                                        Map.entry(
+                                                        IfcMemberStandardCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcMemberStandardCaseLine::new)),
+                                        Map.entry(
+                                                        IfcMooringDeviceLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcMooringDeviceLine::new)),
+                                        Map.entry(
+                                                        IfcNavigatorElementLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcNavigatorElementLine::new)),
+                                        Map.entry(
+                                                        IfcPileLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcPileLine::new)),
+                                        Map.entry(
+                                                        IfcPlateStandardCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcPlateStandardCaseLine::new)),
+                                        Map.entry(
+                                                        IfcRailingLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcRailingLine::new)),
+                                        Map.entry(
+                                                        IfcRampFlightLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcRampFlightLine::new)),
+                                        Map.entry(
+                                                        IfcRampLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcRampLine::new)),
+                                        Map.entry(
+                                                        IfcReinforcedSoilLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcReinforcedSoilLine::new)),
+                                        Map.entry(
+                                                        IfcRoofLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcRoofLine::new)),
+                                        Map.entry(
+                                                        IfcShadingDeviceLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcShadingDeviceLine::new)),
+                                        Map.entry(
+                                                        IfcSlabElementedCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcSlabElementedCaseLine::new)),
+                                        Map.entry(
+                                                        IfcSlabStandardCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcSlabStandardCaseLine::new)),
+                                        Map.entry(
+                                                        IfcStairFlightLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcStairFlightLine::new)),
+                                        Map.entry(
+                                                        IfcStairLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcStairLine::new)),
+                                        Map.entry(
+                                                        IfcTrackElementLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcTrackElementLine::new)),
+                                        Map.entry(
+                                                        IfcWallElementedCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcWallElementedCaseLine::new)),
+                                        Map.entry(
+                                                        IfcWallStandardCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcWallStandardCaseLine::new)),
+                                        Map.entry(
+                                                        IfcWindowStandardCaseLine.IDENTIFIER,
+                                                        new IfcLineParserImpl<>(IfcWindowStandardCaseLine::new)));
         /*    } else {
                 sb.append("Couldnt parse Line: ")
                                 .append(line)
@@ -226,20 +239,29 @@ public class IfcFileReader {
 
     public static ParsedIfcFile readIfcFile(
             IfcFileWrapper ifcFile, TaskProgressListener taskProgressListener) throws IOException {
+        long totalLineCount = countLines(ifcFile.getFile().getAbsolutePath());
         List<IfcLine> lines = new ArrayList<>();
         Set<IfcUnit> projectUnits = new HashSet<>();
-
+        int updateIncrement = (int) (totalLineCount / PROGRESS_UPDATES);
         boolean updateProgress = Objects.nonNull(taskProgressListener);
-        Pattern lineTypePattern = Pattern.compile("^#\\d+= ([A-Z]+)\\(");
+        Pattern lineTypePattern = Pattern.compile("^#\\d+= ([A-Z0-9]+)\\(");
         try (LineIterator it =
                 FileUtils.lineIterator(ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
             StringBuilder sb = new StringBuilder();
+            int lineCount = 0;
             while (it.hasNext()) {
                 String line = it.nextLine();
+                lineCount++;
+                float progress = (float) lineCount / (float) totalLineCount * 100;
+                if (updateProgress && (lineCount % updateIncrement == 0 || sb.length() > 0)) {
+                    taskProgressListener.notifyProgress(null, sb.toString(), progress);
+                    sb = new StringBuilder();
+                }
                 Matcher identifierMatcher = lineTypePattern.matcher(line);
                 boolean isIfcLine = identifierMatcher.lookingAt();
                 if (!isIfcLine) {
-                    handleUnparseableLine(taskProgressListener, lines, updateProgress, line);
+                    handleUnparseableLine(
+                            taskProgressListener, lines, updateProgress, progress, line);
                 } else {
                     String identifier = identifierMatcher.group(1);
                     IfcLineParser<?> parser = ifcLineParsers.get(identifier);
@@ -251,20 +273,16 @@ public class IfcFileReader {
                                     .append(System.lineSeparator());
                             lines.add(new IfcQuantityLine(line));
                         } else {
-                            handleUnparseableLine(
-                                    taskProgressListener, lines, updateProgress, line);
+                            lines.add(new IfcLine(line));
                         }
                     } else {
                         try {
                             lines.add(parser.parse(line));
                         } catch (IllegalArgumentException e) {
                             handleUnparseableLine(
-                                    taskProgressListener, lines, updateProgress, line);
+                                    taskProgressListener, lines, updateProgress, progress, line);
                         }
                     }
-                }
-                if (updateProgress && sb.length() > 0) {
-                    taskProgressListener.notifyProgress(null, sb.toString(), 0);
                 }
             }
         }
@@ -461,10 +479,11 @@ public class IfcFileReader {
             TaskProgressListener taskProgressListener,
             List<IfcLine> lines,
             boolean updateProgress,
+            float progress,
             String line) {
         if (updateProgress) {
             taskProgressListener.notifyProgress(
-                    null, "Couldnt parse Line: " + line + " adding it as IfcLine", 0);
+                    null, "Couldnt parse Line: " + line + " adding it as IfcLine", progress);
         }
         lines.add(new IfcLine(line));
     }
