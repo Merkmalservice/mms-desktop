@@ -1,7 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.model.task;
 
 import at.researchstudio.sat.merkmalservice.model.Project;
-
 import java.util.ArrayList;
 import java.util.List;
 

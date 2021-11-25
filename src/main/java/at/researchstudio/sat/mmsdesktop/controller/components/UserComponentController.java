@@ -1,6 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.controller.components;
 
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -8,9 +10,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.springframework.stereotype.Component;
-
-import java.net.URL;
-import java.util.ResourceBundle;
 
 @Component
 @FxmlView("userComponent.fxml")

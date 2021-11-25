@@ -9,6 +9,16 @@ import at.researchstudio.sat.mmsdesktop.util.FileUtils;
 import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import com.jfoenix.controls.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
+import java.util.Objects;
+import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -29,17 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.NotDirectoryException;
-import java.util.Objects;
-import java.util.ResourceBundle;
 
 @Component
 @FxmlView("extract.fxml")

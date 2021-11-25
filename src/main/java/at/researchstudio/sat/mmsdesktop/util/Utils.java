@@ -4,17 +4,16 @@ import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.ResourceUtils;
-
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.Supplier;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.ResourceUtils;
 
 public class Utils {
     private static final Logger logger =

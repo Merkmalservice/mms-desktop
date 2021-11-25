@@ -4,6 +4,8 @@ import at.researchstudio.sat.mmsdesktop.controller.AboutController;
 import at.researchstudio.sat.mmsdesktop.controller.ExtractController;
 import at.researchstudio.sat.mmsdesktop.controller.SelectInputFileController;
 import at.researchstudio.sat.mmsdesktop.controller.SelectTargetStandardController;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -11,9 +13,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
 import net.rgielen.fxweaver.core.FxWeaver;
 import org.springframework.stereotype.Component;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 @Component
 public class ViewState {

@@ -1,10 +1,10 @@
 package at.researchstudio.sat.mmsdesktop.state;
 
+import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_DISABLED;
+
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import javafx.beans.property.SimpleObjectProperty;
 import org.springframework.stereotype.Component;
-
-import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_DISABLED;
 
 @Component
 public class PerformConversionState {

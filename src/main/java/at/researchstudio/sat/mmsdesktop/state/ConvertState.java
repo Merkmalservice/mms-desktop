@@ -10,14 +10,14 @@ public class ConvertState {
     private PerformConversionState performConversionState;
 
     @Autowired
-    public ConvertState(InputFileState inputFileState,
-                    TargetStandardState targetStandardState, PerformConversionState performConversionState) {
+    public ConvertState(
+            InputFileState inputFileState,
+            TargetStandardState targetStandardState,
+            PerformConversionState performConversionState) {
         this.inputFileState = inputFileState;
         this.targetStandardState = targetStandardState;
         this.performConversionState = performConversionState;
     }
-
-
 
     public InputFileState getInputFileState() {
         return inputFileState;

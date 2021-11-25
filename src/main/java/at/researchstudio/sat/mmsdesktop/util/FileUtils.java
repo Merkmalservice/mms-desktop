@@ -1,10 +1,5 @@
 package at.researchstudio.sat.mmsdesktop.util;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.SuffixFileFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -13,6 +8,10 @@ import java.nio.file.NotDirectoryException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileUtils {
     private static final Logger logger =

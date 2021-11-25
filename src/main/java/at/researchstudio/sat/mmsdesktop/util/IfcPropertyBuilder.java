@@ -6,13 +6,12 @@ import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
+import java.lang.invoke.MethodHandles;
+import java.util.*;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
-import java.util.*;
 
 public class IfcPropertyBuilder {
     private static final Logger logger =

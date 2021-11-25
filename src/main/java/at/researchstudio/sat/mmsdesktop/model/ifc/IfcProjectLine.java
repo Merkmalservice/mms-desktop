@@ -1,9 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 
 public class IfcProjectLine extends IfcLine {
     public static final String IDENTIFIER = "IFCPROJECT";

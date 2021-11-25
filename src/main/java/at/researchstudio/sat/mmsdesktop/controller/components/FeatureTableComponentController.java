@@ -4,6 +4,8 @@ import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.transformation.SortedList;
@@ -16,9 +18,6 @@ import javafx.util.Callback;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.net.URL;
-import java.util.ResourceBundle;
 
 @Component
 @FxmlView("featureTableComponent.fxml")

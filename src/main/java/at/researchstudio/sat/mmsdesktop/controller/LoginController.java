@@ -1,6 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -9,9 +11,6 @@ import javafx.scene.layout.VBox;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.net.URL;
-import java.util.ResourceBundle;
 
 @Component
 @FxmlView("login.fxml")

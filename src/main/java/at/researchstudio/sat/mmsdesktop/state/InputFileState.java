@@ -1,5 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.state;
 
+import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.*;
+
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.mmsdesktop.controller.components.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineClassLabel;
@@ -7,6 +9,10 @@ import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -14,13 +20,6 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.*;
 
 @Component
 public class InputFileState {
@@ -44,7 +43,6 @@ public class InputFileState {
         this.extractedIfcLineClasses = FXCollections.observableArrayList();
         this.selectedIfcLine = new SimpleObjectProperty<>();
         this.parsedIfcFile = new SimpleObjectProperty<>();
-
     }
 
     public void showInitialView() {
@@ -133,5 +131,4 @@ public class InputFileState {
     public SimpleObjectProperty<ProcessState> stepFileStatusProperty() {
         return stepFileStatus;
     }
-
 }

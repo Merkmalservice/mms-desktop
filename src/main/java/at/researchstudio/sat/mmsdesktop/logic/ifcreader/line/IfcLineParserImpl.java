@@ -1,7 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.logic.ifcreader.line;
 
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
-
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -13,7 +12,8 @@ public class IfcLineParserImpl<T extends IfcLine> implements IfcLineParser<T> {
         this.lineGenerator = lineGenerator;
     }
 
-    @Override public T parse(String line) {
+    @Override
+    public T parse(String line) {
         return lineGenerator.apply(line);
     }
 }

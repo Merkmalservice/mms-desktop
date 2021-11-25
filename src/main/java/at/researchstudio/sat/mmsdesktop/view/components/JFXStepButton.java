@@ -1,12 +1,12 @@
 package at.researchstudio.sat.mmsdesktop.view.components;
 
+import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_ACTIVE;
+
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import com.jfoenix.controls.JFXButton;
 import javafx.beans.property.SimpleObjectProperty;
 import org.kordamp.ikonli.bootstrapicons.BootstrapIcons;
 import org.kordamp.ikonli.javafx.FontIcon;
-
-import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_ACTIVE;
 
 public class JFXStepButton extends JFXButton {
     private final FontIcon fontIcon;
@@ -24,8 +24,7 @@ public class JFXStepButton extends JFXButton {
         this.setDisabled(true);
         setGraphic(fontIcon);
 
-        this.state.addListener(
-                ((observable, oldValue, newValue) -> styleForState(newValue)));
+        this.state.addListener(((observable, oldValue, newValue) -> styleForState(newValue)));
         styleForState(this.state.get());
     }
 

@@ -2,9 +2,8 @@ package at.researchstudio.sat.mmsdesktop.util;
 
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
 
 public class FeatureUtils {
     public static boolean isFeatureWithinLine(Feature feature, IfcLine ifcLine) {

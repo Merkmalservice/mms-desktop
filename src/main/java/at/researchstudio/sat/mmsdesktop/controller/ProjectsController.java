@@ -5,6 +5,10 @@ import at.researchstudio.sat.mmsdesktop.model.task.DataResult;
 import at.researchstudio.sat.mmsdesktop.service.DataService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import com.google.gson.Gson;
+import java.lang.invoke.MethodHandles;
+import java.net.URL;
+import java.util.List;
+import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -17,11 +21,6 @@ import org.apache.jena.ext.com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import java.lang.invoke.MethodHandles;
-import java.net.URL;
-import java.util.List;
-import java.util.ResourceBundle;
 
 @Component
 @FxmlView("projects.fxml")

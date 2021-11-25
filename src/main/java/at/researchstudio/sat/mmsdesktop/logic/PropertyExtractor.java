@@ -1,5 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.logic;
 
+import static java.util.stream.Collectors.joining;
+
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcDerivedUnit;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
@@ -16,6 +18,13 @@ import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.*;
 import be.ugent.progress.StatefulTaskProgressListener;
 import be.ugent.progress.TaskProgressListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 import javafx.concurrent.Task;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -26,16 +35,6 @@ import org.apache.jena.rdf.model.Model;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.joining;
 
 public class PropertyExtractor {
     private static final boolean USE_NEWEXTRACTION = true;

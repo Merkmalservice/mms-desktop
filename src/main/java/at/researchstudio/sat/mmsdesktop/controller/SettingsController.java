@@ -1,11 +1,10 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import java.net.URL;
+import java.util.ResourceBundle;
 import javafx.fxml.Initializable;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.springframework.stereotype.Component;
-
-import java.net.URL;
-import java.util.ResourceBundle;
 
 @Component
 @FxmlView("settings.fxml")

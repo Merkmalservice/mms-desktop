@@ -3,7 +3,6 @@ package at.researchstudio.sat.mmsdesktop.model.task;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.mmsdesktop.controller.components.FeatureSetControl;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;

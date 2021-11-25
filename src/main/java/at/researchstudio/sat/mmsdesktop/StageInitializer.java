@@ -2,6 +2,8 @@ package at.researchstudio.sat.mmsdesktop;
 
 import at.researchstudio.sat.mmsdesktop.UIApplication.StageReadyEvent;
 import at.researchstudio.sat.mmsdesktop.controller.MainController;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -11,9 +13,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 @Component
 public class StageInitializer implements ApplicationListener<StageReadyEvent> {

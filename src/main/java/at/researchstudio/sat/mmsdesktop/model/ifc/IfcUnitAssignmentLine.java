@@ -1,12 +1,11 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 public class IfcUnitAssignmentLine extends IfcLine {
     public static final String IDENTIFIER = "IFCUNITASSIGNMENT";

@@ -1,12 +1,12 @@
 package at.researchstudio.sat.mmsdesktop.state;
 
+import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_ACTIVE;
+
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import javafx.beans.property.SimpleObjectProperty;
 import org.springframework.stereotype.Component;
-
-import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_ACTIVE;
 
 @Component
 public class TargetStandardState {
@@ -20,7 +20,6 @@ public class TargetStandardState {
         this.stepTargetStandardStatus = new SimpleObjectProperty<>(STEP_ACTIVE);
     }
 
-
     public SimpleObjectProperty<Project> projectProperty() {
         return project;
     }
@@ -32,5 +31,4 @@ public class TargetStandardState {
     public SimpleObjectProperty<ProcessState> stepTargetStandardStatusProperty() {
         return stepTargetStandardStatus;
     }
-
 }

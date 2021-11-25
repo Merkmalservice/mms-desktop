@@ -1,14 +1,13 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
 import at.researchstudio.sat.mmsdesktop.util.Utils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 public class IfcPropertyEnumerationLine extends IfcLine {
     public static final String IDENTIFIER = "IFCPROPERTYENUMERATION";
