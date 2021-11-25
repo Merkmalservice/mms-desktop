@@ -7,12 +7,13 @@ import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import at.researchstudio.sat.mmsdesktop.state.InputFileState;
+import at.researchstudio.sat.mmsdesktop.state.PerformConversionState;
 import at.researchstudio.sat.mmsdesktop.state.ViewState;
 import at.researchstudio.sat.mmsdesktop.view.components.JFXStepButton;
+import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import com.jfoenix.controls.JFXButton;
-import java.lang.invoke.MethodHandles;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -29,6 +30,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.lang.invoke.MethodHandles;
+import java.net.URL;
+import java.util.Objects;
+import java.util.ResourceBundle;
+
 @Component
 @FxmlView("main.fxml")
 public class MainController implements Initializable {
@@ -39,9 +45,9 @@ public class MainController implements Initializable {
 
     public JFXButton convertButton;
     public JFXButton extractButton;
-    public JFXStepButton convertButtonStepFile;
-    public JFXStepButton convertButtonStepProject;
-    public JFXStepButton convertButtonStepConvert;
+    @FXML public JFXStepButton convertButtonSelectInputFile;
+    @FXML public JFXStepButton convertButtonSelectTargetStandard;
+    @FXML public JFXStepButton convertButtonPerformConversion;
 
     @FXML private MenuBar menuBar;
     @FXML private MenuItem menuBarLogin;
@@ -66,9 +72,6 @@ public class MainController implements Initializable {
         menuBar.setFocusTraversable(true);
         menuBarLogin.visibleProperty().bind(stateService.getLoginState().loggedInProperty().not());
         menuBarLogout.visibleProperty().bind(stateService.getLoginState().loggedInProperty());
-        projectsButton
-                .disableProperty()
-                .bind(stateService.getLoginState().loggedInProperty().not());
         mainPane.centerProperty().bind(stateService.getViewState().visibleCenterPaneProperty());
 
         stateService
@@ -92,44 +95,45 @@ public class MainController implements Initializable {
                             }
                         }));
 
-        convertButtonStepFile
+        convertButtonSelectInputFile
                 .visibleProperty()
                 .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
-        convertButtonStepProject
+        convertButtonSelectInputFile
+                .managedProperty()
+                .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
+        convertButtonSelectTargetStandard
                 .visibleProperty()
                 .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
-        convertButtonStepConvert
-                .visibleProperty()
-                .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
-        convertButtonStepFile
+        convertButtonSelectTargetStandard
                 .managedProperty()
                 .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
-        convertButtonStepProject
+        convertButtonPerformConversion
                 .managedProperty()
                 .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
-        convertButtonStepConvert
-                .managedProperty()
-                .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
+        convertButtonPerformConversion
+                        .visibleProperty()
+                        .bind(stateService.getViewState().activeProperty().isEqualTo(ViewState.CONVERT));
 
-        convertButtonStepFile
+        convertButtonSelectInputFile
                 .stateProperty()
-                .bind(stateService.getConvertState().stepFileStatusProperty());
-        convertButtonStepProject
+                .bind(stateService.getConvertState().getInputFileState().stepFileStatusProperty());
+        convertButtonSelectTargetStandard
                 .stateProperty()
-                .bind(stateService.getConvertState().stepProjectStatusProperty());
-        convertButtonStepConvert
+                .bind(stateService.getConvertState().getTargetStandardState().stepTargetStandardStatusProperty());
+        convertButtonPerformConversion
                 .stateProperty()
-                .bind(stateService.getConvertState().stepConvertStatusProperty());
+                .bind(stateService.getConvertState().getPerformConversionState().stepPerformConversionStatusProperty());
 
         stateService
                 .getConvertState()
+                    .getInputFileState()
                 .selectedIfcLineProperty()
                 .addListener(
                         ((observableValue, oldValue, selectedIfcLine) -> {
                             selectedIfcLineView.setVisible(Objects.nonNull(selectedIfcLine));
                             selectedIfcLineView.setManaged(Objects.nonNull(selectedIfcLine));
                             ifcLineView.setParsedIfcFile(
-                                    stateService.getConvertState().parsedIfcFileProperty());
+                                    stateService.getConvertState().getInputFileState().parsedIfcFileProperty());
                             ifcLineView.setIfcLine(selectedIfcLine);
                         }));
 
@@ -147,7 +151,37 @@ public class MainController implements Initializable {
                                 selectedFeaturePreview.setManaged(false);
                             }
                         });
+        stateService
+                        .getConvertState()
+                        .getInputFileState()
+                        .stepFileStatusProperty()
+                            .addListener(this::onRequiredSelectionStateChange);
+        stateService
+                        .getConvertState()
+                        .getTargetStandardState()
+                        .stepTargetStandardStatusProperty()
+                            .addListener(this::onRequiredSelectionStateChange);
+
     }
+
+    private void onRequiredSelectionStateChange(ObservableValue<? extends ProcessState> observable, ProcessState oldState,
+                    ProcessState newState) {
+
+        ProcessState selectFileStatus = stateService.getConvertState().getInputFileState().stepFileStatusProperty().get();
+        ProcessState selectTargetStandardStatus = stateService.getConvertState().getTargetStandardState()
+                        .stepTargetStandardStatusProperty().get();
+        PerformConversionState performConversionState = stateService.getConvertState().getPerformConversionState();
+        if (selectFileStatus.isComplete() && selectTargetStandardStatus.isComplete()) {
+            ProcessState performConversionStatus = performConversionState.stepPerformConversionStatusProperty()
+                            .get();
+            if (performConversionStatus.isDisabled()) {
+                performConversionState.stepPerformConversionStatusProperty().set(ProcessState.STEP_OPEN);
+            }
+        } else {
+            performConversionState.stepPerformConversionStatusProperty().set(ProcessState.STEP_DISABLED);
+        }
+    }
+
 
     /**
      * Handle action related to input (in this case specifically only responds to keyboard event
@@ -255,8 +289,31 @@ public class MainController implements Initializable {
      * @param event Event on "Settings" menu item.
      */
     @FXML
-    private void handleConvertAction(final ActionEvent event) {
-        stateService.getViewState().switchCenterPane(ConvertController.class);
+    private void handleConvertSelectInputFileAction(final ActionEvent event) {
+        stateService.getViewState().switchCenterPane(SelectInputFileController.class);
+        if (stateService.getConvertState().getInputFileState().stepFileStatusProperty().get().isOpen()) {
+            stateService.getConvertState().getInputFileState().stepFileStatusProperty().set(ProcessState.STEP_ACTIVE);
+        }
+        if (stateService.getConvertState().getTargetStandardState().stepTargetStandardStatusProperty().get().isActive()){
+            stateService.getConvertState().getTargetStandardState().stepTargetStandardStatusProperty().set(ProcessState.STEP_OPEN);
+        }
+
+    }
+
+    @FXML
+    private void handleConvertSelectTargetStandardAction(final ActionEvent event) {
+        stateService.getViewState().switchCenterPane(SelectTargetStandardController.class);
+        if (stateService.getConvertState().getInputFileState().stepFileStatusProperty().get().isActive()) {
+            stateService.getConvertState().getInputFileState().stepFileStatusProperty().set(ProcessState.STEP_OPEN);
+        }
+        if (stateService.getConvertState().getTargetStandardState().stepTargetStandardStatusProperty().get().isOpen()){
+            stateService.getConvertState().getTargetStandardState().stepTargetStandardStatusProperty().set(ProcessState.STEP_ACTIVE);
+        }
+    }
+
+    @FXML
+    private void handleConvertPerformConversionAction(final ActionEvent event) {
+        stateService.getViewState().switchCenterPane(PerformConversionController.class);
     }
 
     @FXML
@@ -266,7 +323,7 @@ public class MainController implements Initializable {
 
     @FXML
     public void handleCloseLineAction(ActionEvent actionEvent) {
-        stateService.getConvertState().closeSelectedIfcLine();
+        stateService.getConvertState().getInputFileState().closeSelectedIfcLine();
     }
 
     @FXML

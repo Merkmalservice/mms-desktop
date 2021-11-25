@@ -1,20 +1,20 @@
 package at.researchstudio.sat.mmsdesktop.view.components;
 
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
-import at.researchstudio.sat.mmsdesktop.state.ConvertState;
 import com.jfoenix.controls.JFXButton;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import org.kordamp.ikonli.bootstrapicons.BootstrapIcons;
 import org.kordamp.ikonli.javafx.FontIcon;
+
+import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_ACTIVE;
 
 public class JFXStepButton extends JFXButton {
     private final FontIcon fontIcon;
 
-    private final IntegerProperty state;
+    private final SimpleObjectProperty<ProcessState> state;
 
     public JFXStepButton() {
-        this.state = new SimpleIntegerProperty(0);
+        this.state = new SimpleObjectProperty<>(STEP_ACTIVE);
 
         this.fontIcon = new FontIcon();
         fontIcon.setIconCode(BootstrapIcons.SQUARE);
@@ -25,50 +25,53 @@ public class JFXStepButton extends JFXButton {
         setGraphic(fontIcon);
 
         this.state.addListener(
-                ((observable, oldValue, newValue) -> {
-                    switch (newValue.intValue()) {
-                        case ConvertState.STEP_ACTIVE:
-                            fontIcon.setIconCode(BootstrapIcons.PENCIL_SQUARE);
-                            fontIcon.setIconColor(ViewConstants.MENU_COLOR_ACTIVE);
-                            this.setTextFill(ViewConstants.MENU_COLOR_ACTIVE);
-                            this.setDisabled(false);
-                            break;
-                        case ConvertState.STEP_COMPLETE:
-                            fontIcon.setIconCode(BootstrapIcons.CHECK_SQUARE);
-                            fontIcon.setIconColor(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setTextFill(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setDisabled(false);
-                            break;
-                        case ConvertState.STEP_FAILED:
-                            fontIcon.setIconCode(BootstrapIcons.EXCLAMATION_SQUARE);
-                            fontIcon.setIconColor(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setTextFill(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setDisabled(false);
-                            break;
-                        case ConvertState.STEP_DISABLED:
-                            fontIcon.setIconCode(BootstrapIcons.SQUARE);
-                            fontIcon.setIconColor(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setTextFill(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setDisabled(true);
-                            break;
-                        case ConvertState.STEP_PROCESSING:
-                            fontIcon.setIconCode(BootstrapIcons.THREE_DOTS);
-                            fontIcon.setIconColor(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setTextFill(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setDisabled(true);
-                            break;
-                        case ConvertState.STEP_OPEN:
-                        default:
-                            fontIcon.setIconCode(BootstrapIcons.SQUARE);
-                            fontIcon.setIconColor(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setTextFill(ViewConstants.MENU_COLOR_INACTIVE);
-                            this.setDisabled(false);
-                            break;
-                    }
-                }));
+                ((observable, oldValue, newValue) -> styleForState(newValue)));
+        styleForState(this.state.get());
     }
 
-    public IntegerProperty stateProperty() {
+    private void styleForState(ProcessState processState) {
+        switch (processState) {
+            case STEP_ACTIVE:
+                fontIcon.setIconCode(BootstrapIcons.PENCIL_SQUARE);
+                fontIcon.setIconColor(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setTextFill(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setDisabled(false);
+                break;
+            case STEP_COMPLETE:
+                fontIcon.setIconCode(BootstrapIcons.CHECK_SQUARE);
+                fontIcon.setIconColor(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setTextFill(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setDisabled(false);
+                break;
+            case STEP_FAILED:
+                fontIcon.setIconCode(BootstrapIcons.EXCLAMATION_SQUARE);
+                fontIcon.setIconColor(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setTextFill(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setDisabled(false);
+                break;
+            case STEP_DISABLED:
+                fontIcon.setIconCode(BootstrapIcons.SQUARE);
+                fontIcon.setIconColor(ViewConstants.MENU_COLOR_INACTIVE);
+                JFXStepButton.this.setTextFill(ViewConstants.MENU_COLOR_INACTIVE);
+                JFXStepButton.this.setDisabled(true);
+                break;
+            case STEP_PROCESSING:
+                fontIcon.setIconCode(BootstrapIcons.THREE_DOTS);
+                fontIcon.setIconColor(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setTextFill(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setDisabled(true);
+                break;
+            case STEP_OPEN:
+            default:
+                fontIcon.setIconCode(BootstrapIcons.SQUARE);
+                fontIcon.setIconColor(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setTextFill(ViewConstants.MENU_COLOR_ACTIVE);
+                JFXStepButton.this.setDisabled(false);
+                break;
+        }
+    }
+
+    public SimpleObjectProperty<ProcessState> stateProperty() {
         return state;
     }
 }
