@@ -1,23 +1,21 @@
 package at.researchstudio.sat.mmsdesktop.logic;
 
-import static java.util.stream.Collectors.joining;
-
-import at.researchstudio.sat.merkmalservice.model.*;
+import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcDerivedUnit;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcSIUnit;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
-import at.researchstudio.sat.merkmalservice.vocab.ifc.*;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasure;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasurePrefix;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
-import at.researchstudio.sat.mmsdesktop.model.ifc.*;
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcVersion;
+import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.util.*;
 import be.ugent.progress.StatefulTaskProgressListener;
 import be.ugent.progress.TaskProgressListener;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
 import javafx.concurrent.Task;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -28,6 +26,16 @@ import org.apache.jena.rdf.model.Model;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 public class PropertyExtractor {
     private static final boolean USE_NEWEXTRACTION = true;

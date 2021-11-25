@@ -1,14 +1,15 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 
 public class IfcPropertySetLine extends IfcLine {
-    public static final String IDENTIFIER = "IFCPROPERTYSET(";
+    public static final String IDENTIFIER = "IFCPROPERTYSET";
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCPROPERTYSET\\('(?<globalId>.*)',(?<historyId>[^,]*),'(?<name>.*)',((?<description>[^$]*)|\\$),\\((?<propertyIds>.*)\\)\\))");

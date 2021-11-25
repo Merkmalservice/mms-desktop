@@ -1,14 +1,15 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 
 public class IfcDerivedUnitLine extends IfcLine {
-    public static final String IDENTIFIER = "IFCDERIVEDUNIT(";
+    public static final String IDENTIFIER = "IFCDERIVEDUNIT";
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCDERIVEDUNIT\\(\\((?<unitIds>.*)\\),.(?<type>.*).,(('(?<name>.*)')|\\$)\\))");
@@ -26,7 +27,7 @@ public class IfcDerivedUnitLine extends IfcLine {
             name = StringUtils.trim(matcher.group("name"));
             String unitIdsString = StringUtils.trim(matcher.group("unitIds"));
             unitElementIds =
-                    Arrays.asList(unitIdsString.split(",")).stream()
+                    Arrays.stream(unitIdsString.split(","))
                             .map(unitIdString -> Integer.parseInt(unitIdString.substring(1)))
                             .collect(Collectors.toList());
         } else {

@@ -1,12 +1,13 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
 
 public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPropertyLineInterface {
-    public static final String IDENTIFIER = "IFCPROPERTYSINGLEVALUE(";
+    public static final String IDENTIFIER = "IFCPROPERTYSINGLEVALUE";
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCPROPERTYSINGLEVALUE\\(')(?<name>.*)',((?<description>[^$]*)|\\$),(((?<type>[A-Z]*)\\(('?)(?<value>[^']*)('?)(\\))|\\$),(.(?<unitId>.*)|\\$)\\))");

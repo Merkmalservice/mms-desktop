@@ -7,10 +7,11 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import at.researchstudio.sat.mmsdesktop.model.ifc.element.IfcBuiltElementLine;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ParsedIfcFile {
     private final List<IfcLine> lines;

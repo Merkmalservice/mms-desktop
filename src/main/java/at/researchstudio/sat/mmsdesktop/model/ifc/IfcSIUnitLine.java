@@ -1,11 +1,12 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class IfcSIUnitLine extends IfcLine {
-    public static final String IDENTIFIER = "IFCSIUNIT(";
+    public static final String IDENTIFIER = "IFCSIUNIT";
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCSIUNIT\\(\\*,.)(?<type>.*).,(.(?<prefix>.*).|\\$),.(?<measure>.*).\\)");

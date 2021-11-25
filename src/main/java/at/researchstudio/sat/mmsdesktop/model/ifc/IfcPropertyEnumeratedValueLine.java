@@ -1,19 +1,20 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
-import static at.researchstudio.sat.mmsdesktop.model.ifc.IfcPropertyEnumerationLine.ENUM_VALUE_PATTERN;
-
 import at.researchstudio.sat.mmsdesktop.util.Utils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
+
+import static at.researchstudio.sat.mmsdesktop.model.ifc.IfcPropertyEnumerationLine.ENUM_VALUE_PATTERN;
 
 public class IfcPropertyEnumeratedValueLine extends IfcLine
         implements IfcNamedPropertyLineInterface {
-    public static final String IDENTIFIER = "IFCPROPERTYENUMERATEDVALUE(";
+    public static final String IDENTIFIER = "IFCPROPERTYENUMERATEDVALUE";
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCPROPERTYENUMERATEDVALUE\\('(?<name>.*)',((?<description>[^,]*)|\\$),\\((?<values>.*)\\),(.(?<enumId>.*)|\\$)\\))");

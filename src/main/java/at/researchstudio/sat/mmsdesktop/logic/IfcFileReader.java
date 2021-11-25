@@ -12,27 +12,130 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
+import at.researchstudio.sat.mmsdesktop.logic.ifcreader.line.IfcLineParser;
+import at.researchstudio.sat.mmsdesktop.logic.ifcreader.line.IfcLineParserImpl;
 import at.researchstudio.sat.mmsdesktop.model.ifc.*;
 import at.researchstudio.sat.mmsdesktop.model.ifc.element.*;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.IfcPropertyBuilder;
 import at.researchstudio.sat.mmsdesktop.util.Utils;
 import be.ugent.progress.TaskProgressListener;
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 public class IfcFileReader {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    private static final Map<String, IfcLineParser<?>> ifcLineParsers;
+    
+    static {
+        ifcLineParsers = Map.ofEntries(Map.entry(IfcCartesianPointLine.IDENTIFIER,
+                        new IfcLineParserImpl<>(IfcCartesianPointLine::new)),
+                        Map.entry(IfcDirectionLine.IDENTIFIER, new IfcLineParserImpl<>(IfcDirectionLine::new)),
+                        Map.entry(IfcFaceLine.IDENTIFIER, new IfcLineParserImpl<>(IfcFaceLine::new)),
+                        Map.entry(IfcFaceOuterBoundLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcFaceOuterBoundLine::new)),
+                        Map.entry(IfcPolyLoopLine.IDENTIFIER, new IfcLineParserImpl<>(IfcPolyLoopLine::new)),
+                        Map.entry(IfcSinglePropertyValueLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcSinglePropertyValueLine::new)),
+                        Map.entry(IfcQuantityLengthLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcQuantityLengthLine::new)),
+                        Map.entry(IfcQuantityAreaLine.IDENTIFIER, new IfcLineParserImpl<>(IfcQuantityAreaLine::new)),
+                        Map.entry(IfcQuantityVolumeLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcQuantityVolumeLine::new)),
+                        Map.entry(IfcQuantityCountLine.IDENTIFIER, new IfcLineParserImpl<>(IfcQuantityCountLine::new)),
+                        Map.entry(IfcBeamLine.IDENTIFIER, new IfcLineParserImpl<>(IfcBeamLine::new)),
+                        Map.entry(IfcColumnLine.IDENTIFIER, new IfcLineParserImpl<>(IfcColumnLine::new)),
+                        Map.entry(IfcDoorLine.IDENTIFIER, new IfcLineParserImpl<>(IfcDoorLine::new)),
+                        Map.entry(IfcPlateLine.IDENTIFIER, new IfcLineParserImpl<>(IfcPlateLine::new)),
+                        Map.entry(IfcSlabLine.IDENTIFIER, new IfcLineParserImpl<>(IfcSlabLine::new)),
+                        Map.entry(IfcWallLine.IDENTIFIER, new IfcLineParserImpl<>(IfcWallLine::new)),
+                        Map.entry(IfcWindowLine.IDENTIFIER, new IfcLineParserImpl<>(IfcWindowLine::new)),
+                        Map.entry(IfcBuildingElementProxyLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcBuildingElementProxyLine::new)),
+                        Map.entry(IfcRelDefinesByPropertiesLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcRelDefinesByPropertiesLine::new)),
+                        Map.entry(IfcSIUnitLine.IDENTIFIER, new IfcLineParserImpl<>(IfcSIUnitLine::new)),
+                        Map.entry(IfcPropertyEnumerationLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcPropertyEnumerationLine::new)),
+                        Map.entry(IfcPropertyEnumeratedValueLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcPropertyEnumeratedValueLine::new)),
+                        Map.entry(IfcDerivedUnitElementLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcDerivedUnitElementLine::new)),
+                        Map.entry(IfcDerivedUnitLine.IDENTIFIER, new IfcLineParserImpl<>(IfcDerivedUnitLine::new)),
+                        Map.entry(IfcElementQuantityLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcElementQuantityLine::new)),
+                        Map.entry(IfcPropertySetLine.IDENTIFIER, new IfcLineParserImpl<>(IfcPropertySetLine::new)),
+                        Map.entry(IfcUnitAssignmentLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcUnitAssignmentLine::new)),
+                        Map.entry(IfcProjectLine.IDENTIFIER, new IfcLineParserImpl<>(IfcProjectLine::new)),
+                        Map.entry(IfcBeamStandardCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcBeamStandardCaseLine::new)),
+                        Map.entry(IfcBearingLine.IDENTIFIER, new IfcLineParserImpl<>(IfcBearingLine::new)),
+                        Map.entry(IfcCaissonFoundationLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcCaissonFoundationLine::new)),
+                        Map.entry(IfcChimneyLine.IDENTIFIER, new IfcLineParserImpl<>(IfcChimneyLine::new)),
+                        Map.entry(IfcColumnStandardCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcColumnStandardCaseLine::new)),
+                        Map.entry(IfcCourseLine.IDENTIFIER, new IfcLineParserImpl<>(IfcCourseLine::new)),
+                        Map.entry(IfcCoveringLine.IDENTIFIER, new IfcLineParserImpl<>(IfcCoveringLine::new)),
+                        Map.entry(IfcCurtainWallLine.IDENTIFIER, new IfcLineParserImpl<>(IfcCurtainWallLine::new)),
+                        Map.entry(IfcDoorStandardCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcDoorStandardCaseLine::new)),
+                        Map.entry(IfcEarthworksFillLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcEarthworksFillLine::new)),
+                        Map.entry(IfcFootingLine.IDENTIFIER, new IfcLineParserImpl<>(IfcFootingLine::new)),
+                        Map.entry(IfcKerbLine.IDENTIFIER, new IfcLineParserImpl<>(IfcKerbLine::new)),
+                        Map.entry(IfcMemberStandardCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcMemberStandardCaseLine::new)),
+                        Map.entry(IfcMooringDeviceLine.IDENTIFIER, new IfcLineParserImpl<>(IfcMooringDeviceLine::new)),
+                        Map.entry(IfcNavigatorElementLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcNavigatorElementLine::new)),
+                        Map.entry(IfcPileLine.IDENTIFIER, new IfcLineParserImpl<>(IfcPileLine::new)),
+                        Map.entry(IfcPlateStandardCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcPlateStandardCaseLine::new)),
+                        Map.entry(IfcRailingLine.IDENTIFIER, new IfcLineParserImpl<>(IfcRailingLine::new)),
+                        Map.entry(IfcRampFlightLine.IDENTIFIER, new IfcLineParserImpl<>(IfcRampFlightLine::new)),
+                        Map.entry(IfcRampLine.IDENTIFIER, new IfcLineParserImpl<>(IfcRampLine::new)),
+                        Map.entry(IfcReinforcedSoilLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcReinforcedSoilLine::new)),
+                        Map.entry(IfcRoofLine.IDENTIFIER, new IfcLineParserImpl<>(IfcRoofLine::new)),
+                        Map.entry(IfcShadingDeviceLine.IDENTIFIER, new IfcLineParserImpl<>(IfcShadingDeviceLine::new)),
+                        Map.entry(IfcSlabElementedCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcSlabElementedCaseLine::new)),
+                        Map.entry(IfcSlabStandardCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcSlabStandardCaseLine::new)),
+                        Map.entry(IfcStairFlightLine.IDENTIFIER, new IfcLineParserImpl<>(IfcStairFlightLine::new)),
+                        Map.entry(IfcStairLine.IDENTIFIER, new IfcLineParserImpl<>(IfcStairLine::new)),
+                        Map.entry(IfcTrackElementLine.IDENTIFIER, new IfcLineParserImpl<>(IfcTrackElementLine::new)),
+                        Map.entry(IfcWallElementedCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcWallElementedCaseLine::new)),
+                        Map.entry(IfcWallStandardCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcWallStandardCaseLine::new)),
+                        Map.entry(IfcWindowStandardCaseLine.IDENTIFIER,
+                                        new IfcLineParserImpl<>(IfcWindowStandardCaseLine::new)));
+/*    } else {
+        sb.append("Couldnt parse Line: ")
+                        .append(line)
+                        .append(" adding it as IfcQuantityLine")
+                        .append(System.lineSeparator());
+        lines.add(new IfcQuantityLine(line));
+    }
+*/
+}
+    
     public static ParsedIfcFile readIfcFile(IfcFileWrapper ifcFile) throws IOException {
         return readIfcFile(ifcFile, null);
     }
@@ -43,154 +146,40 @@ public class IfcFileReader {
         Set<IfcUnit> projectUnits = new HashSet<>();
 
         boolean updateProgress = Objects.nonNull(taskProgressListener);
-
+        Pattern lineTypePattern = Pattern.compile("^#\\d+= ([A-Z]+)\\(");
         try (LineIterator it =
                 FileUtils.lineIterator(ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
             StringBuilder sb = new StringBuilder();
             while (it.hasNext()) {
                 String line = it.nextLine();
-                try {
-                    // TODO: MAYBE IMPLEMENT A DYNAMIC APPROACH IN ORDER
-                    if (line.contains(IfcCartesianPointLine.IDENTIFIER)) {
-                        lines.add(new IfcCartesianPointLine(line));
-                    } else if (line.contains(IfcDirectionLine.IDENTIFIER)) {
-                        lines.add(new IfcDirectionLine(line));
-                    } else if (line.contains(IfcFaceLine.IDENTIFIER)) {
-                        lines.add(new IfcFaceLine(line));
-                    } else if (line.contains(IfcFaceOuterBoundLine.IDENTIFIER)) {
-                        lines.add(new IfcFaceOuterBoundLine(line));
-                    } else if (line.contains(IfcPolyLoopLine.IDENTIFIER)) {
-                        lines.add(new IfcPolyLoopLine(line));
-                    } else if (line.contains(IfcSinglePropertyValueLine.IDENTIFIER)) {
-                        lines.add(new IfcSinglePropertyValueLine(line));
-                    } else if (line.contains("IFCQUANTITY")) {
-                        if (line.contains(IfcQuantityLengthLine.IDENTIFIER)) {
-                            lines.add(new IfcQuantityLengthLine(line));
-                        } else if (line.contains(IfcQuantityAreaLine.IDENTIFIER)) {
-                            lines.add(new IfcQuantityAreaLine(line));
-                        } else if (line.contains(IfcQuantityVolumeLine.IDENTIFIER)) {
-                            lines.add(new IfcQuantityVolumeLine(line));
-                        } else if (line.contains(IfcQuantityCountLine.IDENTIFIER)) {
-                            lines.add(new IfcQuantityCountLine(line));
-                        } else {
+                Matcher identifierMatcher = lineTypePattern.matcher(line);
+                boolean isIfcLine = identifierMatcher.lookingAt();
+                if (! isIfcLine){
+                    handleUnparseableLine(taskProgressListener, lines, updateProgress, line);   
+                } else {
+                    String identifier = identifierMatcher.group(1);
+                    IfcLineParser<?> parser = ifcLineParsers.get(identifier);
+                    if (parser == null) {
+                        if (identifier.contains("IFCQUANTITY")) {
                             sb.append("Couldnt parse Line: ")
-                                    .append(line)
-                                    .append(" adding it as IfcQuantityLine")
-                                    .append(System.lineSeparator());
+                                            .append(line)
+                                            .append(" adding it as IfcQuantityLine")
+                                            .append(System.lineSeparator());
                             lines.add(new IfcQuantityLine(line));
+                        } else {
+                            handleUnparseableLine(taskProgressListener, lines, updateProgress, line);
                         }
-                    } else if (line.contains(IfcBeamLine.IDENTIFIER)) {
-                        lines.add(new IfcBeamLine(line));
-                    } else if (line.contains(IfcColumnLine.IDENTIFIER)) {
-                        lines.add(new IfcColumnLine(line));
-                    } else if (line.contains(IfcDoorLine.IDENTIFIER)) {
-                        lines.add(new IfcDoorLine(line));
-                    } else if (line.contains(IfcPlateLine.IDENTIFIER)) {
-                        lines.add(new IfcPlateLine(line));
-                    } else if (line.contains(IfcSlabLine.IDENTIFIER)) {
-                        lines.add(new IfcSlabLine(line));
-                    } else if (line.contains(IfcWallLine.IDENTIFIER)) {
-                        lines.add(new IfcWallLine(line));
-                    } else if (line.contains(IfcWindowLine.IDENTIFIER)) {
-                        lines.add(new IfcWindowLine(line));
-                    } else if (line.contains(IfcBuildingElementProxyLine.IDENTIFIER)) {
-                        lines.add(new IfcBuildingElementProxyLine(line));
-                    } else if (line.contains(IfcRelDefinesByPropertiesLine.IDENTIFIER)) {
-                        lines.add(new IfcRelDefinesByPropertiesLine(line));
-                    } else if (line.contains(IfcSIUnitLine.IDENTIFIER)) {
-                        lines.add(new IfcSIUnitLine(line));
-                    } else if (line.contains(IfcPropertyEnumerationLine.IDENTIFIER)) {
-                        lines.add(new IfcPropertyEnumerationLine(line));
-                    } else if (line.contains(IfcPropertyEnumeratedValueLine.IDENTIFIER)) {
-                        lines.add(new IfcPropertyEnumeratedValueLine(line));
-                    } else if (line.contains(IfcDerivedUnitElementLine.IDENTIFIER)) {
-                        lines.add(new IfcDerivedUnitElementLine(line));
-                    } else if (line.contains(IfcDerivedUnitLine.IDENTIFIER)) {
-                        lines.add(new IfcDerivedUnitLine(line));
-                    } else if (line.contains(IfcElementQuantityLine.IDENTIFIER)) {
-                        lines.add(new IfcElementQuantityLine(line));
-                    } else if (line.contains(IfcPropertySetLine.IDENTIFIER)) {
-                        lines.add(new IfcPropertySetLine(line));
-                    } else if (line.contains(IfcUnitAssignmentLine.IDENTIFIER)) {
-                        lines.add(new IfcUnitAssignmentLine(line));
-                    } else if (line.contains(IfcProjectLine.IDENTIFIER)) {
-                        lines.add(new IfcProjectLine(line));
-                    } else if (line.contains(IfcBeamStandardCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcBeamStandardCaseLine(line));
-                    } else if (line.contains(IfcBearingLine.IDENTIFIER)) {
-                        lines.add(new IfcBearingLine(line));
-                    } else if (line.contains(IfcCaissonFoundationLine.IDENTIFIER)) {
-                        lines.add(new IfcCaissonFoundationLine(line));
-                    } else if (line.contains(IfcChimneyLine.IDENTIFIER)) {
-                        lines.add(new IfcChimneyLine(line));
-                    } else if (line.contains(IfcColumnStandardCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcColumnStandardCaseLine(line));
-                    } else if (line.contains(IfcCourseLine.IDENTIFIER)) {
-                        lines.add(new IfcCourseLine(line));
-                    } else if (line.contains(IfcCoveringLine.IDENTIFIER)) {
-                        lines.add(new IfcCoveringLine(line));
-                    } else if (line.contains(IfcCurtainWallLine.IDENTIFIER)) {
-                        lines.add(new IfcCurtainWallLine(line));
-                    } else if (line.contains(IfcDoorStandardCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcDoorStandardCaseLine(line));
-                    } else if (line.contains(IfcEarthworksFillLine.IDENTIFIER)) {
-                        lines.add(new IfcEarthworksFillLine(line));
-                    } else if (line.contains(IfcFootingLine.IDENTIFIER)) {
-                        lines.add(new IfcFootingLine(line));
-                    } else if (line.contains(IfcKerbLine.IDENTIFIER)) {
-                        lines.add(new IfcKerbLine(line));
-                    } else if (line.contains(IfcMemberStandardCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcMemberStandardCaseLine(line));
-                    } else if (line.contains(IfcMooringDeviceLine.IDENTIFIER)) {
-                        lines.add(new IfcMooringDeviceLine(line));
-                    } else if (line.contains(IfcNavigatorElementLine.IDENTIFIER)) {
-                        lines.add(new IfcNavigatorElementLine(line));
-                    } else if (line.contains(IfcPileLine.IDENTIFIER)) {
-                        lines.add(new IfcPileLine(line));
-                    } else if (line.contains(IfcPlateStandardCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcPlateStandardCaseLine(line));
-                    } else if (line.contains(IfcRailingLine.IDENTIFIER)) {
-                        lines.add(new IfcRailingLine(line));
-                    } else if (line.contains(IfcRampFlightLine.IDENTIFIER)) {
-                        lines.add(new IfcRampFlightLine(line));
-                    } else if (line.contains(IfcRampLine.IDENTIFIER)) {
-                        lines.add(new IfcRampLine(line));
-                    } else if (line.contains(IfcReinforcedSoilLine.IDENTIFIER)) {
-                        lines.add(new IfcReinforcedSoilLine(line));
-                    } else if (line.contains(IfcRoofLine.IDENTIFIER)) {
-                        lines.add(new IfcRoofLine(line));
-                    } else if (line.contains(IfcShadingDeviceLine.IDENTIFIER)) {
-                        lines.add(new IfcShadingDeviceLine(line));
-                    } else if (line.contains(IfcSlabElementedCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcSlabElementedCaseLine(line));
-                    } else if (line.contains(IfcSlabStandardCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcSlabStandardCaseLine(line));
-                    } else if (line.contains(IfcStairFlightLine.IDENTIFIER)) {
-                        lines.add(new IfcStairFlightLine(line));
-                    } else if (line.contains(IfcStairLine.IDENTIFIER)) {
-                        lines.add(new IfcStairLine(line));
-                    } else if (line.contains(IfcTrackElementLine.IDENTIFIER)) {
-                        lines.add(new IfcTrackElementLine(line));
-                    } else if (line.contains(IfcWallElementedCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcWallElementedCaseLine(line));
-                    } else if (line.contains(IfcWallStandardCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcWallStandardCaseLine(line));
-                    } else if (line.contains(IfcWindowStandardCaseLine.IDENTIFIER)) {
-                        lines.add(new IfcWindowStandardCaseLine(line));
                     } else {
-                        lines.add(new IfcLine(line));
+                        try {
+                            lines.add(parser.parse(line));
+                        } catch (IllegalArgumentException e) {
+                            handleUnparseableLine(taskProgressListener, lines, updateProgress, line);
+                        }
                     }
-                } catch (IllegalArgumentException e) {
-                    // TODO: FIX PARSING OR IGNORE
-                    if (updateProgress) {
-                        taskProgressListener.notifyProgress(
-                                null, "Couldnt parse Line: " + line + " adding it as IfcLine", 0);
-                    }
-                    lines.add(new IfcLine(line));
                 }
-            }
-            if (updateProgress && sb.length() > 0) {
-                taskProgressListener.notifyProgress(null, sb.toString(), 0);
+                if (updateProgress && sb.length() > 0) {
+                    taskProgressListener.notifyProgress(null, sb.toString(), 0);
+                }
             }
         }
 
@@ -380,6 +369,15 @@ public class IfcFileReader {
         }
 
         return parsedIfcFile;
+    }
+
+    private static void handleUnparseableLine(TaskProgressListener taskProgressListener, List<IfcLine> lines,
+                    boolean updateProgress, String line) {
+        if (updateProgress) {
+            taskProgressListener.notifyProgress(
+                    null, "Couldnt parse Line: " + line + " adding it as IfcLine", 0);
+        }
+        lines.add(new IfcLine(line));
     }
 
     private static void extractFromIfcQuantityLine(

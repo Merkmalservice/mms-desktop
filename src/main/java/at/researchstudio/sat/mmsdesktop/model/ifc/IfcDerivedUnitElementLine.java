@@ -1,11 +1,12 @@
 package at.researchstudio.sat.mmsdesktop.model.ifc;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class IfcDerivedUnitElementLine extends IfcLine {
-    public static final String IDENTIFIER = "IFCDERIVEDUNITELEMENT(";
+    public static final String IDENTIFIER = "IFCDERIVEDUNITELEMENT";
     private int unitId;
     private String unitIdString;
     private int exponent;

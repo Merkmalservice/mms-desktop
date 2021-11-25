@@ -4,17 +4,6 @@ import be.ugent.IfcSpfReader;
 import be.ugent.progress.AbortSignal;
 import be.ugent.progress.StatefulTaskProgressListener;
 import be.ugent.progress.TaskProgressListener;
-import java.io.File;
-import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.lang.management.*;
-import java.nio.file.FileSystems;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.management.NotificationEmitter;
 import org.apache.jena.atlas.lib.Sink;
 import org.apache.jena.ext.com.google.common.base.Throwables;
 import org.apache.jena.ext.com.google.common.collect.Streams;
@@ -44,6 +33,18 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.rdfhdt.hdtjena.HDTGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.management.NotificationEmitter;
+import java.io.File;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.management.*;
+import java.nio.file.FileSystems;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class IFC2ModelConverter {
     private static final Logger logger =
