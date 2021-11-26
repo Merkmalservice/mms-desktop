@@ -178,17 +178,25 @@ public class SelectTargetStandardController implements Initializable {
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
         String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
         Resource jsonFile = resourceLoader.getResource("graphql/query-projects.json");
-        try {
-            String queryString =
-                    Files.readString(Path.of(jsonFile.getURI()), StandardCharsets.UTF_8);
-            String result = DataService.callGraphQlEndpoint(queryString, idTokenString);
-            Gson gson = new Gson();
-            List<Project> projects =
-                    gson.fromJson(result, DataResult.class).getData().getProjects();
-            this.projects.setAll(projects);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        new Thread(
+                        () -> {
+                            try {
+                                String queryString =
+                                        Files.readString(
+                                                Path.of(jsonFile.getURI()), StandardCharsets.UTF_8);
+                                String result =
+                                        DataService.callGraphQlEndpoint(queryString, idTokenString);
+                                Gson gson = new Gson();
+                                List<Project> projects =
+                                        gson.fromJson(result, DataResult.class)
+                                                .getData()
+                                                .getProjects();
+                                this.projects.setAll(projects);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        })
+                .start();
     }
 
     public ObservableList<Project> getProjects() {

@@ -2,16 +2,16 @@ package at.researchstudio.sat.mmsdesktop.gui.convert.inputfile;
 
 import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.*;
 
+import at.researchstudio.sat.merkmalservice.ifc.IfcFileReader;
+import at.researchstudio.sat.merkmalservice.ifc.IfcFileWrapper;
+import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
+import at.researchstudio.sat.merkmalservice.ifc.support.FeatureUtils;
+import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import at.researchstudio.sat.mmsdesktop.gui.component.feature.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.gui.component.ifc.IfcLineClassLabel;
-import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
-import at.researchstudio.sat.mmsdesktop.util.FeatureUtils;
-import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
-import at.researchstudio.sat.mmsdesktop.util.progress.TaskProgressListener;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
 import java.io.File;

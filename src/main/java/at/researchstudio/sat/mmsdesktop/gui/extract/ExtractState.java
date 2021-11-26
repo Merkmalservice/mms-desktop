@@ -1,13 +1,13 @@
 package at.researchstudio.sat.mmsdesktop.gui.extract;
 
+import at.researchstudio.sat.merkmalservice.ifc.FileWrapper;
+import at.researchstudio.sat.merkmalservice.ifc.IfcFileWrapper;
+import at.researchstudio.sat.merkmalservice.ifc.support.FileUtils;
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.ExcludeDescriptionStrategy;
 import at.researchstudio.sat.mmsdesktop.gui.component.featureset.FeatureSetBox;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
-import at.researchstudio.sat.mmsdesktop.util.FileUtils;
-import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
-import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
-import at.researchstudio.sat.mmsdesktop.util.Utils;
 import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.util.HashSet;
@@ -154,7 +154,7 @@ public class ExtractState {
             this.extractLogOutput.setValue(task.getValue().getLogOutput());
             this.extractedFeatureSetsPresent.setValue(!this.extractedFeatureSets.isEmpty());
         } else {
-            this.extractLogOutput.setValue(Utils.stacktraceToString(task.getException()));
+            this.extractLogOutput.setValue(IfcUtils.stacktraceToString(task.getException()));
             this.extractJsonOutput.setValue("[]");
             this.extractedFeatureSetsPresent.setValue(false);
         }

@@ -1,11 +1,12 @@
 package at.researchstudio.sat.mmsdesktop.gui.extract;
 
+import at.researchstudio.sat.merkmalservice.ifc.FileWrapper;
+import at.researchstudio.sat.merkmalservice.ifc.support.FileUtils;
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
-import at.researchstudio.sat.mmsdesktop.logic.PropertyExtractor;
+import at.researchstudio.sat.mmsdesktop.logic.extract.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
-import at.researchstudio.sat.mmsdesktop.util.FileUtils;
-import at.researchstudio.sat.mmsdesktop.util.FileWrapper;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import com.jfoenix.controls.*;
 import java.io.File;
@@ -288,9 +289,7 @@ public class ExtractController implements Initializable {
                                                 null)));
 
             } catch (IOException ioException) {
-                logger.error(
-                        at.researchstudio.sat.mmsdesktop.util.Utils.stacktraceToString(
-                                ioException));
+                logger.error(IfcUtils.stacktraceToString(ioException));
                 // TODO: SHOW ERROR
             }
         }
@@ -321,9 +320,7 @@ public class ExtractController implements Initializable {
                                                 null)));
 
             } catch (IOException ioException) {
-                logger.error(
-                        at.researchstudio.sat.mmsdesktop.util.Utils.stacktraceToString(
-                                ioException));
+                logger.error(IfcUtils.stacktraceToString(ioException));
                 // TODO: SHOW ERROR
             }
         }

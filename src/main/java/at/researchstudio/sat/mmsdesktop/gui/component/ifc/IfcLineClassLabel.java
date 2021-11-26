@@ -1,7 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.gui.component.ifc;
 
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
 import java.util.List;
 import java.util.Map;
 import javafx.geometry.Insets;

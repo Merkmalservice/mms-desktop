@@ -2,11 +2,11 @@ package at.researchstudio.sat.mmsdesktop.gui.convert.inputfile;
 
 import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.*;
 
+import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.mmsdesktop.gui.component.feature.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.gui.component.ifc.IfcLineClassLabel;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import java.util.Collections;

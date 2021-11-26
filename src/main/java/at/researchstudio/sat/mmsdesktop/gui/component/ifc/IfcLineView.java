@@ -1,11 +1,12 @@
 package at.researchstudio.sat.mmsdesktop.gui.component.ifc;
 
+import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
+import at.researchstudio.sat.merkmalservice.ifc.model.*;
+import at.researchstudio.sat.merkmalservice.ifc.model.element.IfcBuiltElementLine;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.gui.component.feature.FeatureBox;
-import at.researchstudio.sat.mmsdesktop.model.ifc.*;
-import at.researchstudio.sat.mmsdesktop.model.ifc.element.IfcBuiltElementLine;
 import com.jfoenix.controls.JFXSpinner;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
@@ -86,10 +87,7 @@ public class IfcLineView extends VBox {
             addLineToView(ifcLine);
             if (ifcLine instanceof IfcBuiltElementLine) {
                 List<IfcRelDefinesByPropertiesLine> relDefinesByPropertiesLines =
-                        this.parsedIfcFile
-                                .get()
-                                .getRelDefinesByPropertiesLinesReferencing(
-                                        (IfcBuiltElementLine) ifcLine);
+                        this.parsedIfcFile.get().getRelDefinesByPropertiesLinesReferencing(ifcLine);
 
                 for (IfcRelDefinesByPropertiesLine relDefinesByPropertiesLine :
                         relDefinesByPropertiesLines) {
@@ -97,7 +95,7 @@ public class IfcLineView extends VBox {
                             this.parsedIfcFile
                                     .get()
                                     .getDataLines()
-                                    .get(relDefinesByPropertiesLine.getRelatedSetId());
+                                    .get(relDefinesByPropertiesLine.getRelatingPropertySetId());
                     if (propertySetLine instanceof IfcPropertySetLine) {
                         IfcPropertySetBox propSetsBox =
                                 new IfcPropertySetBox(
@@ -193,8 +191,7 @@ public class IfcLineView extends VBox {
                     new Task<>() {
                         @Override
                         protected List<Node> call() {
-                            List<IfcLine> lines =
-                                    parsedIfcFile.get().getAllLinesReferencing(ifcLine);
+                            List<IfcLine> lines = parsedIfcFile.get().getReferencingLines(ifcLine);
                             return createLineComponents(lines);
                         }
                     };
@@ -228,8 +225,7 @@ public class IfcLineView extends VBox {
                     new Task<>() {
                         @Override
                         protected List<Node> call() {
-                            List<IfcLine> lines =
-                                    parsedIfcFile.get().getAllReferencedLines(ifcLine);
+                            List<IfcLine> lines = parsedIfcFile.get().getReferencedLines(ifcLine);
                             return createLineComponents(lines);
                         }
                     };

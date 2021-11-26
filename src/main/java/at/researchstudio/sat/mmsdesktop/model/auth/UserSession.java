@@ -1,6 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.model.auth;
 
-import at.researchstudio.sat.mmsdesktop.util.Utils;
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import java.lang.invoke.MethodHandles;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.representations.AccessToken;
@@ -43,9 +43,9 @@ public class UserSession {
 
     public String getInitials() {
         String initials =
-                Utils.executeOrDefaultOnException(
+                IfcUtils.executeOrDefaultOnException(
                                 () -> String.valueOf(getGivenName().charAt(0)), "")
-                        + Utils.executeOrDefaultOnException(
+                        + IfcUtils.executeOrDefaultOnException(
                                 () -> String.valueOf(getFamilyName().charAt(0)), "");
         return StringUtils.isEmpty(initials) ? String.valueOf(getUsername().charAt(0)) : initials;
     }

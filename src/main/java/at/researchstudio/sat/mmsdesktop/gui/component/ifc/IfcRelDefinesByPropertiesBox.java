@@ -1,10 +1,10 @@
 package at.researchstudio.sat.mmsdesktop.gui.component.ifc;
 
+import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcPropertySetLine;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcRelDefinesByPropertiesLine;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcPropertySetLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcRelDefinesByPropertiesLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import com.jfoenix.controls.JFXSpinner;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
@@ -48,8 +48,7 @@ public class IfcRelDefinesByPropertiesBox extends VBox {
                         propSetNodes.add(relDefinesLabel);
 
                         List<IfcRelDefinesByPropertiesLine> relDefinesByPropertiesLines =
-                                parsedIfcFile.getRelDefinesByPropertiesLinesReferencing(
-                                        propertySet);
+                                parsedIfcFile.getRelDefinesByPropertiesLinesForPSet(propertySet);
 
                         if (!relDefinesByPropertiesLines.isEmpty()) {
                             for (IfcRelDefinesByPropertiesLine relDefinesByPropertiesLine :

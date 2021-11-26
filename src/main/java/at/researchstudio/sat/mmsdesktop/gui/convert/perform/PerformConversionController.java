@@ -5,6 +5,7 @@ import at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard.TargetStandar
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,4 +27,6 @@ public class PerformConversionController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {}
+
+    public void handleConvertAction(ActionEvent actionEvent) {}
 }

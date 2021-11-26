@@ -1,10 +1,10 @@
 package at.researchstudio.sat.mmsdesktop.gui.component.ifc;
 
+import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcElementQuantityLine;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcElementQuantityLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
-import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import com.jfoenix.controls.JFXSpinner;
 import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;

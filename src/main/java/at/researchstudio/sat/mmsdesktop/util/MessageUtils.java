@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.util;
 
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
@@ -19,7 +20,7 @@ public class MessageUtils {
     }
 
     private static String getKeyForUri(ResourceBundle resourceBundle, String prefix, String uri) {
-        return Utils.executeOrDefaultOnException(
+        return IfcUtils.executeOrDefaultOnException(
                 () -> resourceBundle.getString(prefix + uri.substring(uri.lastIndexOf("/") + 1)),
                 uri);
     }

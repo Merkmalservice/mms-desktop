@@ -1,11 +1,11 @@
 package at.researchstudio.sat.mmsdesktop.gui.component.feature;
 
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.model.EnumFeature;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
-import at.researchstudio.sat.mmsdesktop.util.Utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jfoenix.controls.JFXTextArea;
@@ -102,7 +102,7 @@ public class FeatureBox extends VBox {
             featureDescriptionMarkdown.setMdString(feature.getDescription());
             if (showJson) {
                 featureJson.setText(
-                        Utils.executeOrDefaultOnException(
+                        IfcUtils.executeOrDefaultOnException(
                                 () -> {
                                     Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
                                     return gson.toJson(feature);
