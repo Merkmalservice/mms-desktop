@@ -7,7 +7,7 @@ import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.logic.extract.PropertyExtractor;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
-import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
+import at.researchstudio.sat.mmsdesktop.support.MessageUtils;
 import com.jfoenix.controls.*;
 import java.io.File;
 import java.io.FileNotFoundException;

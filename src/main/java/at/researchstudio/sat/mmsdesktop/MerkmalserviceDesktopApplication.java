@@ -8,8 +8,11 @@ import javafx.scene.control.Alert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+@ComponentScan(
+        basePackages = {"at.researchstudio.sat.mmsdesktop", "at.researchstudio.sat.merkmalservice"})
 public class MerkmalserviceDesktopApplication {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

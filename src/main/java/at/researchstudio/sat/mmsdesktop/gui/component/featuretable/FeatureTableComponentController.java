@@ -4,7 +4,7 @@ import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.mmsdesktop.gui.component.feature.IconLabelTableCell;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
-import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
+import at.researchstudio.sat.mmsdesktop.support.MessageUtils;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.beans.property.SimpleObjectProperty;

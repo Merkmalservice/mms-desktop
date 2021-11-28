@@ -8,7 +8,7 @@ import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
-import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
+import at.researchstudio.sat.mmsdesktop.support.MessageUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

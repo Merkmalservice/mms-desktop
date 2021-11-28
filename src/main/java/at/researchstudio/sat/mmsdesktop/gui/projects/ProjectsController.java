@@ -1,8 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.gui.projects;
 
+import at.researchstudio.sat.merkmalservice.client.DataService;
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.mmsdesktop.model.task.DataResult;
-import at.researchstudio.sat.mmsdesktop.service.DataService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import com.google.gson.Gson;
 import java.lang.invoke.MethodHandles;
@@ -37,6 +37,7 @@ public class ProjectsController implements Initializable {
     @FXML private BorderPane parentPane;
 
     @Autowired ResourceLoader resourceLoader;
+    @Autowired DataService dataService;
 
     public ProjectsController(ReactiveStateService stateService) {
         this.stateService = stateService;
@@ -53,7 +54,7 @@ public class ProjectsController implements Initializable {
         try {
             String queryString =
                     Files.readString(Path.of(jsonFile.getURI()), StandardCharsets.UTF_8);
-            String result = DataService.callGraphQlEndpoint(queryString, idTokenString);
+            String result = dataService.callGraphQlEndpoint(queryString, idTokenString);
             Gson gson = new Gson();
             List<Project> projects =
                     gson.fromJson(result, DataResult.class).getData().getProjects();

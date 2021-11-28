@@ -5,7 +5,7 @@ import at.researchstudio.sat.merkmalservice.model.EnumFeature;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
-import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
+import at.researchstudio.sat.mmsdesktop.support.MessageUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jfoenix.controls.JFXTextArea;

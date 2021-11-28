@@ -2,10 +2,11 @@ package at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard;
 
 import static javafx.beans.binding.Bindings.not;
 
+import at.researchstudio.sat.merkmalservice.client.DataService;
+import at.researchstudio.sat.merkmalservice.model.Organization;
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.mmsdesktop.model.task.DataResult;
-import at.researchstudio.sat.mmsdesktop.service.DataService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import com.google.gson.Gson;
@@ -17,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -48,8 +50,8 @@ public class SelectTargetStandardController implements Initializable {
     @FXML private JFXComboBox<Project> projectList;
     @FXML private JFXComboBox<Standard> standardList;
     @FXML private Button reloadButton;
-
     @Autowired ResourceLoader resourceLoader;
+    @Autowired DataService dataService;
 
     @Autowired
     public SelectTargetStandardController(ReactiveStateService stateService) {
@@ -133,7 +135,11 @@ public class SelectTargetStandardController implements Initializable {
                                     return;
                                 }
                                 setText(null);
-                                setGraphic(new Label(item.getOrganization().getName()));
+                                setGraphic(
+                                        new Label(
+                                                Optional.ofNullable(item.getOrganization())
+                                                        .map(Organization::getName)
+                                                        .orElse("PROJEKTSTANDARD (TODO I18N)")));
                             }
                         });
         this.standardList.setConverter(
@@ -143,7 +149,9 @@ public class SelectTargetStandardController implements Initializable {
                         if (standard == null) {
                             return null;
                         }
-                        return standard.getOrganization().getName();
+                        return Optional.ofNullable(standard.getOrganization())
+                                .map(Organization::getName)
+                                .orElse("PROJEKTSTANDARD (TODO I18N)");
                     }
 
                     @Override
@@ -178,25 +186,17 @@ public class SelectTargetStandardController implements Initializable {
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
         String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
         Resource jsonFile = resourceLoader.getResource("graphql/query-projects.json");
-        new Thread(
-                        () -> {
-                            try {
-                                String queryString =
-                                        Files.readString(
-                                                Path.of(jsonFile.getURI()), StandardCharsets.UTF_8);
-                                String result =
-                                        DataService.callGraphQlEndpoint(queryString, idTokenString);
-                                Gson gson = new Gson();
-                                List<Project> projects =
-                                        gson.fromJson(result, DataResult.class)
-                                                .getData()
-                                                .getProjects();
-                                this.projects.setAll(projects);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        })
-                .start();
+        try {
+            String queryString =
+                    Files.readString(Path.of(jsonFile.getURI()), StandardCharsets.UTF_8);
+            String result = dataService.callGraphQlEndpoint(queryString, idTokenString);
+            Gson gson = new Gson();
+            List<Project> projects =
+                    gson.fromJson(result, DataResult.class).getData().getProjects();
+            this.projects.setAll(projects);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public ObservableList<Project> getProjects() {

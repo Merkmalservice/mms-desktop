@@ -2,7 +2,7 @@ package at.researchstudio.sat.mmsdesktop.service;
 
 import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.model.task.LogoutResult;
-import at.researchstudio.sat.mmsdesktop.util.JavaFXKeycloakInstalled;
+import at.researchstudio.sat.mmsdesktop.support.JavaFXKeycloakInstalled;
 import java.lang.invoke.MethodHandles;
 import java.util.Locale;
 import javafx.application.HostServices;

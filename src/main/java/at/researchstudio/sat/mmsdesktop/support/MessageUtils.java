@@ -1,4 +1,4 @@
-package at.researchstudio.sat.mmsdesktop.util;
+package at.researchstudio.sat.mmsdesktop.support;
 
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import java.text.MessageFormat;

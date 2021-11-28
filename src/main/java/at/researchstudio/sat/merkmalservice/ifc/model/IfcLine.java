@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 
 public class IfcLine {
     public static final String IDENTIFIER = "NOT-AN-IDENTIFIER-IL";
@@ -12,6 +13,7 @@ public class IfcLine {
     private final String line;
     private String modifiedLine = null;
     private String stringId;
+    private String type;
     private List<Integer> references;
 
     public IfcLine(String line) {
@@ -21,6 +23,8 @@ public class IfcLine {
             id = Integer.parseInt(stringId.substring(1));
             int assignmentIndex = line.indexOf("=");
             Matcher m = REF_ID_PATTERN.matcher(line.substring(assignmentIndex));
+            int bracketIndex = line.indexOf('(', assignmentIndex);
+            type = StringUtils.trim(line.substring(assignmentIndex, bracketIndex));
             references = new ArrayList<>();
             while (m.find()) {
                 try {
@@ -42,6 +46,10 @@ public class IfcLine {
 
     public int getId() {
         return id;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public boolean hasId() {

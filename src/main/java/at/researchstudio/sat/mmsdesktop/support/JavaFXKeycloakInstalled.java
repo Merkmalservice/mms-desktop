@@ -1,4 +1,4 @@
-package at.researchstudio.sat.mmsdesktop.util;
+package at.researchstudio.sat.mmsdesktop.support;
 
 import io.undertow.Handlers;
 import io.undertow.Undertow;
