@@ -1,6 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.controller.components;
 
-import at.researchstudio.sat.merkmalservice.model.*;
+import at.researchstudio.sat.merkmalservice.model.EnumFeature;
+import at.researchstudio.sat.merkmalservice.model.Feature;
+import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.util.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.util.Utils;

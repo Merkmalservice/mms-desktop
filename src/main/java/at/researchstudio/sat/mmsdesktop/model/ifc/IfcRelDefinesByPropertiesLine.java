@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcRelDefinesByPropertiesLine extends IfcLine {
-    public static final String IDENTIFIER = "IFCRELDEFINESBYPROPERTIES(";
+    public static final String IDENTIFIER = "IFCRELDEFINESBYPROPERTIES";
     private static final Pattern extractPattern =
             Pattern.compile(
                     "(?>#[0-9]*= IFCRELDEFINESBYPROPERTIES\\('(?<globalId>.*)',(?<historyId>[^,]*),(('(?<name>.*)')|\\$),((?<description>[^$]*)|\\$),\\((?<relatedObjectIds>.*)\\),(?<propertySetId>[^,]*)\\))");

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcElementQuantityLine extends IfcLine {
-    public static final String IDENTIFIER = "IFCELEMENTQUANTITY(";
+    public static final String IDENTIFIER = "IFCELEMENTQUANTITY";
 
     private static final Pattern extractPattern =
             Pattern.compile(

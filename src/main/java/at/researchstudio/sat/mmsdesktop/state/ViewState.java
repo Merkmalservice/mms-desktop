@@ -1,11 +1,15 @@
 package at.researchstudio.sat.mmsdesktop.state;
 
 import at.researchstudio.sat.mmsdesktop.controller.AboutController;
-import at.researchstudio.sat.mmsdesktop.controller.ConvertController;
 import at.researchstudio.sat.mmsdesktop.controller.ExtractController;
+import at.researchstudio.sat.mmsdesktop.controller.SelectInputFileController;
+import at.researchstudio.sat.mmsdesktop.controller.SelectTargetStandardController;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.beans.property.*;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
 import net.rgielen.fxweaver.core.FxWeaver;
 import org.springframework.stereotype.Component;
@@ -37,7 +41,9 @@ public class ViewState {
     }
 
     public void switchCenterPane(Class controllerClass) {
-        if (ConvertController.class.isAssignableFrom(controllerClass)) {
+        if (SelectInputFileController.class.isAssignableFrom(controllerClass)) {
+            active.setValue(CONVERT);
+        } else if (SelectTargetStandardController.class.isAssignableFrom(controllerClass)) {
             active.setValue(CONVERT);
         } else if (ExtractController.class.isAssignableFrom(controllerClass)) {
             active.setValue(EXTRACT);

@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcDerivedUnitElementLine extends IfcLine {
-    public static final String IDENTIFIER = "IFCDERIVEDUNITELEMENT(";
+    public static final String IDENTIFIER = "IFCDERIVEDUNITELEMENT";
     private int unitId;
     private String unitIdString;
     private int exponent;

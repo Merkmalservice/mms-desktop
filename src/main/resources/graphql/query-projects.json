@@ -1,5 +1,5 @@
 {
-  "query": "query PROJECTS {projects {id name users{id} standards{id mappings{id inputFeature{id name description standard {id name organization{id name}}} outputFeature{id name description standard {id name organization{id name}}}}}}}",
+  "query": "query PROJECTS {projects { id name standards { id organization { id name } } } }",
   "operationName": "PROJECTS",
   "variables:": {
   }

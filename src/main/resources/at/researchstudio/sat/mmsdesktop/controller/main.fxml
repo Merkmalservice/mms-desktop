@@ -55,7 +55,7 @@
                 </JFXButton>
                 <JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
                            fx:id="convertButton"
-                           onAction="#handleConvertAction"
+                           onAction="#handleConvertSelectInputFileAction"
                            graphicTextGap="15.0" prefHeight="32.0"
                            prefWidth="220.0" ripplerFill="WHITE" text="%label.sidebar.convertifc"
                            style="-fx-cursor: hand;"
@@ -68,10 +68,10 @@
                     </font>
                 </JFXButton>
                 <JFXStepButton alignment="BASELINE_LEFT" focusTraversable="false"
-                               fx:id="convertButtonStepFile"
-                               onAction="#handleConvertAction"
+                               fx:id="convertButtonSelectInputFile"
+                               onAction="#handleConvertSelectInputFileAction"
                                graphicTextGap="15.0" prefHeight="24.0"
-                               prefWidth="220.0" ripplerFill="WHITE" text="%label.select.file"
+                               prefWidth="220.0" ripplerFill="WHITE" text="%label.convert.chooseFile"
                                style="-fx-cursor: hand;">
                     <padding>
                         <Insets bottom="5.0" left="15.0" right="5.0"/>
@@ -81,10 +81,10 @@
                     </font>
                 </JFXStepButton>
                 <JFXStepButton alignment="BASELINE_LEFT" focusTraversable="false"
-                               fx:id="convertButtonStepProject"
-                               onAction="#handleConvertAction"
+                               fx:id="convertButtonSelectTargetStandard"
+                               onAction="#handleConvertSelectTargetStandardAction"
                                graphicTextGap="15.0" prefHeight="24.0"
-                               prefWidth="220.0" ripplerFill="WHITE" text="%label.select.project"
+                               prefWidth="220.0" ripplerFill="WHITE" text="%label.convert.chooseTarget"
                                style="-fx-cursor: hand;">
                     <padding>
                         <Insets bottom="5.0" left="15.0" right="5.0"/>
@@ -94,8 +94,8 @@
                     </font>
                 </JFXStepButton>
                 <JFXStepButton alignment="BASELINE_LEFT" focusTraversable="false"
-                               fx:id="convertButtonStepConvert"
-                               onAction="#handleConvertAction"
+                               fx:id="convertButtonPerformConversion"
+                               onAction="#handleConvertPerformConversionAction"
                                graphicTextGap="15.0" prefHeight="24.0"
                                prefWidth="220.0" ripplerFill="WHITE" text="TODO: CONVERT"
                                style="-fx-cursor: hand;">
@@ -106,19 +106,6 @@
                         <Font size="12.0"/>
                     </font>
                 </JFXStepButton>
-                <JFXButton fx:id="projectsButton" alignment="BASELINE_LEFT" focusTraversable="false"
-                           onAction="#handleLoadProjectsAction"
-                           graphicTextGap="15.0" layoutX="10.0" layoutY="10.0" prefHeight="32.0"
-                           prefWidth="220.0" ripplerFill="WHITE" text="%label.sidebar.projects"
-                           style="-fx-cursor: hand;"
-                           textFill="#ffffff80">
-                    <padding>
-                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
-                    </padding>
-                    <font>
-                        <Font size="16.0"/>
-                    </font>
-                </JFXButton>
             </ToolBar>
         </left>
         <right>

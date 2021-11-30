@@ -1,19 +1,22 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.*;
+
 import at.researchstudio.sat.mmsdesktop.controller.components.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.controller.components.IfcLineClassLabel;
 import at.researchstudio.sat.mmsdesktop.logic.IfcFileReader;
-import at.researchstudio.sat.mmsdesktop.model.ifc.*;
+import at.researchstudio.sat.mmsdesktop.model.ifc.IfcLine;
+import at.researchstudio.sat.mmsdesktop.model.ifc.ParsedIfcFile;
 import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
-import at.researchstudio.sat.mmsdesktop.state.ConvertState;
 import at.researchstudio.sat.mmsdesktop.util.FeatureUtils;
 import at.researchstudio.sat.mmsdesktop.util.IfcFileWrapper;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
 import java.io.File;
 import java.net.URL;
-import java.util.*;
+import java.util.Objects;
+import java.util.ResourceBundle;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -29,8 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-@FxmlView("convert.fxml")
-public class ConvertController implements Initializable {
+@FxmlView("selectInputFile.fxml")
+public class SelectInputFileController implements Initializable {
     private FileChooser fileChooser;
     private final ReactiveStateService stateService;
 
@@ -50,7 +53,7 @@ public class ConvertController implements Initializable {
     @FXML private JFXListView<IfcLineClassLabel> extractedBuiltElementsList;
 
     @Autowired
-    public ConvertController(ReactiveStateService stateService) {
+    public SelectInputFileController(ReactiveStateService stateService) {
         this.stateService = stateService;
     }
 
@@ -61,58 +64,66 @@ public class ConvertController implements Initializable {
                 .bind(
                         stateService
                                 .getConvertState()
+                                .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(ConvertState.STEP_ACTIVE));
+                                .isEqualTo(STEP_ACTIVE));
         topPickFile
                 .managedProperty()
                 .bind(
                         stateService
                                 .getConvertState()
+                                .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(ConvertState.STEP_ACTIVE));
+                                .isEqualTo(STEP_ACTIVE));
         topInputFile
                 .visibleProperty()
                 .bind(
                         stateService
                                 .getConvertState()
+                                .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(ConvertState.STEP_COMPLETE));
+                                .isEqualTo(STEP_COMPLETE));
         topInputFile
                 .managedProperty()
                 .bind(
                         stateService
                                 .getConvertState()
+                                .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(ConvertState.STEP_COMPLETE));
+                                .isEqualTo(STEP_COMPLETE));
         centerProgress
                 .visibleProperty()
                 .bind(
                         stateService
                                 .getConvertState()
+                                .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(ConvertState.STEP_PROCESSING));
+                                .isEqualTo(STEP_PROCESSING));
         centerProgress
                 .managedProperty()
                 .bind(
                         stateService
                                 .getConvertState()
+                                .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(ConvertState.STEP_PROCESSING));
+                                .isEqualTo(STEP_PROCESSING));
 
         centerInputFile
                 .visibleProperty()
                 .bind(
                         stateService
                                 .getConvertState()
+                                .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(ConvertState.STEP_COMPLETE));
+                                .isEqualTo(STEP_COMPLETE));
         centerInputFile
                 .managedProperty()
                 .bind(
                         stateService
                                 .getConvertState()
+                                .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(ConvertState.STEP_COMPLETE));
+                                .isEqualTo(STEP_COMPLETE));
 
         extractedBuiltElementsList
                 .getSelectionModel()
@@ -121,6 +132,7 @@ public class ConvertController implements Initializable {
                         (observable, deSelectedBuiltElement, selectedBuiltElement) ->
                                 stateService
                                         .getConvertState()
+                                        .getInputFileState()
                                         .getFilteredInputFileContent()
                                         .setPredicate(
                                                 ifcLine -> {
@@ -140,6 +152,7 @@ public class ConvertController implements Initializable {
                         (observable, deSelectedIfcFeature, selectedIfcFeature) ->
                                 stateService
                                         .getConvertState()
+                                        .getInputFileState()
                                         .getFilteredInputFileContent()
                                         .setPredicate(
                                                 ifcLine -> {
@@ -160,21 +173,30 @@ public class ConvertController implements Initializable {
                 .selectedItemProperty()
                 .addListener(
                         (observable, deSelectedIfcLine, selectedIfcLine) ->
-                                stateService.getConvertState().setSelectedIfcLine(selectedIfcLine));
+                                stateService
+                                        .getConvertState()
+                                        .getInputFileState()
+                                        .setSelectedIfcLine(selectedIfcLine));
 
         filteredFileContentList
                 .getSelectionModel()
                 .selectedItemProperty()
                 .addListener(
                         (observable, deSelectedIfcLine, selectedIfcLine) ->
-                                stateService.getConvertState().setSelectedIfcLine(selectedIfcLine));
+                                stateService
+                                        .getConvertState()
+                                        .getInputFileState()
+                                        .setSelectedIfcLine(selectedIfcLine));
 
         filteredFileContentList2
                 .getSelectionModel()
                 .selectedItemProperty()
                 .addListener(
                         (observable, deSelectedIfcLine, selectedIfcLine) ->
-                                stateService.getConvertState().setSelectedIfcLine(selectedIfcLine));
+                                stateService
+                                        .getConvertState()
+                                        .getInputFileState()
+                                        .setSelectedIfcLine(selectedIfcLine));
 
         fileChooser = new FileChooser();
         fileChooser
@@ -202,20 +224,18 @@ public class ConvertController implements Initializable {
                     };
 
             task.setOnSucceeded(
-                    t -> {
-                        stateService.getConvertState().setFileStepResult(task);
-                    });
+                    t ->
+                            stateService
+                                    .getConvertState()
+                                    .getInputFileState()
+                                    .setFileStepResult(task));
 
             task.setOnFailed(
                     event -> {
                         // TODO: MAYBE SHOW DIALOG INSTEAD
-                        stateService.getConvertState().setFileStepResult(task);
-                        stateService
-                                .getConvertState()
-                                .stepFileStatusProperty()
-                                .setValue(ConvertState.STEP_FAILED);
+                        stateService.getConvertState().getInputFileState().setFileStepResult(task);
                     });
-            stateService.getConvertState().showLoadProgressView();
+            stateService.getConvertState().getInputFileState().showLoadProgressView();
             centerProgressProgressBar.progressProperty().bind(task.progressProperty());
             centerProgressProgressInfo.textProperty().bind(task.titleProperty());
 
@@ -225,22 +245,25 @@ public class ConvertController implements Initializable {
 
     @FXML
     public void handleResetFileAction(ActionEvent actionEvent) {
-        stateService.getConvertState().resetSelectedConvertFile();
+        stateService.getConvertState().getInputFileState().resetSelectedConvertFile();
     }
 
     public ObservableList<IfcLine> getFileContentList() {
-        return stateService.getConvertState().getInputFileContent();
+        return stateService.getConvertState().getInputFileState().getInputFileContent();
     }
 
     public ObservableList<FeatureLabel> getFileContentFeatures() {
-        return stateService.getConvertState().getInputFileExtractedFeatures();
+        return stateService.getConvertState().getInputFileState().getInputFileExtractedFeatures();
     }
 
     public ObservableList<IfcLineClassLabel> getFileContentBuiltElements() {
-        return stateService.getConvertState().getInputFileExtractedIfcLineClasses();
+        return stateService
+                .getConvertState()
+                .getInputFileState()
+                .getInputFileExtractedIfcLineClasses();
     }
 
     public ObservableList<IfcLine> getFileContentFiltered() {
-        return stateService.getConvertState().getFilteredInputFileContent();
+        return stateService.getConvertState().getInputFileState().getFilteredInputFileContent();
     }
 }

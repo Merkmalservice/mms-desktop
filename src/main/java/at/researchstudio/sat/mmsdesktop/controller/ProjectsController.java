@@ -1,7 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.controller;
 
+import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.mmsdesktop.model.task.DataResult;
-import at.researchstudio.sat.mmsdesktop.model.task.ProjectResult;
 import at.researchstudio.sat.mmsdesktop.service.DataService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import com.google.gson.Gson;
@@ -28,7 +28,7 @@ public class ProjectsController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ReactiveStateService stateService;
-    private final ObservableList<ProjectResult> loadedProjects;
+    private final ObservableList<Project> loadedProjects;
     // BorderPane Elements
     @FXML private BorderPane parentPane;
 
@@ -48,7 +48,7 @@ public class ProjectsController implements Initializable {
             String queryString = Resources.toString(josnUrl, Charsets.UTF_8);
             String result = DataService.callGraphQlEndpoint(queryString, idTokenString);
             Gson gson = new Gson();
-            List<ProjectResult> projects =
+            List<Project> projects =
                     gson.fromJson(result, DataResult.class).getData().getProjects();
             loadedProjects.setAll(projects);
         } catch (Exception e) {
@@ -56,7 +56,7 @@ public class ProjectsController implements Initializable {
         }
     }
 
-    public ObservableList<ProjectResult> getLoadedProjects() {
+    public ObservableList<Project> getLoadedProjects() {
         return loadedProjects;
     }
 }
