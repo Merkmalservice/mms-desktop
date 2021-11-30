@@ -247,31 +247,37 @@ public class SelectTargetStandardController implements Initializable {
     @FXML
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
         String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
-        dataService.getProjectsWithFeatureSets(
-                idTokenString, result -> Platform.runLater(() -> this.projects.setAll(result)));
+        Platform.runLater(
+                () -> {
+                    this.projects.setAll(dataService.getProjectsWithFeatureSets(idTokenString));
+                });
     }
 
     @FXML
     public void handleLoadMappingsAction(ActionEvent actionEvent) {
         String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
-        if (!(this.selectedProject.isNotNull().and(this.selectedStandard.isNotNull())).get()) {
-            return;
-        }
-        String projectId = selectedProject.get().getId();
-        String standardId = selectedStandard.get().getId();
-        List<String> mappingIds =
-                selectedProject.get().getMappings().stream()
-                        .filter(
-                                m ->
-                                        m.getFeatureSets().stream()
-                                                .anyMatch(s -> standardId.equals(s.getId())))
-                        .map(Mapping::getId)
-                        .collect(Collectors.toList());
-        this.mappings.clear();
-        dataService.getMappings(
-                mappingIds,
-                idTokenString,
-                result -> Platform.runLater(() -> this.mappings.addAll(result)));
+        Platform.runLater(
+                () -> {
+                    if (!(this.selectedProject.isNotNull().and(this.selectedStandard.isNotNull()))
+                            .get()) {
+                        return;
+                    }
+                    String standardId = selectedStandard.get().getId();
+                    List<String> mappingIds =
+                            selectedProject.get().getMappings().stream()
+                                    .filter(
+                                            m ->
+                                                    m.getFeatureSets().stream()
+                                                            .anyMatch(
+                                                                    s ->
+                                                                            standardId.equals(
+                                                                                    s.getId())))
+                                    .map(Mapping::getId)
+                                    .collect(Collectors.toList());
+                    List<Mapping> loadedMappings =
+                            dataService.getMappings(mappingIds, idTokenString);
+                    this.mappings.setAll(loadedMappings);
+                });
     }
 
     public ObservableList<Project> getProjects() {

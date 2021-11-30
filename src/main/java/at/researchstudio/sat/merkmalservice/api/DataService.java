@@ -4,6 +4,7 @@ import at.researchstudio.sat.merkmalservice.api.support.exception.MMSGraphQLClie
 import at.researchstudio.sat.merkmalservice.api.support.model.GraphqlResult;
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
+import com.netflix.graphql.dgs.client.GraphQLResponse;
 import com.netflix.graphql.dgs.client.MonoGraphQLClient;
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
@@ -115,37 +116,32 @@ public class DataService {
         }
     }
 
-    public void getProjectsWithFeatureSets(
-            String idTokenString, Consumer<List<Project>> resultHandler) {
+    public List<Project> getProjectsWithFeatureSets(String idTokenString) {
         String queryString = getGraphQlQuery("classpath:graphql/query-projects.gql");
-        getGraphQLClient(idTokenString)
+        return getGraphQLClient(idTokenString)
                 .reactiveExecuteQuery(queryString)
-                .subscribe(
-                        result ->
-                                resultHandler.accept(
-                                        result.dataAsObject(GraphqlResult.class).getProjects()));
+                .block()
+                .dataAsObject(GraphqlResult.class)
+                .getProjects();
     }
 
-    public void getMappings(
-            List<String> mappingIds, String idTokenString, Consumer<List<Mapping>> resultHandler) {
+    public List<Mapping> getMappings(List<String> mappingIds, String idTokenString) {
         String queryString = getGraphQlQuery("classpath:graphql/query-mappings.gql");
-        mappingIds.stream()
-                .forEach(
-                        id ->
-                                getGraphQLClient(idTokenString)
-                                        .reactiveExecuteQuery(
-                                                queryString, Map.of("mappingId", id), "mapping")
-                                        .doOnError(
-                                                t -> t.printStackTrace(new PrintWriter(System.err)))
-                                        .subscribe(
-                                                result -> {
-                                                    System.out.println(result.getJson());
-                                                    resultHandler.accept(
-                                                            List.of(
-                                                                    result.dataAsObject(
-                                                                                    GraphqlResult
-                                                                                            .class)
-                                                                            .getMapping()));
-                                                }));
+        return mappingIds.stream()
+                .map(
+                        id -> {
+                            GraphQLResponse response =
+                                    getGraphQLClient(idTokenString)
+                                            .reactiveExecuteQuery(
+                                                    queryString, Map.of("mappingId", id), "mapping")
+                                            .doOnError(
+                                                    t ->
+                                                            t.printStackTrace(
+                                                                    new PrintWriter(System.err)))
+                                            .block();
+                            System.out.println(response.getJson());
+                            return response.dataAsObject(GraphqlResult.class).getMapping();
+                        })
+                .collect(Collectors.toList());
     }
 }

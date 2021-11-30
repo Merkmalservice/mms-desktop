@@ -97,7 +97,6 @@ public class PerformConversionController implements Initializable {
                                         public void notifyFailed(String s) {}
                                     };
                             // TODO: ERROR HANDLING FOR BETTER USABILITY
-                            processState.set(STEP_PROCESSING);
                             Collection<ConversionRule> rules =
                                     new MappingConversionRuleFactory(
                                                     stateService
@@ -120,6 +119,7 @@ public class PerformConversionController implements Initializable {
             stateService.getConvertState().getInputFileState().showLoadProgressView();
             pcCenterProgressProgressBar.progressProperty().bind(task.progressProperty());
             pcCenterProgressProgressInfo.textProperty().bind(task.messageProperty());
+            processState.set(STEP_PROCESSING);
             new Thread(task).start();
         }
     }
