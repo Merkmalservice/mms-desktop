@@ -1,6 +1,10 @@
 package at.researchstudio.sat.mmsdesktop.service;
 
-import at.researchstudio.sat.mmsdesktop.state.*;
+import at.researchstudio.sat.mmsdesktop.gui.ViewState;
+import at.researchstudio.sat.mmsdesktop.gui.component.featuretable.SelectedFeatureState;
+import at.researchstudio.sat.mmsdesktop.gui.convert.ConvertState;
+import at.researchstudio.sat.mmsdesktop.gui.extract.ExtractState;
+import at.researchstudio.sat.mmsdesktop.gui.login.LoginState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -43,6 +43,20 @@
         </repository>
     </repositories>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.netflix.graphql.dgs</groupId>
+                <artifactId>graphql-dgs-platform-dependencies</artifactId>
+                <!-- The DGS BOM/platform dependency. This is the only place you set version of DGS -->
+                <version>4.9.7</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -93,33 +107,6 @@
             <version>2.7</version>
         </dependency>
         <dependency>
-            <groupId>com.github.pipauwel</groupId>
-            <artifactId>ifctordf</artifactId>
-            <version>0.5-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-base</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-arq</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-iri</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.jena</groupId>
-                    <artifactId>jena-shaded-guava</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-installed-adapter</artifactId>
             <version>11.0.2</version>
@@ -127,7 +114,7 @@
         <dependency>
             <groupId>at.researchstudio.sat</groupId>
             <artifactId>merkmalservice-utils</artifactId>
-            <version>0.4.9</version>
+            <version>0.4.10</version>
         </dependency>
         <dependency>
             <groupId>com.sandec</groupId>
@@ -135,15 +122,21 @@
             <version>0.2.3</version>
         </dependency>
         <dependency>
-            <groupId>org.rdfhdt</groupId>
-            <artifactId>hdt-jena</artifactId>
-            <version>2.1.2</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>com.netflix.graphql.dgs</groupId>
+            <artifactId>graphql-dgs-spring-boot-starter</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.rdfhdt</groupId>
-            <artifactId>hdt-java-core</artifactId>
-            <version>2.1.2</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
+
     </dependencies>
 
     <build>

@@ -1,7 +1,7 @@
 package at.researchstudio.sat.mmsdesktop;
 
 import at.researchstudio.sat.mmsdesktop.UIApplication.StageReadyEvent;
-import at.researchstudio.sat.mmsdesktop.controller.MainController;
+import at.researchstudio.sat.mmsdesktop.gui.main.MainController;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.scene.Parent;
