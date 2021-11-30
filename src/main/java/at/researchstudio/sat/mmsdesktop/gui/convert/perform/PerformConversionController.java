@@ -18,11 +18,13 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
@@ -41,6 +43,7 @@ public class PerformConversionController implements Initializable {
     @FXML private JFXProgressBar pcCenterProgressProgressBar;
     @FXML private BorderPane pcCenterProgress;
     @FXML private Label pcCenterProgressProgressInfo;
+    private final ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
 
     @Autowired
     public PerformConversionController(ReactiveStateService stateService) {
@@ -111,12 +114,22 @@ public class PerformConversionController implements Initializable {
                                             taskProgressListener);
                             // TODO: Cancel op
                             IfcFileWriter.write(convertedIfcFile, file);
+                            final Runnable showDialog =
+                                    () -> {
+                                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                        alert.setContentText(
+                                                String.format(
+                                                        resourceBundle.getString(
+                                                                "label.convert.perform.success"),
+                                                        file.getAbsolutePath()));
+                                        alert.showAndWait();
+                                    };
+                            Platform.runLater(showDialog);
                             return new IfcFileVO(convertedIfcFile);
                         }
                     };
             task.setOnSucceeded(e -> processState.set(STEP_COMPLETE));
             task.setOnFailed(e -> processState.set(STEP_FAILED));
-            stateService.getConvertState().getInputFileState().showLoadProgressView();
             pcCenterProgressProgressBar.progressProperty().bind(task.progressProperty());
             pcCenterProgressProgressInfo.textProperty().bind(task.messageProperty());
             processState.set(STEP_PROCESSING);

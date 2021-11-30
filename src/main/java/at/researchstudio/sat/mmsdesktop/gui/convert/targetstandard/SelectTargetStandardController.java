@@ -31,6 +31,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import net.rgielen.fxweaver.core.FxmlView;
@@ -89,9 +90,15 @@ public class SelectTargetStandardController implements Initializable {
                 .addListener(
                         (observable, deSelected, selected) -> {
                             if (selected != null) {
-                                standardList.getItems().clear();
-                                standardList.getItems().addAll(selected.getStandards());
-                                selectedProject.set(selected);
+                                if (selectedProject.get() == null
+                                        || !selectedProject.get().equals(selected)) {
+                                    selectedProject.set(selected);
+                                    selectedStandard.set(null);
+                                    standardList.getSelectionModel().clearSelection();
+                                }
+                                if (!standards.equals(selected.getStandards())) {
+                                    standards.setAll(selected.getStandards());
+                                }
                                 stateService
                                         .getConvertState()
                                         .getTargetStandardState()
@@ -107,7 +114,10 @@ public class SelectTargetStandardController implements Initializable {
                                 super.updateItem(item, empty);
                                 if (empty || item == null) {
                                     setText(null);
-                                    setGraphic(null);
+                                    setGraphic(
+                                            new Label(
+                                                    resourceBundle.getString(
+                                                            "label.projectpicker.chooseProject")));
                                     return;
                                 }
                                 setGraphic(new Label(item.getName()));
@@ -119,7 +129,7 @@ public class SelectTargetStandardController implements Initializable {
                     @Override
                     public String toString(Project project) {
                         if (project == null) {
-                            return null;
+                            return resourceBundle.getString("label.projectpicker.chooseProject");
                         }
                         return project.getName();
                     }
@@ -139,7 +149,10 @@ public class SelectTargetStandardController implements Initializable {
                             protected void updateItem(Standard item, boolean empty) {
                                 super.updateItem(item, empty);
                                 if (empty || item == null) {
-                                    setGraphic(null);
+                                    setGraphic(
+                                            new Label(
+                                                    resourceBundle.getString(
+                                                            "label.projectpicker.chooseFeatureSet")));
                                     setText(null);
                                     return;
                                 }
@@ -158,11 +171,11 @@ public class SelectTargetStandardController implements Initializable {
                     @Override
                     public String toString(Standard standard) {
                         if (standard == null) {
-                            return null;
+                            return resourceBundle.getString("label.projectpicker.chooseFeatureSet");
                         }
                         return Optional.ofNullable(standard.getOrganization())
                                 .map(Organization::getName)
-                                .orElse("PROJEKTSTANDARD (TODO I18N)");
+                                .orElse(resourceBundle.getString("label.projects.projectStandard"));
                     }
 
                     @Override
@@ -178,7 +191,10 @@ public class SelectTargetStandardController implements Initializable {
                 .selectedItemProperty()
                 .addListener(
                         (observable, deSelected, selected) -> {
-                            selectedStandard.set(selected);
+                            if (selectedStandard.get() == null
+                                    || selectedStandard.get() != selected) {
+                                selectedStandard.set(selected);
+                            }
                             handleLoadMappingsAction(null);
                             stateService
                                     .getConvertState()
@@ -219,6 +235,7 @@ public class SelectTargetStandardController implements Initializable {
         if (stateService.getLoginState().isLoggedIn() && selectedStandard.isNull().get()) {
             handleLoadProjectsAction(null);
         }
+        restoreProjectStandardSelection();
     }
 
     private String makeMappingLabelText(Mapping mapping) {
@@ -250,7 +267,36 @@ public class SelectTargetStandardController implements Initializable {
         Platform.runLater(
                 () -> {
                     this.projects.setAll(dataService.getProjectsWithFeatureSets(idTokenString));
+                    restoreProjectStandardSelection();
                 });
+    }
+
+    public void restoreProjectStandardSelection() {
+        Platform.runLater(
+                () -> {
+                    selectPreviouslySelected(
+                            this.selectedProject,
+                            this.projects,
+                            this.projectList.getSelectionModel());
+                    selectPreviouslySelected(
+                            this.selectedStandard,
+                            this.standards,
+                            this.standardList.getSelectionModel());
+                });
+    }
+
+    private <T> void selectPreviouslySelected(
+            SimpleObjectProperty<T> selected,
+            ObservableList<T> items,
+            SingleSelectionModel<T> selectionModel) {
+        if (selected.isNotNull().get()) {
+            if (selectionModel.isEmpty()) {
+                int idx = items.indexOf(selected.get());
+                if (idx != -1) {
+                    selectionModel.select(idx);
+                }
+            }
+        }
     }
 
     @FXML

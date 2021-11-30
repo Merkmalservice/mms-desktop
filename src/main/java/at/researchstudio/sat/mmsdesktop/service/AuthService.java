@@ -64,7 +64,7 @@ public class AuthService {
     }
 
     public Task<UserSession> getLoginTask() {
-        return loginTask;
+        return generateLoginTask();
     }
 
     public Task<LogoutResult> getLogoutTask() {

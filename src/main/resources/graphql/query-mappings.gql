@@ -11,6 +11,7 @@ query mapping($mappingId :ID!) {
                 actions {
                     ... on DeleteAction {
                         __typename
+                        id
                         feature {
                             id
                             name
@@ -18,33 +19,16 @@ query mapping($mappingId :ID!) {
                                 __typename
                             }
                         }
-                        id
                     }
                 }
             }
             ... on AddActionGroup {
                 __typename
                 id
-                value {
-                    ... on MEBooleanValue {
-                        booleanValue
-                    }
-                    ... on MEFloatValue {
-                        floatValue
-                    }
-                    ... on MEIDValue {
-                        idValue
-                    }
-                    ... on MEIntegerValue {
-                        integerValue
-                    }
-                    ... on MEStringValue {
-                        stringValue
-                    }
-                }
                 actions {
                     ... on AddAction {
                         __typename
+                        id
                         feature {
                             id
                             name
@@ -52,7 +36,23 @@ query mapping($mappingId :ID!) {
                                 __typename
                             }
                         }
-                        id
+                        value {
+                            ... on MEBooleanValue {
+                                booleanValue
+                            }
+                            ... on MEFloatValue {
+                                floatValue
+                            }
+                            ... on MEIDValue {
+                                idValue
+                            }
+                            ... on MEIntegerValue {
+                                integerValue
+                            }
+                            ... on MEStringValue {
+                                stringValue
+                            }
+                        }
                     }
                 }
             }
@@ -71,6 +71,7 @@ query mapping($mappingId :ID!) {
                         conditions {
                             ... on SingleCondition {
                                 __typename
+                                id
                                 feature {
                                     id
                                     name
@@ -101,6 +102,7 @@ query mapping($mappingId :ID!) {
                     }
                     ... on SingleCondition {
                         __typename
+                        id
                         feature {
                             id
                             name
@@ -131,6 +133,7 @@ query mapping($mappingId :ID!) {
             }
             ... on SingleCondition {
                 __typename
+                id
                 feature {
                     id
                     name
