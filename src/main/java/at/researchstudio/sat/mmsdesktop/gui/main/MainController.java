@@ -171,15 +171,15 @@ public class MainController implements Initializable {
                 .getConvertState()
                 .getInputFileState()
                 .stepFileStatusProperty()
-                .addListener(this::onRequiredSelectionStateChange);
+                .addListener(this::enablePerformConversionIfPossible);
         stateService
                 .getConvertState()
                 .getTargetStandardState()
                 .stepTargetStandardStatusProperty()
-                .addListener(this::onRequiredSelectionStateChange);
+                .addListener(this::enablePerformConversionIfPossible);
     }
 
-    private void onRequiredSelectionStateChange(
+    private void enablePerformConversionIfPossible(
             ObservableValue<? extends ProcessState> observable,
             ProcessState oldState,
             ProcessState newState) {
@@ -315,7 +315,7 @@ public class MainController implements Initializable {
      * @param event Event on "Settings" menu item.
      */
     @FXML
-    private void handleConvertSelectInputFileAction(final ActionEvent event) {
+    private void handleSelectInputFileAction(final ActionEvent event) {
         stateService.getViewState().switchCenterPane(SelectInputFileController.class);
         if (stateService
                 .getConvertState()
@@ -344,7 +344,7 @@ public class MainController implements Initializable {
     }
 
     @FXML
-    private void handleConvertSelectTargetStandardAction(final ActionEvent event) {
+    private void handleSelectTargetStandardAction(final ActionEvent event) {
         stateService.getViewState().switchCenterPane(SelectTargetStandardController.class);
         if (stateService
                 .getConvertState()
@@ -375,6 +375,30 @@ public class MainController implements Initializable {
     @FXML
     private void handleConvertPerformConversionAction(final ActionEvent event) {
         stateService.getViewState().switchCenterPane(PerformConversionController.class);
+        if (stateService
+                .getConvertState()
+                .getPerformConversionState()
+                .stepPerformConversionStatusProperty()
+                .get()
+                .isActive()) {
+            stateService
+                    .getConvertState()
+                    .getPerformConversionState()
+                    .stepPerformConversionStatusProperty()
+                    .set(ProcessState.STEP_OPEN);
+        }
+        if (stateService
+                .getConvertState()
+                .getPerformConversionState()
+                .stepPerformConversionStatusProperty()
+                .get()
+                .isOpen()) {
+            stateService
+                    .getConvertState()
+                    .getPerformConversionState()
+                    .stepPerformConversionStatusProperty()
+                    .set(ProcessState.STEP_ACTIVE);
+        }
     }
 
     @FXML

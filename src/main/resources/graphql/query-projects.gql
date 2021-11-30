@@ -1,0 +1,17 @@
+query PROJECTS_WITH_STANDARDS {
+    projects {
+        id
+        name
+        standards {
+            id
+            organization {
+                id
+                name
+            }
+        }
+        mappings {
+          id
+          featureSets { id }
+        }
+    }
+}

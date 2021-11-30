@@ -1,4 +1,4 @@
-package at.researchstudio.sat.merkmalservice.client.support.exception;
+package at.researchstudio.sat.merkmalservice.api.support.exception;
 
 import at.researchstudio.sat.merkmalservice.support.exception.MMSException;
 

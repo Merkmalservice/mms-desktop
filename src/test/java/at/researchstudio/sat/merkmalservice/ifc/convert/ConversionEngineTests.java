@@ -7,7 +7,6 @@ import at.researchstudio.sat.merkmalservice.ifc.IfcFileReader;
 import at.researchstudio.sat.merkmalservice.ifc.IfcFileWrapper;
 import at.researchstudio.sat.merkmalservice.ifc.IfcFileWriter;
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
-import at.researchstudio.sat.merkmalservice.ifc.convert.support.DefaultIfcFileConversionConfig;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import java.io.File;
 import java.io.IOException;
@@ -66,8 +65,8 @@ public class ConversionEngineTests {
     @Test
     public void testDeleteOneProperty1() throws IOException {
         ParsedIfcFile parsedIfcFile = loadTestFile1();
-        IfcFileConversionConfig config =
-                new DefaultIfcFileConversionConfig(
+        ConversionRuleFactory factory =
+                () ->
                         Set.of(
                                 new ConversionRule() {
                                     @Override
@@ -85,16 +84,16 @@ public class ConversionEngineTests {
                                             IfcLine line, ParsedIfcFile ifcModel) {
                                         return removePropertyWithName("Versatz unten", line);
                                     }
-                                }));
-        ConversionEngine engine = new ConversionEngine(config.getConversionRules());
+                                });
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_single_value_versatz_unten", engine);
     }
 
     @Test
     public void testDeleteAllProperties() throws IOException {
         ParsedIfcFile parsedIfcFile = loadTestFile1();
-        IfcFileConversionConfig config =
-                new DefaultIfcFileConversionConfig(
+        ConversionRuleFactory factory =
+                () ->
                         Set.of(
                                 new ConversionRule() {
                                     @Override
@@ -114,9 +113,38 @@ public class ConversionEngineTests {
                                                 removePropertyWithMatchingName(".*", line),
                                                 removeQuantityWithMatchingName(".*", line));
                                     }
-                                }));
-        ConversionEngine engine = new ConversionEngine(config.getConversionRules());
+                                });
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_all_properties_and_quantities", engine);
+    }
+
+    @Test
+    public void testDeleteAllPropertiesOfOneWall() throws IOException {
+        ParsedIfcFile parsedIfcFile = loadTestFile1();
+        ConversionRuleFactory factory =
+                () ->
+                        Set.of(
+                                new ConversionRule() {
+                                    @Override
+                                    public int getOrder() {
+                                        return 0;
+                                    }
+
+                                    @Override
+                                    public boolean appliesTo(IfcLine line, ParsedIfcFile ifcModel) {
+                                        return "IFCWALLSTANDARDCASE".equals(line.getType());
+                                    }
+
+                                    @Override
+                                    public ParsedIfcFileModification applyTo(
+                                            IfcLine line, ParsedIfcFile ifcModel) {
+                                        return multiple(
+                                                removePropertyWithMatchingName(".*", line),
+                                                removeQuantityWithMatchingName(".*", line));
+                                    }
+                                });
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_all_properties_of_one_wall", engine);
     }
 
     @NotNull

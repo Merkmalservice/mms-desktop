@@ -7,7 +7,7 @@ import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.mmsdesktop.gui.component.feature.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.gui.component.ifc.IfcLineClassLabel;
-import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
+import at.researchstudio.sat.mmsdesktop.model.task.IfcFileVO;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import java.util.Collections;
 import java.util.Comparator;
@@ -67,7 +67,7 @@ public class InputFileState {
         return inputFileContent;
     }
 
-    public void setFileStepResult(Task<LoadResult> task) {
+    public void setFileStepResult(Task<IfcFileVO> task) {
         this.inputFileContent.clear();
         this.extractedFeatures.clear();
         this.extractedIfcLineClasses.clear();

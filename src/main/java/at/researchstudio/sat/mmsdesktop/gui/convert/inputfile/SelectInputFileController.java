@@ -10,7 +10,7 @@ import at.researchstudio.sat.merkmalservice.ifc.support.FeatureUtils;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import at.researchstudio.sat.mmsdesktop.gui.component.feature.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.gui.component.ifc.IfcLineClassLabel;
-import at.researchstudio.sat.mmsdesktop.model.task.LoadResult;
+import at.researchstudio.sat.mmsdesktop.model.task.IfcFileVO;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
@@ -211,10 +211,10 @@ public class SelectInputFileController implements Initializable {
 
         if (Objects.nonNull(file) && file.exists()) {
             // TODO: Maybe handle if/else within task, but probably not
-            Task<LoadResult> task =
+            Task<IfcFileVO> task =
                     new Task<>() {
                         @Override
-                        protected LoadResult call() throws Exception {
+                        protected IfcFileVO call() throws Exception {
                             TaskProgressListener taskProgressListener =
                                     new TaskProgressListener() {
                                         @Override
@@ -237,7 +237,7 @@ public class SelectInputFileController implements Initializable {
                                             new IfcFileWrapper(file), taskProgressListener);
 
                             // TODO: Cancel op
-                            return new LoadResult(parsedIfcFile);
+                            return new IfcFileVO(parsedIfcFile);
                         }
                     };
 

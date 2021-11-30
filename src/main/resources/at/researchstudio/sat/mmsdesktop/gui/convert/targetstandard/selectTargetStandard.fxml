@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import com.jfoenix.controls.JFXComboBox?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
+<?import com.jfoenix.controls.JFXListView?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.*?>
 <BorderPane prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -43,34 +42,53 @@
                 </VBox>
             </top>
             <center>
-                <HBox>
-                    <VBox>
-                        <Label text="%label.projectpicker.project">
+                <VBox>
+
+                    <HBox>
+                        <VBox>
+                            <Label text="%label.projectpicker.project">
+                                <font>
+                                    <Font size="16.0"/>
+                                </font>
+                                <padding>
+                                    <Insets bottom="10.0"/>
+                                </padding>
+                            </Label>
+                            <JFXComboBox prefWidth="250" items="${controller.projects}" fx:id="projectList"/>
+                        </VBox>
+                        <HBox prefWidth="50"/>
+                        <VBox>
+                            <Label text="%label.projectpicker.featureset">
+                                <font>
+                                    <Font size="16.0"/>
+                                </font>
+                                <padding>
+                                    <Insets bottom="10.0"/>
+                                </padding>
+                            </Label>
+                            <JFXComboBox prefWidth="250" items="${controller.standards}" fx:id="standardList"/>
+                        </VBox>
+                    </HBox>
+                    <VBox fx:id="mappingsView" visible="false" managed="false">
+                        <Label text="%label.projectpicker.mappings">
                             <font>
-                                <Font size="12.0"/>
+                                <Font size="16.0"/>
                             </font>
                             <padding>
-                                <Insets bottom="10.0"/>
+                                <Insets top="10" bottom="10.0"/>
                             </padding>
                         </Label>
-                        <JFXComboBox prefWidth="300" items="${controller.projects}" fx:id="projectList"/>
+                        <JFXListView items="${controller.mappings}" fx:id="mappingsList">
+                        </JFXListView>
                     </VBox>
-                    <HBox prefWidth="50" />
-                    <VBox>
-                        <Label text="%label.projectpicker.featureset">
-                            <font>
-                                <Font size="12.0"/>
-                            </font>
-                            <padding>
-                                <Insets bottom="10.0"/>
-                            </padding>
-                        </Label>
-                        <JFXComboBox prefWidth="300" items="${controller.standards}" fx:id="standardList"/>
-                    </VBox>
-                </HBox>
+                </VBox>
             </center>
             <bottom>
+
                 <HBox>
+                    <padding>
+                        <Insets top="10" bottom="10.0"/>
+                    </padding>
                     <Button text="%label.projectpicker.reload" fx:id="reloadButton"
                             onAction="#handleLoadProjectsAction"/>
                 </HBox>

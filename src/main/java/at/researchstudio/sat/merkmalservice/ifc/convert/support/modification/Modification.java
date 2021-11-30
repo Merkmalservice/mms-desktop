@@ -3,6 +3,8 @@ package at.researchstudio.sat.merkmalservice.ifc.convert.support.modification;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ParsedIfcFileModification;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
+import java.util.List;
+import java.util.stream.Stream;
 
 public abstract class Modification {
     private static final ParsedIfcFileModification NOP = new NoModification();
@@ -12,6 +14,16 @@ public abstract class Modification {
     }
 
     public static ParsedIfcFileModification multiple(ParsedIfcFileModification... modifications) {
+        return new ParsedIfcFileModificationGroup(modifications);
+    }
+
+    public static ParsedIfcFileModification multiple(
+            List<ParsedIfcFileModification> modifications) {
+        return new ParsedIfcFileModificationGroup(modifications);
+    }
+
+    public static ParsedIfcFileModification multiple(
+            Stream<ParsedIfcFileModification> modifications) {
         return new ParsedIfcFileModificationGroup(modifications);
     }
 

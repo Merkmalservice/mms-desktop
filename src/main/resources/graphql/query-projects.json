@@ -1,6 +1,0 @@
-{
-  "query": "query PROJECTS {projects { id name standards { id organization { id name } } } }",
-  "operationName": "PROJECTS",
-  "variables:": {
-  }
-}

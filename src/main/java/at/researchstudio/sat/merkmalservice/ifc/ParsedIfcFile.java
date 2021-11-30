@@ -1,5 +1,6 @@
 package at.researchstudio.sat.merkmalservice.ifc;
 
+import static at.researchstudio.sat.merkmalservice.ifc.model.IfcTypeConverter.castIfPossible;
 import static java.util.stream.Collectors.*;
 
 import at.researchstudio.sat.merkmalservice.ifc.model.*;
@@ -10,14 +11,19 @@ import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
+import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 
 public class ParsedIfcFile {
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final List<IfcLine> lines;
     private final Map<Integer, IfcLine> dataLines;
     private final Map<Class<? extends IfcLine>, List<IfcLine>> dataLinesByClass;
@@ -31,7 +37,8 @@ public class ParsedIfcFile {
         toDelete.addAll(
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
                         .map(this::getPropertySet)
-                        .flatMap(ps -> getPropertySetChildLines(ps).stream())
+                        .filter(Optional::isPresent)
+                        .flatMap(ps -> getPropertySetChildLines(ps.get()).stream())
                         .filter(predicate)
                         .collect(toList()));
         toDelete.addAll(
@@ -69,16 +76,29 @@ public class ParsedIfcFile {
         cascadingDeletes.forEach(this::removeLine);
     }
 
-    public IfcPropertySetLine getPropertySet(IfcRelDefinesByPropertiesLine propertySetRel) {
+    public Optional<IfcPropertySetLine> getPropertySet(
+            IfcRelDefinesByPropertiesLine propertySetRel) {
         IfcLine related = getDataLines().get(propertySetRel.getRelatingPropertySetId());
-        return (IfcPropertySetLine) related;
+        return castIfPossible(
+                related, IfcPropertySetLine.class, "find reference to a property set");
     }
 
     public List<IfcPropertySetLine> getPropertySets(IfcRelDefinesByTypeLine propertySetRel) {
-        IfcTypeObjectLine related =
-                (IfcTypeObjectLine) getDataLines().get(propertySetRel.getRelatingTypeId());
-        return related.getPropertySetIds().stream()
-                .map(id -> (IfcPropertySetLine) dataLines.get(id))
+        Optional<IfcTypeObjectLine> related =
+                castIfPossible(
+                        getDataLines().get(propertySetRel.getRelatingTypeId()),
+                        IfcTypeObjectLine.class,
+                        "find references to property sets");
+        return related.stream()
+                .flatMap(r -> r.getPropertySetIds().stream())
+                .map(
+                        id ->
+                                castIfPossible(
+                                        dataLines.get(id),
+                                        IfcPropertySetLine.class,
+                                        "get a referenced property set"))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(toList());
     }
 

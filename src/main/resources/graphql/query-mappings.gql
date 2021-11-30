@@ -1,0 +1,162 @@
+query mapping($mappingId :ID!) {
+    mapping (id : $mappingId) {
+        id
+        name
+        featureSets {
+            id
+        }
+        actionGroups {
+            ... on DeleteActionGroup {
+                __typename
+                actions {
+                    ... on DeleteAction {
+                        __typename
+                        feature {
+                            id
+                            name
+                            type {
+                                __typename
+                            }
+                        }
+                        id
+                    }
+                }
+            }
+            ... on AddActionGroup {
+                __typename
+                id
+                value {
+                    ... on MEBooleanValue {
+                        booleanValue
+                    }
+                    ... on MEFloatValue {
+                        floatValue
+                    }
+                    ... on MEIDValue {
+                        idValue
+                    }
+                    ... on MEIntegerValue {
+                        integerValue
+                    }
+                    ... on MEStringValue {
+                        stringValue
+                    }
+                }
+                actions {
+                    ... on AddAction {
+                        __typename
+                        feature {
+                            id
+                            name
+                            type {
+                                __typename
+                            }
+                        }
+                        id
+                    }
+                }
+            }
+        }
+        condition {
+            __typename
+            ... on ConditionGroup {
+                __typename
+                id
+                connective
+                conditions {
+                    ... on ConditionGroup {
+                        __typename
+                        id
+                        connective
+                        conditions {
+                            ... on SingleCondition {
+                                __typename
+                                feature {
+                                    id
+                                    name
+                                    type {
+                                        __typename
+                                    }
+                                }
+                                predicate
+                                value {
+                                    ... on MEBooleanValue {
+                                        booleanValue
+                                    }
+                                    ... on MEFloatValue {
+                                        floatValue
+                                    }
+                                    ... on MEIDValue {
+                                        idValue
+                                    }
+                                    ... on MEIntegerValue {
+                                        integerValue
+                                    }
+                                    ... on MEStringValue {
+                                        stringValue
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    ... on SingleCondition {
+                        __typename
+                        feature {
+                            id
+                            name
+                            type {
+                                __typename
+                            }
+                        }
+                        predicate
+                        value {
+                            ... on MEBooleanValue {
+                                booleanValue
+                            }
+                            ... on MEFloatValue {
+                                floatValue
+                            }
+                            ... on MEIDValue {
+                                idValue
+                            }
+                            ... on MEIntegerValue {
+                                integerValue
+                            }
+                            ... on MEStringValue {
+                                stringValue
+                            }
+                        }
+                    }
+                }
+            }
+            ... on SingleCondition {
+                __typename
+                feature {
+                    id
+                    name
+                    type {
+                        __typename
+                    }
+                }
+                predicate
+                value {
+                    ... on MEBooleanValue {
+                        booleanValue
+                    }
+                    ... on MEFloatValue {
+                        floatValue
+                    }
+                    ... on MEIDValue {
+                        idValue
+                    }
+                    ... on MEIntegerValue {
+                        integerValue
+                    }
+                    ... on MEStringValue {
+                        stringValue
+                    }
+                }
+            }
+        }
+    }
+}

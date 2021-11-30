@@ -7,10 +7,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-public class LoadResult implements Serializable {
+public class IfcFileVO implements Serializable {
     private final ParsedIfcFile parsedIfcFile;
 
-    public LoadResult(ParsedIfcFile parsedIfcFile) {
+    public IfcFileVO(ParsedIfcFile parsedIfcFile) {
         this.parsedIfcFile = parsedIfcFile;
     }
 

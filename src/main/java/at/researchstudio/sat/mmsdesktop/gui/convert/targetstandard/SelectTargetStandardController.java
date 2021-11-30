@@ -1,39 +1,43 @@
 package at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
 import static javafx.beans.binding.Bindings.not;
 
-import at.researchstudio.sat.merkmalservice.client.DataService;
+import at.researchstudio.sat.merkmalservice.api.DataService;
 import at.researchstudio.sat.merkmalservice.model.Organization;
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
-import at.researchstudio.sat.mmsdesktop.model.task.DataResult;
+import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
-import com.google.gson.Gson;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListCell;
+import com.jfoenix.controls.JFXListView;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
 import net.rgielen.fxweaver.core.FxmlView;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
@@ -45,19 +49,24 @@ public class SelectTargetStandardController implements Initializable {
     private final ReactiveStateService stateService;
     private final ObservableList<Project> projects;
     private final ObservableList<Standard> standards;
+    private final ObservableList<Mapping> mappings;
     private final SimpleObjectProperty<Project> selectedProject;
     private final SimpleObjectProperty<Standard> selectedStandard;
     @FXML private JFXComboBox<Project> projectList;
     @FXML private JFXComboBox<Standard> standardList;
     @FXML private Button reloadButton;
+    @FXML private VBox mappingsView;
+    @FXML private JFXListView<Mapping> mappingsList;
     @Autowired ResourceLoader resourceLoader;
     @Autowired DataService dataService;
+    private final ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
 
     @Autowired
     public SelectTargetStandardController(ReactiveStateService stateService) {
         this.stateService = stateService;
         this.projects = FXCollections.observableArrayList();
         this.standards = FXCollections.observableArrayList();
+        this.mappings = FXCollections.observableArrayList();
         this.selectedProject = new SimpleObjectProperty<>();
         this.selectedStandard = new SimpleObjectProperty<>();
         this.stateService
@@ -139,7 +148,9 @@ public class SelectTargetStandardController implements Initializable {
                                         new Label(
                                                 Optional.ofNullable(item.getOrganization())
                                                         .map(Organization::getName)
-                                                        .orElse("PROJEKTSTANDARD (TODO I18N)")));
+                                                        .orElse(
+                                                                resourceBundle.getString(
+                                                                        "label.projects.projectStandard"))));
                             }
                         });
         this.standardList.setConverter(
@@ -168,35 +179,99 @@ public class SelectTargetStandardController implements Initializable {
                 .addListener(
                         (observable, deSelected, selected) -> {
                             selectedStandard.set(selected);
+                            handleLoadMappingsAction(null);
                             stateService
                                     .getConvertState()
                                     .getTargetStandardState()
                                     .stepTargetStandardStatusProperty()
                                     .set(ProcessState.STEP_COMPLETE);
                         });
+        this.mappingsView.visibleProperty().bind(selectedStandard.isNotNull());
+        this.mappingsView.managedProperty().bind(selectedStandard.isNotNull());
+        this.mappingsList.setCellFactory(
+                param ->
+                        new JFXListCell<>() {
+                            @Override
+                            protected void updateItem(Mapping item, boolean empty) {
+                                super.updateItem(item, empty);
+                                if (empty || item == null) {
+                                    setText(null);
+                                    setGraphic(null);
+                                    return;
+                                }
+                                setGraphic(new Label(makeMappingLabelText(item)));
+                                setText(null);
+                            }
+                        });
+        this.mappings.addListener(
+                (ListChangeListener<Mapping>)
+                        c -> {
+                            while (c.next()) {}
+                            this.stateService
+                                    .getConvertState()
+                                    .getTargetStandardState()
+                                    .mappingsProperty()
+                                    .setAll(this.mappings);
+                        });
         this.reloadButton
                 .disableProperty()
                 .bind(not(stateService.getLoginState().loggedInProperty()));
-        if (stateService.getLoginState().isLoggedIn()) {
+        if (stateService.getLoginState().isLoggedIn() && selectedStandard.isNull().get()) {
             handleLoadProjectsAction(null);
         }
+    }
+
+    private String makeMappingLabelText(Mapping mapping) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(resourceBundle.getString("label.mapping.name"))
+                .append(": ")
+                .append(mapping.getName());
+        String actionGroupsString =
+                mapping.getActionGroups().stream()
+                        .collect(Collectors.groupingBy(g -> g.getClass(), toSet()))
+                        .entrySet()
+                        .stream()
+                        .map(e -> Map.entry(e.getKey(), e.getValue().size()))
+                        .map(e -> String.format("%d %s", e.getValue(), e.getKey().getSimpleName()))
+                        .collect(joining(", "));
+        if (StringUtils.isNotEmpty(actionGroupsString)) {
+            sb.append(", ")
+                    .append(resourceBundle.getString("label.mapping.actionGroups"))
+                    .append(": ")
+                    .append(actionGroupsString);
+        }
+        return sb.toString();
     }
 
     @FXML
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
         String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
-        Resource jsonFile = resourceLoader.getResource("graphql/query-projects.json");
-        try {
-            String queryString =
-                    Files.readString(Path.of(jsonFile.getURI()), StandardCharsets.UTF_8);
-            String result = dataService.callGraphQlEndpoint(queryString, idTokenString);
-            Gson gson = new Gson();
-            List<Project> projects =
-                    gson.fromJson(result, DataResult.class).getData().getProjects();
-            this.projects.setAll(projects);
-        } catch (Exception e) {
-            e.printStackTrace();
+        dataService.getProjectsWithFeatureSets(
+                idTokenString, result -> Platform.runLater(() -> this.projects.setAll(result)));
+    }
+
+    @FXML
+    public void handleLoadMappingsAction(ActionEvent actionEvent) {
+        String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
+        if (!(this.selectedProject.isNotNull().and(this.selectedStandard.isNotNull())).get()) {
+            return;
         }
+        String projectId = selectedProject.get().getId();
+        String standardId = selectedStandard.get().getId();
+        List<String> mappingIds =
+                selectedProject.get().getMappings().stream()
+                        .filter(
+                                m ->
+                                        m.getFeatureSets().stream()
+                                                .anyMatch(s -> standardId.equals(s.getId())))
+                        .map(Mapping::getId)
+                        .collect(Collectors.toList());
+        this.mappings.clear();
+        dataService.getMappings(
+                mappingIds,
+                idTokenString,
+                result -> Platform.runLater(() -> this.mappings.addAll(result)));
     }
 
     public ObservableList<Project> getProjects() {
@@ -205,5 +280,9 @@ public class SelectTargetStandardController implements Initializable {
 
     public ObservableList<Standard> getStandards() {
         return standards;
+    }
+
+    public ObservableList<Mapping> getMappings() {
+        return mappings;
     }
 }

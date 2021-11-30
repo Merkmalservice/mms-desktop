@@ -55,7 +55,7 @@
                 </JFXButton>
                 <JFXButton alignment="BASELINE_LEFT" focusTraversable="false"
                            fx:id="convertButton"
-                           onAction="#handleConvertSelectInputFileAction"
+                           onAction="#handleSelectInputFileAction"
                            graphicTextGap="15.0" prefHeight="32.0"
                            prefWidth="220.0" ripplerFill="WHITE" text="%label.sidebar.convertifc"
                            style="-fx-cursor: hand;"
@@ -69,7 +69,7 @@
                 </JFXButton>
                 <JFXStepButton alignment="BASELINE_LEFT" focusTraversable="false"
                                fx:id="convertButtonSelectInputFile"
-                               onAction="#handleConvertSelectInputFileAction"
+                               onAction="#handleSelectInputFileAction"
                                graphicTextGap="15.0" prefHeight="24.0"
                                prefWidth="220.0" ripplerFill="WHITE" text="%label.convert.chooseFile"
                                style="-fx-cursor: hand;">
@@ -82,7 +82,7 @@
                 </JFXStepButton>
                 <JFXStepButton alignment="BASELINE_LEFT" focusTraversable="false"
                                fx:id="convertButtonSelectTargetStandard"
-                               onAction="#handleConvertSelectTargetStandardAction"
+                               onAction="#handleSelectTargetStandardAction"
                                graphicTextGap="15.0" prefHeight="24.0"
                                prefWidth="220.0" ripplerFill="WHITE" text="%label.convert.chooseTarget"
                                style="-fx-cursor: hand;">
@@ -97,7 +97,7 @@
                                fx:id="convertButtonPerformConversion"
                                onAction="#handleConvertPerformConversionAction"
                                graphicTextGap="15.0" prefHeight="24.0"
-                               prefWidth="220.0" ripplerFill="WHITE" text="TODO: CONVERT"
+                               prefWidth="220.0" ripplerFill="WHITE" text="%label.convert.perform"
                                style="-fx-cursor: hand;">
                     <padding>
                         <Insets bottom="5.0" left="15.0" right="5.0"/>

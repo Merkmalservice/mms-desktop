@@ -2,6 +2,7 @@ package at.researchstudio.sat.mmsdesktop.gui;
 
 import at.researchstudio.sat.mmsdesktop.gui.component.about.AboutController;
 import at.researchstudio.sat.mmsdesktop.gui.convert.inputfile.SelectInputFileController;
+import at.researchstudio.sat.mmsdesktop.gui.convert.perform.PerformConversionController;
 import at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard.SelectTargetStandardController;
 import at.researchstudio.sat.mmsdesktop.gui.extract.ExtractController;
 import java.util.Locale;
@@ -44,6 +45,8 @@ public class ViewState {
         if (SelectInputFileController.class.isAssignableFrom(controllerClass)) {
             active.setValue(CONVERT);
         } else if (SelectTargetStandardController.class.isAssignableFrom(controllerClass)) {
+            active.setValue(CONVERT);
+        } else if (PerformConversionController.class.isAssignableFrom(controllerClass)) {
             active.setValue(CONVERT);
         } else if (ExtractController.class.isAssignableFrom(controllerClass)) {
             active.setValue(EXTRACT);

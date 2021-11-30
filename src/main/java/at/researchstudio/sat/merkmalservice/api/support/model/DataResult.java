@@ -1,7 +1,9 @@
-package at.researchstudio.sat.mmsdesktop.model.task;
+package at.researchstudio.sat.merkmalservice.api.support.model;
 
 public class DataResult {
     private GraphqlResult data;
+
+    public DataResult() {}
 
     public DataResult(GraphqlResult data) {
         this.data = data;

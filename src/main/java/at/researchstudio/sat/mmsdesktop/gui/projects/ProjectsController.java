@@ -1,8 +1,8 @@
 package at.researchstudio.sat.mmsdesktop.gui.projects;
 
-import at.researchstudio.sat.merkmalservice.client.DataService;
+import at.researchstudio.sat.merkmalservice.api.DataService;
+import at.researchstudio.sat.merkmalservice.api.support.model.DataResult;
 import at.researchstudio.sat.merkmalservice.model.Project;
-import at.researchstudio.sat.mmsdesktop.model.task.DataResult;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import com.google.gson.Gson;
 import java.lang.invoke.MethodHandles;
@@ -50,7 +50,7 @@ public class ProjectsController implements Initializable {
     @FXML
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
         String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
-        Resource jsonFile = resourceLoader.getResource("graphql/query-projects.json");
+        Resource jsonFile = resourceLoader.getResource("graphql/query-projects.gql");
         try {
             String queryString =
                     Files.readString(Path.of(jsonFile.getURI()), StandardCharsets.UTF_8);
