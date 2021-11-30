@@ -13,6 +13,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -118,11 +119,12 @@ public class DataService {
 
     public List<Project> getProjectsWithFeatureSets(String idTokenString) {
         String queryString = getGraphQlQuery("classpath:graphql/query-projects.gql");
-        return getGraphQLClient(idTokenString)
-                .reactiveExecuteQuery(queryString)
-                .block()
-                .dataAsObject(GraphqlResult.class)
-                .getProjects();
+        GraphQLResponse response =
+                getGraphQLClient(idTokenString).reactiveExecuteQuery(queryString).block();
+        if (response == null) {
+            return Collections.emptyList();
+        }
+        return response.dataAsObject(GraphqlResult.class).getProjects();
     }
 
     public List<Mapping> getMappings(List<String> mappingIds, String idTokenString) {
@@ -139,9 +141,12 @@ public class DataService {
                                                             t.printStackTrace(
                                                                     new PrintWriter(System.err)))
                                             .block();
-                            System.out.println(response.getJson());
+                            if (response == null) {
+                                return null;
+                            }
                             return response.dataAsObject(GraphqlResult.class).getMapping();
                         })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 }

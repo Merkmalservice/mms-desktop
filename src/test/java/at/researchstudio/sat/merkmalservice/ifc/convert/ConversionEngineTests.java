@@ -64,7 +64,6 @@ public class ConversionEngineTests {
 
     @Test
     public void testDeleteOneProperty1() throws IOException {
-        ParsedIfcFile parsedIfcFile = loadTestFile1();
         ConversionRuleFactory factory =
                 () ->
                         Set.of(
@@ -90,8 +89,33 @@ public class ConversionEngineTests {
     }
 
     @Test
+    public void testDeleteOneProperty2() throws IOException {
+        ConversionRuleFactory factory =
+                () ->
+                        Set.of(
+                                new ConversionRule() {
+                                    @Override
+                                    public int getOrder() {
+                                        return 0;
+                                    }
+
+                                    @Override
+                                    public boolean appliesTo(IfcLine line, ParsedIfcFile ifcModel) {
+                                        return true;
+                                    }
+
+                                    @Override
+                                    public ParsedIfcFileModification applyTo(
+                                            IfcLine line, ParsedIfcFile ifcModel) {
+                                        return removePropertyWithName("cpiFitMatchKey", line);
+                                    }
+                                });
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_property_single_value_cpiFitMatchKey", engine);
+    }
+
+    @Test
     public void testDeleteAllProperties() throws IOException {
-        ParsedIfcFile parsedIfcFile = loadTestFile1();
         ConversionRuleFactory factory =
                 () ->
                         Set.of(
@@ -120,7 +144,6 @@ public class ConversionEngineTests {
 
     @Test
     public void testDeleteAllPropertiesOfOneWall() throws IOException {
-        ParsedIfcFile parsedIfcFile = loadTestFile1();
         ConversionRuleFactory factory =
                 () ->
                         Set.of(
