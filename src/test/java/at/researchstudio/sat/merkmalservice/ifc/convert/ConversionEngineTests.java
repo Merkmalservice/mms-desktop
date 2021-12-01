@@ -7,6 +7,7 @@ import at.researchstudio.sat.merkmalservice.ifc.IfcFileReader;
 import at.researchstudio.sat.merkmalservice.ifc.IfcFileWrapper;
 import at.researchstudio.sat.merkmalservice.ifc.IfcFileWriter;
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.MappingConversionRuleFactory;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +15,15 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+
+import at.researchstudio.sat.merkmalservice.model.Organization;
+import at.researchstudio.sat.merkmalservice.model.Project;
+import at.researchstudio.sat.merkmalservice.model.Standard;
+import at.researchstudio.sat.merkmalservice.model.mapping.*;
+import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
+import at.researchstudio.sat.merkmalservice.model.mapping.feature.featuretype.StringFeatureType;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -170,6 +179,13 @@ public class ConversionEngineTests {
         testInOut("delete_all_properties_of_one_wall", engine);
     }
 
+    @Test
+    public void testDeleteByMappingRule() throws IOException {
+        MappingConversionRuleFactory factory = new MappingConversionRuleFactory(List.of(Inst.mappingDeleteCpiFitMatchKey));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_property_single_value_cpiFitMatchKey", engine);
+    }
+
     @NotNull
     private ParsedIfcFile loadTestFile1() throws IOException {
         File testFile = new File(testResources, "IFC test.ifc");
@@ -180,5 +196,20 @@ public class ConversionEngineTests {
     private ParsedIfcFile parseFile(File testFile) throws IOException {
         IfcFileWrapper wrapper = new IfcFileWrapper(testFile);
         return IfcFileReader.readIfcFile(wrapper);
+    }
+
+    private static class Inst {
+        static Feature featureCpiFitMatchKey = new Feature("feature1Id", "cpiFitMatchKey", "the match key", List.of(),
+                        new StringFeatureType());
+        static Organization organization1 =  new Organization("org1Id", "Org one");
+        static Project project1 = new Project("project1Id", "Project One", "a project", List.of(), List.of());
+        static Standard standard1 = new Standard("standard1Id", "standard one", false, organization1);
+        static Mapping mappingDeleteCpiFitMatchKey = new Mapping(
+                        "mapping1Id", "Delete cpiFitMatchKey",
+                        project1,
+                        List.of(),
+                        new SingleCondition("singleCondition1Id", featureCpiFitMatchKey, MappingPredicate.PRESENT, null),
+                        List.of(new DeleteActionGroup(List.of(new DeleteAction("deleteAction1Id", featureCpiFitMatchKey )))));
+
     }
 }

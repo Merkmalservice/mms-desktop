@@ -319,6 +319,7 @@ public class ParsedIfcFile {
         return dataLinesByClass;
     }
 
+
     public Feature getRelatedFeature(IfcLine ifcLine) {
         String name;
         if (ifcLine instanceof IfcNamedPropertyLineInterface) {
