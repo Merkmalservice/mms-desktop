@@ -91,10 +91,11 @@ public class ParsedIfcFile {
                         "find references to property sets");
         return related.stream()
                 .flatMap(r -> r.getPropertySetIds().stream())
+                .map(dataLines::get)
+                .filter(Objects::nonNull)
                 .map(
-                        id ->
-                                castIfPossible(
-                                        dataLines.get(id),
+                        line ->
+                                castIfPossible(line,
                                         IfcPropertySetLine.class,
                                         "get a referenced property set"))
                 .filter(Optional::isPresent)
