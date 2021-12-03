@@ -84,11 +84,8 @@ public class IfcLine {
     public boolean removeReferenceTo(Integer itemId) {
         this.references.remove(itemId);
         this.modifiedLine =
-                (modifiedLine == null ? line : modifiedLine)
-                        .replaceAll(("(\\(.+\\([^)]*?),?#" + itemId), "$1")
-                        .replaceAll(("(\\(([^()]+(\\([^()]+\\))?)*)(,)?#" + itemId), "$1$4\\$")
-                        .replaceAll("\\(\\)", "\\$");
-
+                ReferenceRemover.removeReferenceTo(
+                        modifiedLine == null ? line : modifiedLine, itemId);
         return false;
     }
 }

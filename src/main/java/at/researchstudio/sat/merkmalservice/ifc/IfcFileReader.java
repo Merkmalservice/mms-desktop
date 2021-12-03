@@ -5,7 +5,6 @@ import static at.researchstudio.sat.merkmalservice.ifc.support.FileUtils.countLi
 import at.researchstudio.sat.merkmalservice.ifc.model.*;
 import at.researchstudio.sat.merkmalservice.ifc.parser.IfcLineParser;
 import at.researchstudio.sat.merkmalservice.ifc.parser.IfcLineParserImpl;
-import at.researchstudio.sat.merkmalservice.ifc.support.ClassloaderUtils;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcPropertyBuilder;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.model.BooleanFeature;
@@ -21,6 +20,8 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Modifier;
@@ -42,19 +43,21 @@ public class IfcFileReader {
     public static final int PROGRESS_UPDATES = 200;
 
     static {
-        Set<Class> ifcModelClasses = new HashSet<>();
-        ifcModelClasses.addAll(
-                ClassloaderUtils.findClassesInPackage(
-                        "at.researchstudio.sat.merkmalservice.ifc.model", IfcLine.class));
-        ifcModelClasses.addAll(
-                ClassloaderUtils.findClassesInPackage(
-                        "at.researchstudio.sat.merkmalservice.ifc.model.element", IfcLine.class));
-        ifcModelClasses.addAll(
-                ClassloaderUtils.findClassesInPackage(
-                        "at.researchstudio.sat.merkmalservice.ifc.model.type", IfcLine.class));
-        ifcLineParsers = new HashMap<>();
-        for (Class ifcModelClass : ifcModelClasses) {
-            instantiateLineParser(ifcLineParsers, ifcModelClass);
+        synchronized (IfcFileReader.class) {
+            Set<Class> ifcModelClasses = new HashSet<>();
+            try (ScanResult scanResult =
+                    new ClassGraph()
+                            .enableClassInfo()
+                            .acceptPackages("at.researchstudio.sat.merkmalservice.ifc.model")
+                            .scan()) { // Start the scan
+                scanResult.getSubclasses(IfcLine.class).stream()
+                        .map(i -> i.loadClass())
+                        .forEach(ifcModelClasses::add);
+            }
+            ifcLineParsers = new HashMap<>();
+            for (Class ifcModelClass : ifcModelClasses) {
+                instantiateLineParser(ifcLineParsers, ifcModelClass);
+            }
         }
     }
 
@@ -65,6 +68,11 @@ public class IfcFileReader {
                 return;
             }
             String type = (String) ifcModelClass.getDeclaredField("IDENTIFIER").get(ifcModelClass);
+            logger.debug(
+                    "registering ifc line parser "
+                            + ifcModelClass.getSimpleName()
+                            + " for identifier "
+                            + type);
             parsers.put(
                     type,
                     new IfcLineParserImpl<>(

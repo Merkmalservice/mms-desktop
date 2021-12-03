@@ -1,5 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.gui.component.ifc;
 
+import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castToOpt;
+
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.*;
 import at.researchstudio.sat.merkmalservice.ifc.model.element.IfcBuiltElementLine;
@@ -24,14 +26,10 @@ import org.slf4j.LoggerFactory;
 public class IfcLineView extends VBox {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     private final ResourceBundle resourceBundle;
     private IfcLine ifcLine;
-
     private ObjectProperty<ParsedIfcFile> parsedIfcFile;
-
     private final Label selectedLineLabel;
-
     private final Accordion accordion;
     private final TitledPane correspondingFeaturePane;
     private final TitledPane referencingLinesPane;
@@ -39,13 +37,10 @@ public class IfcLineView extends VBox {
 
     public IfcLineView() {
         this.resourceBundle = ResourceBundle.getBundle("messages", Locale.getDefault());
-
         this.selectedLineLabel = new Label(resourceBundle.getString("label.line.selected"));
         this.selectedLineLabel.setFont(ViewConstants.FONT_PT16_SYSTEM_BOLD);
         this.selectedLineLabel.setWrapText(true);
-
         accordion = new Accordion();
-
         correspondingFeaturePane =
                 new TitledPane(
                         resourceBundle.getString("label.line.correspondingFeature"),
@@ -79,7 +74,6 @@ public class IfcLineView extends VBox {
     private void processDataChange() {
         getChildren().clear();
         accordion.getPanes().clear();
-
         if (Objects.nonNull(parsedIfcFile)
                 && Objects.nonNull(parsedIfcFile.get())
                 && Objects.nonNull(ifcLine)) {
@@ -88,7 +82,6 @@ public class IfcLineView extends VBox {
             if (ifcLine instanceof IfcBuiltElementLine) {
                 List<IfcRelDefinesByPropertiesLine> relDefinesByPropertiesLines =
                         this.parsedIfcFile.get().getRelDefinesByPropertiesLinesReferencing(ifcLine);
-
                 for (IfcRelDefinesByPropertiesLine relDefinesByPropertiesLine :
                         relDefinesByPropertiesLines) {
                     IfcLine propertySetLine =
@@ -115,14 +108,11 @@ public class IfcLineView extends VBox {
             if (ifcLine instanceof IfcNamedPropertyLineInterface) {
                 accordion.getPanes().add(correspondingFeaturePane);
                 List<IfcPropertySetLine> relatedPropertySets =
-                        this.parsedIfcFile.get().getRelatedPropertySetLines(ifcLine);
-
+                        this.parsedIfcFile.get().getPropertySetsForProperty(ifcLine);
                 if (!relatedPropertySets.isEmpty()) {
-
                     for (IfcPropertySetLine relatedPropertySet : relatedPropertySets) {
                         IfcPropertySetBox propSetsBox =
                                 new IfcPropertySetBox(relatedPropertySet, parsedIfcFile.get());
-
                         String propSetName = relatedPropertySet.getName();
                         String convertedPropSetName =
                                 Objects.nonNull(propSetName)
@@ -139,17 +129,14 @@ public class IfcLineView extends VBox {
                         accordion.getPanes().add(propSetPane);
                     }
                 }
-
                 List<IfcElementQuantityLine> relatedElementQuantityLines =
                         this.parsedIfcFile.get().getRelatedElementQuantityLines(ifcLine);
-
                 if (!relatedElementQuantityLines.isEmpty()) {
                     for (IfcElementQuantityLine relatedElementQuantity :
                             relatedElementQuantityLines) {
                         IfcElementQuantityBox propSetsBox =
                                 new IfcElementQuantityBox(
                                         relatedElementQuantity, parsedIfcFile.get());
-
                         String elementQuantityName = relatedElementQuantity.getName();
                         String convertedElementQuantityName =
                                 Objects.nonNull(elementQuantityName)
@@ -166,27 +153,28 @@ public class IfcLineView extends VBox {
                         accordion.getPanes().add(elementQuantityPane);
                     }
                 }
-
-                Feature relatedFeature = this.parsedIfcFile.get().getRelatedFeature(ifcLine);
-
-                if (Objects.nonNull(relatedFeature)) {
-                    FeatureBox featureView = new FeatureBox();
-                    featureView.setShowJson(false);
-                    featureView.setSpacing(10);
-                    featureView.setPadding(new Insets(10, 10, 10, 10));
-                    featureView.setFeature(relatedFeature);
-                    getChildren().add(featureView);
-                    correspondingFeaturePane.setContent(featureView);
+                Feature relatedFeature = null;
+                Optional<IfcNamedPropertyLineInterface> namedProp =
+                        castToOpt(ifcLine, IfcNamedPropertyLineInterface.class);
+                if (namedProp.isPresent()) {
+                    this.parsedIfcFile.get().getFeatureForNamedPropertyLine(namedProp.get());
+                    if (Objects.nonNull(relatedFeature)) {
+                        FeatureBox featureView = new FeatureBox();
+                        featureView.setShowJson(false);
+                        featureView.setSpacing(10);
+                        featureView.setPadding(new Insets(10, 10, 10, 10));
+                        featureView.setFeature(relatedFeature);
+                        getChildren().add(featureView);
+                        correspondingFeaturePane.setContent(featureView);
+                    }
                 }
             }
             accordion.getPanes().add(referencingLinesPane);
-
             // TODO: MAYBE ADD PROGRESS BAR FOR REFERENCING LINES
             VBox referencingLinesBox = new VBox();
             referencingLinesBox.setSpacing(10);
             referencingLinesBox.setPadding(new Insets(10, 10, 10, 10));
             referencingLinesBox.getChildren().add(new JFXSpinner());
-
             Task<List<Node>> referencingLinesTask =
                     new Task<>() {
                         @Override
@@ -195,7 +183,6 @@ public class IfcLineView extends VBox {
                             return createLineComponents(lines);
                         }
                     };
-
             referencingLinesPane.setContent(referencingLinesBox);
             referencingLinesTask.setOnSucceeded(
                     t -> {
@@ -209,18 +196,14 @@ public class IfcLineView extends VBox {
                                 referencingLinesTask.getException());
                         // TODO: MAYBE SHOW DIALOG INSTEAD
                     });
-
             new Thread(referencingLinesTask).start();
-
             // TODO: MAYBE ADD PROGRESS BAR FOR REFERENCED LINES
             VBox referencedLinesBox = new VBox();
             referencedLinesBox.setSpacing(10);
             referencedLinesBox.setPadding(new Insets(10, 10, 10, 10));
             referencedLinesBox.getChildren().add(new JFXSpinner());
-
             accordion.getPanes().add(referencedLinesPane);
             getChildren().add(accordion);
-
             Task<List<Node>> referencedLineTask =
                     new Task<>() {
                         @Override
@@ -229,7 +212,6 @@ public class IfcLineView extends VBox {
                             return createLineComponents(lines);
                         }
                     };
-
             referencedLinesPane.setContent(referencedLinesBox);
             referencedLineTask.setOnSucceeded(
                     t -> {
@@ -243,14 +225,12 @@ public class IfcLineView extends VBox {
                                 referencedLineTask.getException());
                         // TODO: MAYBE DIALOG INSTEAD
                     });
-
             new Thread(referencedLineTask).start();
         }
     }
 
     private List<Node> createLineComponents(List<IfcLine> lines) {
         List<Node> elements = new ArrayList<>();
-
         if (!lines.isEmpty()) {
             for (IfcLine relatedLine : lines) {
                 elements.add(new IfcLineBox(relatedLine));

@@ -1,6 +1,6 @@
 package at.researchstudio.sat.merkmalservice.ifc;
 
-import static at.researchstudio.sat.merkmalservice.ifc.model.IfcTypeConverter.castIfPossible;
+import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castToOptAndLogFailure;
 import static java.util.stream.Collectors.*;
 
 import at.researchstudio.sat.merkmalservice.ifc.model.*;
@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
@@ -32,22 +33,51 @@ public class ParsedIfcFile {
     private final List<Feature> features;
     private final Set<FeatureSet> featureSets;
 
-    public <T extends IfcLine> void removeProperty(T element, Predicate<IfcLine> predicate) {
-        List<IfcLine> toDelete = new ArrayList<>();
-        toDelete.addAll(
+    public <T extends IfcLine> List<? extends IfcLine> getProperties(
+            T element, Predicate<IfcLine> predicate) {
+        List<IfcLine> properties = new ArrayList<>();
+        properties.addAll(
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
                         .map(this::getPropertySet)
                         .filter(Optional::isPresent)
                         .flatMap(ps -> getPropertySetChildLines(ps.get()).stream())
                         .filter(predicate)
                         .collect(toList()));
-        toDelete.addAll(
+        properties.addAll(
                 getRelDefinesByTypeReferencing(element).stream()
                         .flatMap(rel -> getPropertySets(rel).stream())
                         .flatMap(ps -> getPropertySetChildLines(ps).stream())
                         .filter(predicate)
                         .collect(toList()));
-        toDelete.forEach(this::removeLine);
+        return properties;
+    }
+
+    public <T extends IfcLine> void removeProperty(T element, Predicate<IfcLine> predicate) {
+        List<Pair<IfcPropertySetLine, IfcSinglePropertyValueLine>> toDelete = new ArrayList<>();
+        toDelete.addAll(
+                getRelDefinesByPropertiesLinesReferencing(element).stream()
+                        .map(this::getPropertySet)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .flatMap(
+                                ps ->
+                                        getPropertySetChildLines(ps).stream()
+                                                .filter(predicate)
+                                                .map(prop -> Pair.of(ps, prop)))
+                        .collect(Collectors.toList()));
+        toDelete.addAll(
+                getRelDefinesByTypeReferencing(element).stream()
+                        .flatMap(rel -> getPropertySets(rel).stream())
+                        .flatMap(
+                                ps ->
+                                        getPropertySetChildLines(ps).stream()
+                                                .filter(predicate)
+                                                .map(prop -> Pair.of(ps, prop)))
+                        .collect(toList()));
+        toDelete.forEach(
+                pSetAndProp ->
+                        removeSinglePropertyFromPropertySet(
+                                pSetAndProp.getLeft(), pSetAndProp.getRight()));
     }
 
     public <T extends IfcBuiltElementLine> void removeQuantity(
@@ -58,12 +88,23 @@ public class ParsedIfcFile {
             List<IfcLine> quantities = getElementQuantityChildLines(elementQuantity);
             toDelete.addAll(quantities.stream().filter(predicate).collect(Collectors.toList()));
         }
-        toDelete.forEach(this::removeLine);
+        toDelete.forEach(d -> removeLine(d));
+    }
+
+    private void removeSinglePropertyFromPropertySet(
+            IfcPropertySetLine propertySetLine, IfcSinglePropertyValueLine propertyValueLine) {
+        propertySetLine.removeReferenceTo(propertyValueLine);
+        if (propertySetLine.getPropertyIds().isEmpty()) {
+            removeLine(propertySetLine);
+        }
+        if (getReferencingLines(propertyValueLine).isEmpty()) {
+            removeLine(propertyValueLine);
+        }
     }
 
     private void removeLine(IfcLine line) {
-        List<IfcLine> referencing = this.getReferencingLines(line);
         List<IfcLine> cascadingDeletes = new ArrayList<>();
+        List<IfcLine> referencing = this.getReferencingLines(line);
         for (IfcLine referencingLine : referencing) {
             if (referencingLine.removeReferenceTo(line)) {
                 cascadingDeletes.add(referencingLine);
@@ -73,19 +114,19 @@ public class ParsedIfcFile {
         getTypeInstancePairStream(line)
                 .forEach(tip -> this.dataLinesByClass.get(tip.type).remove(tip.instance));
         this.lines.remove(line);
-        cascadingDeletes.forEach(this::removeLine);
+        cascadingDeletes.forEach(toRemoveCascading -> removeLine(toRemoveCascading));
     }
 
     public Optional<IfcPropertySetLine> getPropertySet(
             IfcRelDefinesByPropertiesLine propertySetRel) {
         IfcLine related = getDataLines().get(propertySetRel.getRelatingPropertySetId());
-        return castIfPossible(
+        return TypeConverter.castToOptAndLogFailure(
                 related, IfcPropertySetLine.class, "find reference to a property set");
     }
 
     public List<IfcPropertySetLine> getPropertySets(IfcRelDefinesByTypeLine propertySetRel) {
         Optional<IfcTypeObjectLine> related =
-                castIfPossible(
+                TypeConverter.castToOptAndLogFailure(
                         getDataLines().get(propertySetRel.getRelatingTypeId()),
                         IfcTypeObjectLine.class,
                         "find references to property sets");
@@ -95,7 +136,8 @@ public class ParsedIfcFile {
                 .filter(Objects::nonNull)
                 .map(
                         line ->
-                                castIfPossible(line,
+                                TypeConverter.castToOptAndLogFailure(
+                                        line,
                                         IfcPropertySetLine.class,
                                         "get a referenced property set"))
                 .filter(Optional::isPresent)
@@ -320,14 +362,8 @@ public class ParsedIfcFile {
         return dataLinesByClass;
     }
 
-
-    public Feature getRelatedFeature(IfcLine ifcLine) {
-        String name;
-        if (ifcLine instanceof IfcNamedPropertyLineInterface) {
-            name = ((IfcNamedPropertyLineInterface) ifcLine).getName();
-        } else {
-            name = null;
-        }
+    public Feature getFeatureForNamedPropertyLine(IfcNamedPropertyLineInterface ifcLine) {
+        String name = ifcLine.getName();
         if (Objects.nonNull(name)) {
             String convertedName = Utils.convertIFCStringToUtf8(name);
             Optional<Feature> optionalFeature =
@@ -339,7 +375,7 @@ public class ParsedIfcFile {
         return null;
     }
 
-    public List<IfcPropertySetLine> getRelatedPropertySetLines(IfcLine ifcLine) {
+    public List<IfcPropertySetLine> getPropertySetsForProperty(IfcLine ifcLine) {
         return getPropertySetLines().parallelStream()
                 .filter(
                         entryIfcLine -> {
@@ -399,9 +435,21 @@ public class ParsedIfcFile {
         return ifcLine.getRelatedObjectIds().parallelStream().map(dataLines::get).collect(toList());
     }
 
-    public List<IfcLine> getPropertySetChildLines(IfcPropertySetLine ifcLine) {
+    public List<IfcSinglePropertyValueLine> getPropertySetChildLines(IfcPropertySetLine ifcLine) {
         return Optional.ofNullable(ifcLine)
-                .map(l -> l.getPropertyIds().stream().map(dataLines::get).collect(toList()))
+                .map(
+                        l ->
+                                l.getPropertyIds().stream()
+                                        .map(dataLines::get)
+                                        .map(
+                                                line ->
+                                                        castToOptAndLogFailure(
+                                                                line,
+                                                                IfcSinglePropertyValueLine.class,
+                                                                "get properties of property set"))
+                                        .filter(Optional::isPresent)
+                                        .map(Optional::get)
+                                        .collect(toList()))
                 .orElse(Collections.emptyList());
     }
 

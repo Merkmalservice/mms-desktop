@@ -4,6 +4,7 @@ import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcPropertySetLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcRelDefinesByPropertiesLine;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcSinglePropertyValueLine;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import com.jfoenix.controls.JFXSpinner;
 import java.lang.invoke.MethodHandles;
@@ -81,7 +82,7 @@ public class IfcRelDefinesByPropertiesBox extends VBox {
                         siblingPropertiesLabel.setWrapText(true);
                         propSetNodes.add(siblingPropertiesLabel);
 
-                        List<IfcLine> propertySetChildLines =
+                        List<IfcSinglePropertyValueLine> propertySetChildLines =
                                 parsedIfcFile.getPropertySetChildLines(propertySet);
 
                         if (!propertySetChildLines.isEmpty()) {

@@ -1,15 +1,24 @@
 package at.researchstudio.sat.merkmalservice.ifc.support;
 
+import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castToOpt;
+
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcPropertyEnumeratedValueLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcQuantityLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcSinglePropertyValueLine;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
+import java.lang.invoke.MethodHandles;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class IfcLinePredicates {
+public abstract class IfcLinePredicates {
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static Predicate<IfcLine> isPropertyWithName(String name) {
         Objects.requireNonNull(name);
@@ -81,5 +90,269 @@ public class IfcLinePredicates {
             }
             return false;
         };
+    }
+
+    public static Predicate<IfcLine> isStringPropertyWithValuePredicate(
+            Predicate<String> valueMatcher) {
+        Objects.requireNonNull(valueMatcher);
+        return line ->
+                castToOpt(line, IfcSinglePropertyValueLine.class)
+                        .map(IfcLinePredicates::getStringValue)
+                        .map(valueMatcher::test)
+                        .orElse(false);
+    }
+
+    public static Predicate<IfcLine> isStringPropertyWithValue(String stringValue) {
+        Objects.requireNonNull(stringValue);
+        return isStringPropertyWithValuePredicate(s -> stringValue.equals(s));
+    }
+
+    public static Predicate<IfcLine> isStringPropertyWithValueContaining(String subString) {
+        Objects.requireNonNull(subString);
+        return isStringPropertyWithValuePredicate(s -> s != null && s.contains(subString));
+    }
+
+    public static Predicate<IfcLine> isStringPropertyWithValueNotContaining(String subString) {
+        Objects.requireNonNull(subString);
+        return isStringPropertyWithValuePredicate(s -> s != null && !s.contains(subString));
+    }
+
+    public static Predicate<IfcLine> isStringPropertyWithValueMatching(String regex) {
+        Objects.requireNonNull(regex);
+        return isStringPropertyWithValueMatchingPattern(Pattern.compile(regex));
+    }
+
+    public static Predicate<IfcLine> isStringPropertyWithValueMatchingPattern(Pattern regex) {
+        Objects.requireNonNull(regex);
+        return isStringPropertyWithValuePredicate(s -> regex.matcher(s).matches());
+    }
+
+    public static Predicate<IfcLine> isIntegerPropertyWithValuePredicate(
+            Predicate<Long> valueMatcher) {
+        Objects.requireNonNull(valueMatcher);
+        return line ->
+                castToOpt(line, IfcSinglePropertyValueLine.class)
+                        .map(IfcLinePredicates::getIntegerValue)
+                        .map(valueMatcher::test)
+                        .orElse(false);
+    }
+
+    public static Predicate<IfcLine> isIntegerPropertyWithValueEqualTo(int value) {
+        return isIntegerPropertyWithValuePredicate(v -> v == value);
+    }
+
+    public static Predicate<IfcLine> isIntegerPropertyWithValueLessThan(int value) {
+        return isIntegerPropertyWithValuePredicate(v -> v < value);
+    }
+
+    public static Predicate<IfcLine> isIntegerPropertyWithValueLessThanOrEqualTo(int value) {
+        return isIntegerPropertyWithValuePredicate(v -> v <= value);
+    }
+
+    public static Predicate<IfcLine> isRealPropertyWithValuePredicate(
+            Predicate<Double> valueMatcher) {
+        Objects.requireNonNull(valueMatcher);
+        return line ->
+                castToOpt(line, IfcSinglePropertyValueLine.class)
+                        .map(IfcLinePredicates::getRealValue)
+                        .map(valueMatcher::test)
+                        .orElse(false);
+    }
+
+    public static Predicate<IfcLine> isRealPropertyWithValueEqualTo(double value) {
+        return isRealPropertyWithValuePredicate(v -> value == v);
+    }
+
+    public static Predicate<IfcLine> isRealPropertyWithValueLessThan(double value) {
+        return isRealPropertyWithValuePredicate(v -> value < v);
+    }
+
+    public static Predicate<IfcLine> isRealPropertyWithValueLessThanOrEqualTo(double value) {
+        return isRealPropertyWithValuePredicate(v -> value <= v);
+    }
+
+    public static Predicate<IfcLine> isBooleanPropertyWithValuePredicate(
+            Predicate<Boolean> valueMatcher) {
+        Objects.requireNonNull(valueMatcher);
+        return line ->
+                castToOpt(line, IfcSinglePropertyValueLine.class)
+                        .map(IfcLinePredicates::getBooleanValue)
+                        .map(valueMatcher::test)
+                        .orElse(false);
+    }
+
+    public static Predicate<IfcLine> valueEquals(String value) {
+        Objects.requireNonNull(value);
+        return isStringPropertyWithValuePredicate(v -> value.equals(v));
+    }
+
+    public static Predicate<IfcLine> valueEquals(Double value) {
+        Objects.requireNonNull(value);
+        return isRealPropertyWithValuePredicate(v -> value.equals(v));
+    }
+
+    public static Predicate<IfcLine> valueEquals(Integer value) {
+        Objects.requireNonNull(value);
+        return isIntegerPropertyWithValuePredicate(v -> value.equals(v));
+    }
+
+    public static Predicate<IfcLine> valueEquals(Boolean value) {
+        Objects.requireNonNull(value);
+        return isBooleanPropertyWithValuePredicate(v -> value.equals(v));
+    }
+
+    public static <T> Predicate<IfcLine> valueEquals(T value) {
+        Objects.requireNonNull(value);
+        if (value instanceof String) {
+            return valueEquals((String) value);
+        }
+        if (value instanceof Double) {
+            return valueEquals((Double) value);
+        }
+        if (value instanceof Integer) {
+            return valueEquals((Integer) value);
+        }
+        if (value instanceof Boolean) {
+            return valueEquals((Boolean) value);
+        }
+        logger.info(
+                "Cannot generate 'equals' predicate for value of type {}",
+                value.getClass().getName());
+        return line -> false;
+    }
+
+    public static <T> Predicate<IfcLine> isNumericPropertyWithValueLessThanOrEqualTo(T value) {
+        Objects.requireNonNull(value);
+        if (value instanceof Integer) {
+            return isIntegerPropertyWithValueLessThanOrEqualTo((Integer) value);
+        }
+        if (value instanceof Double) {
+            return isRealPropertyWithValueLessThanOrEqualTo((Double) value);
+        }
+        logger.info(
+                "Cannot generate 'lessThanOrEqualTo' predicate for value of type {}",
+                value.getClass().getName());
+        return line -> false;
+    }
+
+    public static <T> Predicate<IfcLine> isNumericPropertyWithValueLessThan(T value) {
+        Objects.requireNonNull(value);
+        if (value instanceof Integer) {
+            return isIntegerPropertyWithValueLessThan((Integer) value);
+        }
+        if (value instanceof Double) {
+            return isRealPropertyWithValueLessThan((Double) value);
+        }
+        logger.info(
+                "Cannot generate 'lessThanOrEqualTo' predicate for value of type {}",
+                value.getClass().getName());
+        return line -> false;
+    }
+
+    public static Predicate<IfcLine> isRealProperty() {
+        return line ->
+                castToOpt(line, IfcSinglePropertyValueLine.class)
+                        .map(IfcLinePredicates::isRealValue)
+                        .orElse(false);
+    }
+
+    public static Predicate<IfcLine> isIntegerProperty() {
+        return line ->
+                castToOpt(line, IfcSinglePropertyValueLine.class)
+                        .map(IfcLinePredicates::isIntegerValue)
+                        .orElse(false);
+    }
+
+    public static Predicate<IfcLine> isStringProperty() {
+        return line ->
+                castToOpt(line, IfcSinglePropertyValueLine.class)
+                        .map(IfcLinePredicates::isStringValue)
+                        .orElse(false);
+    }
+
+    public static Predicate<IfcLine> isBooleanProperty() {
+        return line ->
+                castToOpt(line, IfcSinglePropertyValueLine.class)
+                        .map(IfcLinePredicates::isBooleanValue)
+                        .orElse(false);
+    }
+
+    public static Predicate<IfcLine> isNumericProperty() {
+        return line ->
+                castToOpt(line, IfcSinglePropertyValueLine.class)
+                        .map(l -> isRealValue(l) || isIntegerValue(l))
+                        .orElse(false);
+    }
+
+    private static boolean isRealValue(IfcSinglePropertyValueLine p) {
+        return IfcPropertyType.fromString(p.getType()).isMeasureType()
+                || IfcPropertyType.isOneOf(
+                        p.getType(), IfcPropertyType.REAL, IfcPropertyType.EXPRESS_REAL);
+    }
+
+    private static Double getRealValue(IfcSinglePropertyValueLine line) {
+        return Optional.ofNullable(line)
+                .filter(IfcLinePredicates::isRealValue)
+                .map(IfcSinglePropertyValueLine::getValue)
+                .map(Double::valueOf)
+                .orElse(null);
+    }
+
+    private static boolean isIntegerValue(IfcSinglePropertyValueLine p) {
+        return IfcPropertyType.isOneOf(
+                p.getType(),
+                IfcPropertyType.INTEGER,
+                IfcPropertyType.POSITIVE_INTEGER,
+                IfcPropertyType.EXPRESS_INTEGER);
+    }
+
+    private static Long getIntegerValue(IfcSinglePropertyValueLine line) {
+        return Optional.ofNullable(line)
+                .filter(IfcLinePredicates::isIntegerValue)
+                .map(IfcSinglePropertyValueLine::getValue)
+                .map(Long::valueOf)
+                .orElse(null);
+    }
+
+    private static String getStringValue(IfcSinglePropertyValueLine line) {
+        return Optional.ofNullable(line)
+                .filter(IfcLinePredicates::isStringValue)
+                .map(IfcSinglePropertyValueLine::getValue)
+                .orElse(null);
+    }
+
+    private static boolean isStringValue(IfcSinglePropertyValueLine p) {
+        return IfcPropertyType.isOneOf(
+                p.getType(),
+                IfcPropertyType.TEXT,
+                IfcPropertyType.LABEL,
+                IfcPropertyType.IDENTIFIER);
+    }
+
+    private static boolean isBooleanValue(IfcSinglePropertyValueLine p) {
+        return IfcPropertyType.isOneOf(
+                p.getType(),
+                IfcPropertyType.EXPRESS_BOOL,
+                IfcPropertyType.BOOL,
+                IfcPropertyType.LOGICAL);
+    }
+
+    private static Boolean getBooleanValue(IfcSinglePropertyValueLine line) {
+        return Optional.ofNullable(line)
+                .filter(p -> IfcPropertyType.is(p.getType(), IfcPropertyType.BOOL))
+                .map(IfcSinglePropertyValueLine::getValue)
+                .map(s -> ".T.".equals(s))
+                .or(
+                        () ->
+                                Optional.ofNullable(line)
+                                        .filter(
+                                                p ->
+                                                        IfcPropertyType.isOneOf(
+                                                                p.getType(),
+                                                                IfcPropertyType.EXPRESS_BOOL,
+                                                                IfcPropertyType.LOGICAL))
+                                        .map(IfcSinglePropertyValueLine::getValue)
+                                        .map(Boolean::valueOf))
+                .orElse(null);
     }
 }
