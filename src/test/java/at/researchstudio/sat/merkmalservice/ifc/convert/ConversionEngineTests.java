@@ -207,7 +207,92 @@ public class ConversionEngineTests {
                                         MappingPredicate.CONTAINS,
                                         new MappingExecutionValue("ABC"))));
         ConversionEngine engine = new ConversionEngine(factory.getRules());
-        testInOut("delete_property_cpiFitMatchKey_containing_string", engine);
+        testInOut("delete_property_cpiFitMatchKey_1_instance_ABC", engine);
+    }
+
+    @Test
+    public void test_delete_reldefinesbytypeproperty_typname_should_not_delete()
+            throws IOException {
+        // Should not delete any property as the property is not one of the object but of its type
+        // (the walltype)
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                delete(
+                                        Inst.featureTypname,
+                                        "byContains",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.CONTAINS,
+                                        new MappingExecutionValue("ABC"))));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_property_Typname_where_cpiFitMatchKey_ABC", engine);
+    }
+
+    @Test
+    public void test_delete_property_phase_erstellt_where_cpiFitMatchKey_contains_ABC()
+            throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                delete(
+                                        Inst.featurePhaseErstellt,
+                                        "byContains",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.CONTAINS,
+                                        new MappingExecutionValue("ABC"))));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_property_phase_erstellt_where_cpiFitMatchKey_contains_ABC", engine);
+    }
+
+    @Test
+    public void test_delete_property_phase_erstellt_where_cpiFitMatchKey_contains_ABC_KLM()
+            throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                delete(
+                                        Inst.featurePhaseErstellt,
+                                        "byContains",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.CONTAINS,
+                                        new MappingExecutionValue("ABC")),
+                                delete(
+                                        Inst.featurePhaseErstellt,
+                                        "byContains",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.CONTAINS,
+                                        new MappingExecutionValue("KLM"))));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_property_phase_erstellt_where_cpiFitMatchKey_contains_ABC_KLM", engine);
+    }
+
+    @Test
+    public void test_delete_property_phase_erstellt_where_cpiFitMatchKey_contains_ABC_KLM_RST()
+            throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                delete(
+                                        Inst.featurePhaseErstellt,
+                                        "byContains",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.CONTAINS,
+                                        new MappingExecutionValue("ABC")),
+                                delete(
+                                        Inst.featurePhaseErstellt,
+                                        "byContains",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.CONTAINS,
+                                        new MappingExecutionValue("KLM")),
+                                delete(
+                                        Inst.featurePhaseErstellt,
+                                        "byContains",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.CONTAINS,
+                                        new MappingExecutionValue("RST"))));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut(
+                "delete_property_phase_erstellt_where_cpiFitMatchKey_contains_ABC_KLM_RST", engine);
     }
 
     @Test
@@ -249,7 +334,7 @@ public class ConversionEngineTests {
                                         MappingPredicate.MATCHES,
                                         new MappingExecutionValue("^AB(\\.|C)[DEFG]+$"))));
         ConversionEngine engine = new ConversionEngine(factory.getRules());
-        testInOut("delete_property_cpiFitMatchKey_containing_string", engine);
+        testInOut("delete_property_cpiFitMatchKey_1_instance_ABC", engine);
     }
 
     @Test
@@ -263,7 +348,7 @@ public class ConversionEngineTests {
                                         MappingPredicate.EQUALS,
                                         new MappingExecutionValue("ABCDEFG"))));
         ConversionEngine engine = new ConversionEngine(factory.getRules());
-        testInOut("delete_property_cpiFitMatchKey_containing_string", engine);
+        testInOut("delete_property_cpiFitMatchKey_1_instance_ABC", engine);
     }
 
     @Test
@@ -379,17 +464,59 @@ public class ConversionEngineTests {
     }
 
     @Test
-    public void test_delete_IFCINTEGER_greaterThan_walltypeproperty() throws IOException {
+    public void test_delete_IFCVOLUMEMEASURE_greaterThan_4() throws IOException {
         MappingConversionRuleFactory factory =
                 new MappingConversionRuleFactory(
                         List.of(
                                 delete(
                                         "byGreaterThan",
-                                        Inst.featureRauigkeit,
+                                        Inst.featureVolume,
                                         MappingPredicate.GREATER_THAN,
-                                        new MappingExecutionValue(1))));
+                                        new MappingExecutionValue(4.0))));
         ConversionEngine engine = new ConversionEngine(factory.getRules());
-        testInOut("delete_property_rauigkeit", engine);
+        testInOut("delete_property_volumen_greater_than_4", engine);
+    }
+
+    @Test
+    public void test_delete_IFCVOLUMEMEASURE_lessThan_4() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                delete(
+                                        "byLessThan",
+                                        Inst.featureVolume,
+                                        MappingPredicate.LESS_THAN,
+                                        new MappingExecutionValue(4.0))));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_property_volumen_less_than_4", engine);
+    }
+
+    @Test
+    public void test_delete_IFCVOLUMEMEASURE_lessThanOrEqualTo_3p5() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                delete(
+                                        "byLessThanOrEquals",
+                                        Inst.featureVolume,
+                                        MappingPredicate.LESS_OR_EQUALS,
+                                        new MappingExecutionValue(3.5))));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_property_volumen_less_than_or_equal_to_3.5", engine);
+    }
+
+    @Test
+    public void test_delete_IFCVOLUMEMEASURE_greaterThanOrEqualTo_3p5() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                delete(
+                                        "byGreaterThanOrEquals",
+                                        Inst.featureVolume,
+                                        MappingPredicate.GREATER_OR_EQUALS,
+                                        new MappingExecutionValue(3.5))));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_property_volumen_greater_than_or_equal_to_3.5", engine);
     }
 
     @NotNull
@@ -405,6 +532,27 @@ public class ConversionEngineTests {
     }
 
     private static class Inst {
+        public static Feature featureTypname =
+                new Feature(
+                        "feature4Id",
+                        "Typname",
+                        "The type name",
+                        List.of(),
+                        new StringFeatureType());
+        public static Feature featurePhaseErstellt =
+                new Feature(
+                        "feature5Id",
+                        "Phase erstellt",
+                        "the phase",
+                        List.of(),
+                        new StringFeatureType());
+        public static Feature featureVolume =
+                new Feature(
+                        "feature6Id",
+                        "Volumen",
+                        "The volume of an object",
+                        List.of(),
+                        new NumericFeatureType(QudtQuantityKind.VOLUME, QudtUnit.CUBIC_METRE));
         static Feature featureCpiFitMatchKey =
                 new Feature(
                         "feature1Id",
@@ -462,5 +610,26 @@ public class ConversionEngineTests {
                 List.of(
                         new DeleteActionGroup(
                                 List.of(new DeleteAction("actionId" + name, feature)))));
+    }
+
+    private Mapping delete(
+            Feature deleteFeature,
+            String name,
+            Feature conditionFeature,
+            MappingPredicate predicate,
+            MappingExecutionValue value) {
+        return new Mapping(
+                "mappingIdDelete" + name + conditionFeature.getName(),
+                "DeleteMapping " + name + " " + conditionFeature.getName(),
+                Inst.project1,
+                List.of(),
+                new SingleCondition(
+                        "singleCondition" + name + conditionFeature.getName(),
+                        conditionFeature,
+                        predicate,
+                        value),
+                List.of(
+                        new DeleteActionGroup(
+                                List.of(new DeleteAction("actionId" + name, deleteFeature)))));
     }
 }

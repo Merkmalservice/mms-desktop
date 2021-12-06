@@ -21,6 +21,7 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
 import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -51,11 +52,11 @@ public class IfcFileReader {
                             .acceptPackages("at.researchstudio.sat.merkmalservice.ifc.model")
                             .scan()) { // Start the scan
                 scanResult.getSubclasses(IfcLine.class).stream()
-                        .map(i -> i.loadClass())
+                        .map(ClassInfo::loadClass)
                         .forEach(ifcModelClasses::add);
             }
             ifcLineParsers = new HashMap<>();
-            for (Class ifcModelClass : ifcModelClasses) {
+            for (Class<? extends IfcLine> ifcModelClass : ifcModelClasses) {
                 instantiateLineParser(ifcLineParsers, ifcModelClass);
             }
         }

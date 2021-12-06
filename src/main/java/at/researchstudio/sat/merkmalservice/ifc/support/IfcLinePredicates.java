@@ -104,7 +104,7 @@ public abstract class IfcLinePredicates {
 
     public static Predicate<IfcLine> isStringPropertyWithValue(String stringValue) {
         Objects.requireNonNull(stringValue);
-        return isStringPropertyWithValuePredicate(s -> stringValue.equals(s));
+        return isStringPropertyWithValuePredicate(stringValue::equals);
     }
 
     public static Predicate<IfcLine> isStringPropertyWithValueContaining(String subString) {
@@ -137,15 +137,15 @@ public abstract class IfcLinePredicates {
                         .orElse(false);
     }
 
-    public static Predicate<IfcLine> isIntegerPropertyWithValueEqualTo(int value) {
+    public static Predicate<IfcLine> isIntegerPropertyWithValueEqualTo(long value) {
         return isIntegerPropertyWithValuePredicate(v -> v == value);
     }
 
-    public static Predicate<IfcLine> isIntegerPropertyWithValueLessThan(int value) {
+    public static Predicate<IfcLine> isIntegerPropertyWithValueLessThan(long value) {
         return isIntegerPropertyWithValuePredicate(v -> v < value);
     }
 
-    public static Predicate<IfcLine> isIntegerPropertyWithValueLessThanOrEqualTo(int value) {
+    public static Predicate<IfcLine> isIntegerPropertyWithValueLessThanOrEqualTo(long value) {
         return isIntegerPropertyWithValuePredicate(v -> v <= value);
     }
 
@@ -164,11 +164,11 @@ public abstract class IfcLinePredicates {
     }
 
     public static Predicate<IfcLine> isRealPropertyWithValueLessThan(double value) {
-        return isRealPropertyWithValuePredicate(v -> value < v);
+        return isRealPropertyWithValuePredicate(v -> v < value);
     }
 
     public static Predicate<IfcLine> isRealPropertyWithValueLessThanOrEqualTo(double value) {
-        return isRealPropertyWithValuePredicate(v -> value <= v);
+        return isRealPropertyWithValuePredicate(v -> v <= value);
     }
 
     public static Predicate<IfcLine> isBooleanPropertyWithValuePredicate(
@@ -183,22 +183,22 @@ public abstract class IfcLinePredicates {
 
     public static Predicate<IfcLine> valueEquals(String value) {
         Objects.requireNonNull(value);
-        return isStringPropertyWithValuePredicate(v -> value.equals(v));
+        return isStringPropertyWithValuePredicate(value::equals);
     }
 
     public static Predicate<IfcLine> valueEquals(Double value) {
         Objects.requireNonNull(value);
-        return isRealPropertyWithValuePredicate(v -> value.equals(v));
+        return isRealPropertyWithValuePredicate(value::equals);
     }
 
-    public static Predicate<IfcLine> valueEquals(Integer value) {
+    public static Predicate<IfcLine> valueEquals(Long value) {
         Objects.requireNonNull(value);
-        return isIntegerPropertyWithValuePredicate(v -> value.equals(v));
+        return isIntegerPropertyWithValuePredicate(value::equals);
     }
 
     public static Predicate<IfcLine> valueEquals(Boolean value) {
         Objects.requireNonNull(value);
-        return isBooleanPropertyWithValuePredicate(v -> value.equals(v));
+        return isBooleanPropertyWithValuePredicate(value::equals);
     }
 
     public static <T> Predicate<IfcLine> valueEquals(T value) {
@@ -209,8 +209,14 @@ public abstract class IfcLinePredicates {
         if (value instanceof Double) {
             return valueEquals((Double) value);
         }
+        if (value instanceof Float) {
+            return valueEquals(((Float) value).doubleValue());
+        }
         if (value instanceof Integer) {
-            return valueEquals((Integer) value);
+            return valueEquals(((Integer) value).longValue());
+        }
+        if (value instanceof Long) {
+            return valueEquals((Long) value);
         }
         if (value instanceof Boolean) {
             return valueEquals((Boolean) value);
@@ -223,11 +229,17 @@ public abstract class IfcLinePredicates {
 
     public static <T> Predicate<IfcLine> isNumericPropertyWithValueLessThanOrEqualTo(T value) {
         Objects.requireNonNull(value);
+        if (value instanceof Long) {
+            return isIntegerPropertyWithValueLessThanOrEqualTo((Long) value);
+        }
         if (value instanceof Integer) {
-            return isIntegerPropertyWithValueLessThanOrEqualTo((Integer) value);
+            return isIntegerPropertyWithValueLessThanOrEqualTo(((Integer) value).longValue());
         }
         if (value instanceof Double) {
             return isRealPropertyWithValueLessThanOrEqualTo((Double) value);
+        }
+        if (value instanceof Float) {
+            return isRealPropertyWithValueLessThanOrEqualTo(((Float) value).doubleValue());
         }
         logger.info(
                 "Cannot generate 'lessThanOrEqualTo' predicate for value of type {}",
@@ -238,15 +250,25 @@ public abstract class IfcLinePredicates {
     public static <T> Predicate<IfcLine> isNumericPropertyWithValueLessThan(T value) {
         Objects.requireNonNull(value);
         if (value instanceof Integer) {
-            return isIntegerPropertyWithValueLessThan((Integer) value);
+            return isIntegerPropertyWithValueLessThan(((Integer) value).longValue());
+        }
+        if (value instanceof Long) {
+            return isIntegerPropertyWithValueLessThan((Long) value);
         }
         if (value instanceof Double) {
             return isRealPropertyWithValueLessThan((Double) value);
+        }
+        if (value instanceof Float) {
+            return isRealPropertyWithValueLessThan(((Float) value).doubleValue());
         }
         logger.info(
                 "Cannot generate 'lessThanOrEqualTo' predicate for value of type {}",
                 value.getClass().getName());
         return line -> false;
+    }
+
+    public static Predicate<IfcLine> isProperty() {
+        return line -> line instanceof IfcSinglePropertyValueLine;
     }
 
     public static Predicate<IfcLine> isRealProperty() {
@@ -341,7 +363,7 @@ public abstract class IfcLinePredicates {
         return Optional.ofNullable(line)
                 .filter(p -> IfcPropertyType.is(p.getType(), IfcPropertyType.BOOL))
                 .map(IfcSinglePropertyValueLine::getValue)
-                .map(s -> ".T.".equals(s))
+                .map(".T."::equals)
                 .or(
                         () ->
                                 Optional.ofNullable(line)

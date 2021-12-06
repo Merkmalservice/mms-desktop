@@ -32,29 +32,34 @@ public class ParsedIfcFile {
     private final Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap;
     private final List<Feature> features;
     private final Set<FeatureSet> featureSets;
+    private final Map<Integer, List<Integer>> reverseLookupRelDefinesByProperties;
+    private final Map<Integer, List<Integer>> reverseLookupReferencingLines;
 
     public <T extends IfcLine> List<? extends IfcLine> getProperties(
             T element, Predicate<IfcLine> predicate) {
-        List<IfcLine> properties = new ArrayList<>();
-        properties.addAll(
+        List<IfcLine> properties =
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
                         .map(this::getPropertySet)
                         .filter(Optional::isPresent)
                         .flatMap(ps -> getPropertySetChildLines(ps.get()).stream())
                         .filter(predicate)
-                        .collect(toList()));
-        properties.addAll(
+                        .collect(toList());
+        return properties;
+    }
+
+    public <T extends IfcLine> List<? extends IfcLine> getPropertiesViaType(
+            T element, Predicate<IfcLine> predicate) {
+        List<IfcLine> properties =
                 getRelDefinesByTypeReferencing(element).stream()
                         .flatMap(rel -> getPropertySets(rel).stream())
                         .flatMap(ps -> getPropertySetChildLines(ps).stream())
                         .filter(predicate)
-                        .collect(toList()));
+                        .collect(toList());
         return properties;
     }
 
     public <T extends IfcLine> void removeProperty(T element, Predicate<IfcLine> predicate) {
-        List<Pair<IfcPropertySetLine, IfcSinglePropertyValueLine>> toDelete = new ArrayList<>();
-        toDelete.addAll(
+        List<Pair<IfcPropertySetLine, IfcSinglePropertyValueLine>> toDelete =
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
                         .map(this::getPropertySet)
                         .filter(Optional::isPresent)
@@ -64,8 +69,15 @@ public class ParsedIfcFile {
                                         getPropertySetChildLines(ps).stream()
                                                 .filter(predicate)
                                                 .map(prop -> Pair.of(ps, prop)))
-                        .collect(Collectors.toList()));
-        toDelete.addAll(
+                        .collect(Collectors.toList());
+        toDelete.forEach(
+                pSetAndProp ->
+                        removeSinglePropertyFromPropertySet(
+                                pSetAndProp.getLeft(), pSetAndProp.getRight()));
+    }
+
+    public <T extends IfcLine> void removePropertyViaType(T element, Predicate<IfcLine> predicate) {
+        List<Pair<IfcPropertySetLine, IfcSinglePropertyValueLine>> toDelete =
                 getRelDefinesByTypeReferencing(element).stream()
                         .flatMap(rel -> getPropertySets(rel).stream())
                         .flatMap(
@@ -73,7 +85,7 @@ public class ParsedIfcFile {
                                         getPropertySetChildLines(ps).stream()
                                                 .filter(predicate)
                                                 .map(prop -> Pair.of(ps, prop)))
-                        .collect(toList()));
+                        .collect(toList());
         toDelete.forEach(
                 pSetAndProp ->
                         removeSinglePropertyFromPropertySet(
@@ -88,7 +100,7 @@ public class ParsedIfcFile {
             List<IfcLine> quantities = getElementQuantityChildLines(elementQuantity);
             toDelete.addAll(quantities.stream().filter(predicate).collect(Collectors.toList()));
         }
-        toDelete.forEach(d -> removeLine(d));
+        toDelete.forEach(this::removeLine);
     }
 
     private void removeSinglePropertyFromPropertySet(
@@ -114,7 +126,7 @@ public class ParsedIfcFile {
         getTypeInstancePairStream(line)
                 .forEach(tip -> this.dataLinesByClass.get(tip.type).remove(tip.instance));
         this.lines.remove(line);
-        cascadingDeletes.forEach(toRemoveCascading -> removeLine(toRemoveCascading));
+        cascadingDeletes.forEach(this::removeLine);
     }
 
     public Optional<IfcPropertySetLine> getPropertySet(
@@ -195,11 +207,7 @@ public class ParsedIfcFile {
                                 }
                                 features.addAll(
                                         getPropertySetChildLines(line).parallelStream()
-                                                .filter(
-                                                        l ->
-                                                                l
-                                                                        instanceof
-                                                                        IfcNamedPropertyLineInterface)
+                                                .filter(Objects::nonNull)
                                                 .map(
                                                         childLine ->
                                                                 Utils.convertIFCStringToUtf8(
@@ -305,11 +313,32 @@ public class ParsedIfcFile {
                                                             .filter(Objects::nonNull)
                                                             .collect(toList())))
                             .collect(Collectors.toSet()));
+            this.reverseLookupRelDefinesByProperties =
+                    this.dataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
+                            .map(line -> (IfcRelDefinesByPropertiesLine) line)
+                            .flatMap(
+                                    line ->
+                                            line.getRelatedObjectIds().stream()
+                                                    .map(o -> Map.entry(o, line.getId())))
+                            .collect(
+                                    groupingBy(
+                                            e -> e.getKey(), mapping(e -> e.getValue(), toList())));
+            this.reverseLookupReferencingLines =
+                    this.dataLines.values().parallelStream()
+                            .flatMap(
+                                    line ->
+                                            line.getReferences().stream()
+                                                    .map(ref -> Map.entry(ref, line.getId())))
+                            .collect(
+                                    groupingBy(
+                                            e -> e.getKey(), mapping(e -> e.getValue(), toList())));
         } else {
             this.dataLines = Collections.emptyMap();
             this.dataLinesByClass = Collections.emptyMap();
             this.featureSets = Collections.emptySet();
             this.features = Collections.emptyList();
+            this.reverseLookupRelDefinesByProperties = Collections.emptyMap();
+            this.reverseLookupReferencingLines = Collections.emptyMap();
         }
     }
 
@@ -332,6 +361,9 @@ public class ParsedIfcFile {
         this.extractedPropertyMap = new HashMap<>(toCopy.extractedPropertyMap);
         this.featureSets = new HashSet<>(toCopy.featureSets);
         this.lines = new ArrayList<>(toCopy.lines);
+        this.reverseLookupRelDefinesByProperties =
+                new HashMap<>(toCopy.reverseLookupRelDefinesByProperties);
+        this.reverseLookupReferencingLines = new HashMap<>(toCopy.reverseLookupReferencingLines);
     }
 
     public List<IfcLine> getLines() {
@@ -420,11 +452,14 @@ public class ParsedIfcFile {
     }
 
     public List<IfcLine> getReferencingLines(IfcLine ifcLine) {
-        return dataLines.entrySet().parallelStream()
-                .map(Map.Entry::getValue)
+        return reverseLookupReferencingLines
+                .getOrDefault(ifcLine.getId(), Collections.emptyList())
+                .stream()
+                .map(dataLines::get)
                 .filter(Objects::nonNull)
-                .filter(dataLine -> dataLine.references(ifcLine))
-                .collect(toList());
+                // lazy check required because we may have deleted the reference
+                .filter(ref -> ref.references(ifcLine.getId()))
+                .collect(Collectors.toList());
     }
 
     public List<IfcLine> getReferencedLines(IfcLine ifcLine) {
@@ -439,7 +474,7 @@ public class ParsedIfcFile {
         return Optional.ofNullable(ifcLine)
                 .map(
                         l ->
-                                l.getPropertyIds().stream()
+                                l.getPropertyIds().parallelStream()
                                         .map(dataLines::get)
                                         .map(
                                                 line ->
@@ -470,13 +505,13 @@ public class ParsedIfcFile {
 
     public List<IfcRelDefinesByPropertiesLine> getRelDefinesByPropertiesLinesReferencing(
             IfcLine ifcLine) {
-        return getDataLinesByClass(IfcRelDefinesByPropertiesLine.class).stream()
-                .filter(
-                        entryIfcLine ->
-                                Objects.nonNull(entryIfcLine)
-                                        && entryIfcLine
-                                                .getRelatedObjectIds()
-                                                .contains(ifcLine.getId()))
+        List<Integer> lookup =
+                this.reverseLookupRelDefinesByProperties.getOrDefault(
+                        ifcLine.getId(), Collections.emptyList());
+        return lookup.stream()
+                .map(dataLines::get)
+                .filter(Objects::nonNull)
+                .map(l -> (IfcRelDefinesByPropertiesLine) l)
                 .collect(toList());
     }
 

@@ -8,7 +8,7 @@ public abstract class ReferenceRemover {
         int pos = 0;
         int lastPos = 0;
         int depth = 0;
-        char lastChar = '_';
+        char lastChar;
         char curChar = '_';
         for (int i = 0; i < line.length(); i++) {
             lastChar = curChar;
@@ -45,7 +45,6 @@ public abstract class ReferenceRemover {
                 }
             }
             result.append(curChar);
-            continue;
         }
         return result.toString();
     }

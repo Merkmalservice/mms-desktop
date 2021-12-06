@@ -13,7 +13,6 @@ import at.researchstudio.sat.merkmalservice.model.mapping.*;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -32,7 +31,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
 
     @Override
     public Collection<ConversionRule> getRules() {
-        return mappings.stream().map(m -> toConversionRule(m)).collect(toList());
+        return mappings.stream().map(this::toConversionRule).collect(toList());
     }
 
     private ConversionRule toConversionRule(Mapping mapping) {
@@ -89,7 +88,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
 
     private Predicate<IfcLineAndModel> makePredicate(ConditionGroup condition) {
         return condition.getConditions().stream()
-                .map(c -> buildRulePredicate(c))
+                .map(this::buildRulePredicate)
                 .reduce(
                         (p1, p2) ->
                                 condition.getConnective() == Connective.AND
@@ -99,18 +98,16 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
     }
 
     private Predicate<IfcLineAndModel> makePredicate(SingleCondition condition) {
-        return ilam -> {
-            BiFunction<IfcLineAndModel, SingleCondition, Boolean> fun =
-                    singleConditionPredicates.get(condition.getPredicate());
-            if (fun != null) {
-                return fun.apply(ilam, condition);
-            } else {
-                logger.info(
-                        "Ignoring condition with predicate {}: not implemented",
-                        condition.getPredicate());
-            }
-            return false;
-        };
+        Function<SingleCondition, Predicate<IfcLineAndModel>> fun =
+                singleConditionPredicates.get(condition.getPredicate());
+        if (fun != null) {
+            return fun.apply(condition);
+        } else {
+            logger.info(
+                    "Ignoring condition with predicate {}: not implemented",
+                    condition.getPredicate());
+        }
+        return x -> false;
     }
 
     private static List<? extends IfcLine> getProperties(IfcLineAndModel ilam, Feature feature) {
@@ -120,117 +117,92 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
     }
 
     private static final Map<
-                    MappingPredicate, BiFunction<IfcLineAndModel, SingleCondition, Boolean>>
+                    MappingPredicate, Function<SingleCondition, Predicate<IfcLineAndModel>>>
             singleConditionPredicates =
                     Map.ofEntries(
                             Map.entry(
                                     MappingPredicate.PRESENT,
-                                    (ilam, condition) ->
-                                            !getProperties(ilam, condition.getFeature()).isEmpty()),
+                                    condition ->
+                                            ilam ->
+                                                    !getProperties(ilam, condition.getFeature())
+                                                            .isEmpty()),
                             Map.entry(
                                     MappingPredicate.CONTAINS,
-                                    (ilam, condition) ->
-                                            evaluateCondition(
-                                                    ilam,
-                                                    condition,
-                                                    IfcLinePredicates
-                                                            ::isStringPropertyWithValueContaining)),
+                                    getConditionFactory(
+                                            IfcLinePredicates
+                                                    ::isStringPropertyWithValueContaining)),
                             Map.entry(
                                     MappingPredicate.CONTAINS_NOT,
-                                    (ilam, condition) ->
-                                            evaluateCondition(
-                                                    ilam,
-                                                    condition,
-                                                    IfcLinePredicates
-                                                            ::isStringPropertyWithValueNotContaining)),
+                                    getConditionFactory(
+                                            IfcLinePredicates
+                                                    ::isStringPropertyWithValueNotContaining)),
                             Map.entry(
                                     MappingPredicate.MATCHES,
-                                    (ilam, condition) ->
-                                            evaluateCondition(
-                                                    ilam,
-                                                    condition,
-                                                    IfcLinePredicates
-                                                            ::isStringPropertyWithValueMatching)),
+                                    getConditionFactory(
+                                            IfcLinePredicates::isStringPropertyWithValueMatching)),
                             Map.entry(
                                     MappingPredicate.EQUALS,
-                                    (ilam, condition) ->
-                                            evaluateCondition(
-                                                    ilam,
-                                                    condition,
-                                                    IfcLinePredicates::valueEquals)),
+                                    getConditionFactory(IfcLinePredicates::valueEquals)),
                             Map.entry(
                                     MappingPredicate.NOT,
-                                    (ilam, condition) ->
-                                            evaluateCondition(
-                                                    ilam,
-                                                    condition,
-                                                    o ->
-                                                            IfcLinePredicates.valueEquals(o)
-                                                                    .negate())),
+                                    getConditionFactory(
+                                            o ->
+                                                    IfcLinePredicates.isProperty()
+                                                            .and(
+                                                                    IfcLinePredicates.valueEquals(o)
+                                                                            .negate()))),
                             Map.entry(
                                     MappingPredicate.GREATER_OR_EQUALS,
-                                    (ilam, condition) ->
-                                            evaluateCondition(
-                                                    ilam,
-                                                    condition,
-                                                    o ->
-                                                            IfcLinePredicates.isNumericProperty()
-                                                                    .and(
-                                                                            IfcLinePredicates
-                                                                                    .isNumericPropertyWithValueLessThan(
-                                                                                            o)
-                                                                                    .negate()))),
+                                    getConditionFactory(
+                                            o ->
+                                                    IfcLinePredicates.isNumericProperty()
+                                                            .and(
+                                                                    IfcLinePredicates
+                                                                            .isNumericPropertyWithValueLessThan(
+                                                                                    o)
+                                                                            .negate()))),
                             Map.entry(
                                     MappingPredicate.GREATER_THAN,
-                                    (ilam, condition) ->
-                                            evaluateCondition(
-                                                    ilam,
-                                                    condition,
-                                                    o ->
-                                                            IfcLinePredicates.isNumericProperty()
-                                                                    .and(
-                                                                            IfcLinePredicates
-                                                                                    .isNumericPropertyWithValueLessThanOrEqualTo(
-                                                                                            o)
-                                                                                    .negate()))),
+                                    getConditionFactory(
+                                            o ->
+                                                    IfcLinePredicates.isNumericProperty()
+                                                            .and(
+                                                                    IfcLinePredicates
+                                                                            .isNumericPropertyWithValueLessThanOrEqualTo(
+                                                                                    o)
+                                                                            .negate()))),
                             Map.entry(
                                     MappingPredicate.LESS_OR_EQUALS,
-                                    (ilam, condition) ->
-                                            evaluateCondition(
-                                                    ilam,
-                                                    condition,
-                                                    o ->
-                                                            IfcLinePredicates
-                                                                    .isNumericPropertyWithValueLessThanOrEqualTo(
-                                                                            o))),
+                                    getConditionFactory(
+                                            IfcLinePredicates
+                                                    ::isNumericPropertyWithValueLessThanOrEqualTo)),
                             Map.entry(
                                     MappingPredicate.LESS_THAN,
-                                    (ilam, condition) ->
-                                            evaluateCondition(
-                                                    ilam,
-                                                    condition,
-                                                    o ->
-                                                            IfcLinePredicates
-                                                                    .isNumericPropertyWithValueLessThan(
-                                                                            o))));
+                                    getConditionFactory(
+                                            IfcLinePredicates
+                                                    ::isNumericPropertyWithValueLessThan)));
 
     @NotNull
-    private static <T> Boolean evaluateCondition(
-            IfcLineAndModel ilam,
-            SingleCondition condition,
+    private static <T> Function<SingleCondition, Predicate<IfcLineAndModel>> getConditionFactory(
             Function<T, Predicate<IfcLine>> predicateGenerator) {
-        List<? extends IfcLine> props = getProperties(ilam, condition.getFeature());
-        if (props.isEmpty()) {
-            return false;
-        }
-        warnIfMultipleValues(ilam, condition, props);
-        IfcLine prop = props.get(0);
-        Optional<MappingExecutionValue> conditionValue = condition.getValue();
-        if (!condition.getPredicate().isValueless() && conditionValue.isEmpty()) {
-            warnAboutMissingConditionValue(condition);
-            return false;
-        }
-        return predicateGenerator.apply(conditionValue.get().getValue()).test(prop);
+        return condition -> {
+            Optional<MappingExecutionValue> conditionValue = condition.getValue();
+            if (!condition.getPredicate().isValueless() && conditionValue.isEmpty()) {
+                warnAboutMissingConditionValue(condition);
+                return x -> false;
+            }
+            final Predicate<IfcLine> pred =
+                    predicateGenerator.apply(conditionValue.get().getValue());
+            return ilam -> {
+                List<? extends IfcLine> props = getProperties(ilam, condition.getFeature());
+                if (props.isEmpty()) {
+                    return false;
+                }
+                warnIfMultipleValues(ilam, condition, props);
+                IfcLine prop = props.get(0);
+                return pred.test(prop);
+            };
+        };
     }
 
     private static void warnAboutMissingConditionValue(SingleCondition condition) {
