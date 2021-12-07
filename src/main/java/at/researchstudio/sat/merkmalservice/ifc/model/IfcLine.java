@@ -2,6 +2,7 @@ package at.researchstudio.sat.merkmalservice.ifc.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +49,14 @@ public class IfcLine {
         return id;
     }
 
+    public void changeIdTo(Integer newId) {
+        int oldId = this.id;
+        this.id = newId;
+        this.modifiedLine =
+                (this.modifiedLine == null ? line : modifiedLine)
+                        .replaceAll("#" + oldId + "\\b", "#" + this.id);
+    }
+
     public String getType() {
         return type;
     }
@@ -87,5 +96,20 @@ public class IfcLine {
                 ReferenceRemover.removeReferenceTo(
                         modifiedLine == null ? line : modifiedLine, itemId);
         return false;
+    }
+
+    public void replaceReference(Integer oldValue, Integer newValue) {
+        Objects.requireNonNull(oldValue);
+        Objects.requireNonNull(newValue);
+        if (!this.references.remove(oldValue)) {
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Cannot replace reference to #%d with reference to #%d in line %s: no such reference",
+                            oldValue, newValue, modifiedLine));
+        }
+        this.references.add(newValue);
+        this.modifiedLine =
+                (modifiedLine == null ? line : modifiedLine)
+                        .replaceAll("#" + oldValue + "\\b", "#" + newValue);
     }
 }

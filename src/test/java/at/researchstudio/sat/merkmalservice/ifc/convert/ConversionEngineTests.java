@@ -519,6 +519,20 @@ public class ConversionEngineTests {
         testInOut("delete_property_volumen_greater_than_or_equal_to_3.5", engine);
     }
 
+    @Test
+    public void test_delete_property_from_shared_pset() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                delete(
+                                        "byEquals",
+                                        Inst.featurePhaseErstellt,
+                                        MappingPredicate.NOT,
+                                        new MappingExecutionValue("ABCDEFG"))));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_property_from_pset_shared_by_3_objects", engine);
+    }
+
     @NotNull
     private ParsedIfcFile loadTestFile1() throws IOException {
         File testFile = new File(testResources, "IFC test.ifc");

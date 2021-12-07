@@ -35,13 +35,23 @@ public class IfcRelDefinesByPropertiesLine extends IfcRelationLine {
         }
     }
 
+    public boolean isSharedPropertySet() {
+        return relatedObjectIds.size() > 1;
+    }
+
     public int getRelatingPropertySetId() {
         return relatingPropertySetId;
+    }
+
+    public void changeRelatingPropertySetIdTo(Integer id) {
+        replaceReference(this.relatingPropertySetId, id);
+        this.relatingPropertySetId = id;
     }
 
     @Override
     public boolean removeReferenceTo(Integer itemId) {
         super.removeReferenceTo(itemId);
-        return relatingPropertySetId == itemId;
+        this.relatedObjectIds.remove(itemId);
+        return relatingPropertySetId == itemId || relatedObjectIds.isEmpty();
     }
 }

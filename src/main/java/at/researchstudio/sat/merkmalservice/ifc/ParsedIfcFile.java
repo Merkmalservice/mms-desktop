@@ -1,6 +1,8 @@
 package at.researchstudio.sat.merkmalservice.ifc;
 
+import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castTo;
 import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castToOptAndLogFailure;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.*;
 
 import at.researchstudio.sat.merkmalservice.ifc.model.*;
@@ -13,6 +15,7 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import java.lang.invoke.MethodHandles;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,6 +37,20 @@ public class ParsedIfcFile {
     private final Set<FeatureSet> featureSets;
     private final Map<Integer, List<Integer>> reverseLookupRelDefinesByProperties;
     private final Map<Integer, List<Integer>> reverseLookupReferencingLines;
+    private AtomicInteger nextFreeLineId = new AtomicInteger(1);
+
+    private Integer nextFreeLineId() {
+        return nextFreeLineId.getAndIncrement();
+    }
+
+    /*
+     * Sets the nextFreeLineId to the specified <code>usedId + 1<code> if that value is higher than its current value.
+     */
+    private void markLineIdUsed(Integer usedId) {
+        nextFreeLineId.accumulateAndGet(
+                usedId,
+                (currentValue, candidateValue) -> Math.max(candidateValue + 1, currentValue));
+    }
 
     public <T extends IfcLine> List<? extends IfcLine> getProperties(
             T element, Predicate<IfcLine> predicate) {
@@ -59,8 +76,14 @@ public class ParsedIfcFile {
     }
 
     public <T extends IfcLine> void removeProperty(T element, Predicate<IfcLine> predicate) {
+        List<IfcRelDefinesByPropertiesLine> relDefByProps =
+                getRelDefinesByPropertiesLinesReferencing(element);
+        relDefByProps.stream()
+                .filter(IfcRelDefinesByPropertiesLine::isSharedPropertySet)
+                .forEach(ps -> splitSharedPropertySet(element, ps, predicate));
         List<Pair<IfcPropertySetLine, IfcSinglePropertyValueLine>> toDelete =
-                getRelDefinesByPropertiesLinesReferencing(element).stream()
+                relDefByProps.stream()
+                        .filter(not(IfcRelDefinesByPropertiesLine::isSharedPropertySet))
                         .map(this::getPropertySet)
                         .filter(Optional::isPresent)
                         .map(Optional::get)
@@ -74,6 +97,84 @@ public class ParsedIfcFile {
                 pSetAndProp ->
                         removeSinglePropertyFromPropertySet(
                                 pSetAndProp.getLeft(), pSetAndProp.getRight()));
+    }
+
+    private <T extends IfcLine> void splitSharedPropertySet(
+            T element, IfcRelDefinesByPropertiesLine relDefByProps, Predicate<IfcLine> predicate) {
+        IfcPropertySetLine pSet =
+                castTo(
+                        dataLines.get(relDefByProps.getRelatingPropertySetId()),
+                        IfcPropertySetLine.class);
+        IfcPropertySetLine newPSet = new IfcPropertySetLine(pSet.getModifiedLine());
+        registerNewIfcLine(newPSet);
+        removeFromLookupTables(relDefByProps);
+        relDefByProps.removeReferenceTo(element.getId());
+        addToLookupTables(relDefByProps);
+        IfcRelDefinesByPropertiesLine newRelDefByProps =
+                new IfcRelDefinesByPropertiesLine(relDefByProps.getLine());
+        List<Integer> toRemove =
+                newRelDefByProps.getRelatedObjectIds().stream()
+                        .filter(id -> id != element.getId())
+                        .collect(toList());
+        toRemove.forEach(newRelDefByProps::removeReferenceTo);
+        newRelDefByProps.changeRelatingPropertySetIdTo(newPSet.getId());
+        registerNewIfcLine(newRelDefByProps);
+    }
+
+    private void registerNewIfcLine(IfcLine newLine) {
+        newLine.changeIdTo(nextFreeLineId());
+        if (dataLines.put(newLine.getId(), newLine) != null) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Tried to use line id %d for new line %s but that Id is not available",
+                            newLine.getId(), newLine.getModifiedLine()));
+        }
+        int lineNo = lines.size() - 1;
+        while (lineNo > 0 && !lines.get(lineNo).getModifiedLine().startsWith("#")) {
+            lineNo--;
+        }
+        lines.add(lineNo + 1, newLine);
+        addToLookupTables(newLine);
+    }
+
+    private void removeFromLookupTables(IfcLine newLine) {
+        if (newLine instanceof IfcRelDefinesByPropertiesLine) {
+            for (Integer objectId :
+                    ((IfcRelDefinesByPropertiesLine) newLine).getRelatedObjectIds()) {
+                List<Integer> existingRefs = this.reverseLookupRelDefinesByProperties.get(objectId);
+                if (existingRefs != null) {
+                    existingRefs.remove((Object) newLine.getId());
+                }
+            }
+        }
+        for (Integer objectId : newLine.getReferences()) {
+            List<Integer> existingRefs = this.reverseLookupReferencingLines.get(objectId);
+            if (existingRefs != null) {
+                existingRefs.remove((Object) newLine.getId());
+            }
+        }
+    }
+
+    private void addToLookupTables(IfcLine newLine) {
+        if (newLine instanceof IfcRelDefinesByPropertiesLine) {
+            for (Integer objectId :
+                    ((IfcRelDefinesByPropertiesLine) newLine).getRelatedObjectIds()) {
+                List<Integer> existingRefs =
+                        this.reverseLookupRelDefinesByProperties.putIfAbsent(
+                                objectId, List.of(newLine.getId()));
+                if (existingRefs != null) {
+                    existingRefs.add(newLine.getId());
+                }
+            }
+        }
+        for (Integer objectId : newLine.getReferences()) {
+            List<Integer> existingRefs =
+                    this.reverseLookupReferencingLines.putIfAbsent(
+                            objectId, List.of(newLine.getId()));
+            if (existingRefs != null) {
+                existingRefs.add(newLine.getId());
+            }
+        }
     }
 
     public <T extends IfcLine> void removePropertyViaType(T element, Predicate<IfcLine> predicate) {
@@ -332,6 +433,9 @@ public class ParsedIfcFile {
                             .collect(
                                     groupingBy(
                                             e -> e.getKey(), mapping(e -> e.getValue(), toList())));
+            if (!dataLines.isEmpty()) {
+                this.markLineIdUsed(dataLines.keySet().stream().max(Integer::compareTo).get());
+            }
         } else {
             this.dataLines = Collections.emptyMap();
             this.dataLinesByClass = Collections.emptyMap();
@@ -364,6 +468,7 @@ public class ParsedIfcFile {
         this.reverseLookupRelDefinesByProperties =
                 new HashMap<>(toCopy.reverseLookupRelDefinesByProperties);
         this.reverseLookupReferencingLines = new HashMap<>(toCopy.reverseLookupReferencingLines);
+        this.markLineIdUsed(toCopy.nextFreeLineId());
     }
 
     public List<IfcLine> getLines() {
