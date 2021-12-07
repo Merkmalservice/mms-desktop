@@ -357,7 +357,7 @@ public class ConversionEngineTests {
                 new MappingConversionRuleFactory(
                         List.of(
                                 delete(
-                                        "byEquals",
+                                        "byEqualsNot",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.NOT,
                                         new MappingExecutionValue("ABCDEFG"))));
@@ -525,12 +525,34 @@ public class ConversionEngineTests {
                 new MappingConversionRuleFactory(
                         List.of(
                                 delete(
-                                        "byEquals",
                                         Inst.featurePhaseErstellt,
-                                        MappingPredicate.NOT,
+                                        "byEquals",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.EQUALS,
                                         new MappingExecutionValue("ABCDEFG"))));
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_from_pset_shared_by_3_objects", engine);
+    }
+
+    @Test
+    public void test_delete_two_different_properties_from_shared_pset() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                delete(
+                                        Inst.featurePhaseErstellt,
+                                        "byEquals",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.EQUALS,
+                                        new MappingExecutionValue("ABCDEFG")),
+                                delete(
+                                        Inst.featurePhaseGebaut,
+                                        "byEquals",
+                                        Inst.featureCpiFitMatchKey,
+                                        MappingPredicate.EQUALS,
+                                        new MappingExecutionValue("RSTUVWX"))));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_two_different_properties_from_pset_shared_by_3_objects", engine);
     }
 
     @NotNull
@@ -546,27 +568,6 @@ public class ConversionEngineTests {
     }
 
     private static class Inst {
-        public static Feature featureTypname =
-                new Feature(
-                        "feature4Id",
-                        "Typname",
-                        "The type name",
-                        List.of(),
-                        new StringFeatureType());
-        public static Feature featurePhaseErstellt =
-                new Feature(
-                        "feature5Id",
-                        "Phase erstellt",
-                        "the phase",
-                        List.of(),
-                        new StringFeatureType());
-        public static Feature featureVolume =
-                new Feature(
-                        "feature6Id",
-                        "Volumen",
-                        "The volume of an object",
-                        List.of(),
-                        new NumericFeatureType(QudtQuantityKind.VOLUME, QudtUnit.CUBIC_METRE));
         static Feature featureCpiFitMatchKey =
                 new Feature(
                         "feature1Id",
@@ -588,6 +589,36 @@ public class ConversionEngineTests {
                         "Indikator für Rauigkeit",
                         List.of(),
                         new NumericFeatureType(QudtQuantityKind.DIMENSIONLESS, QudtUnit.UNITLESS));
+        public static Feature featureTypname =
+                new Feature(
+                        "feature4Id",
+                        "Typname",
+                        "The type name",
+                        List.of(),
+                        new StringFeatureType());
+        public static Feature featurePhaseErstellt =
+                new Feature(
+                        "feature5Id",
+                        "Phase erstellt",
+                        "the phase in which the object was planned",
+                        List.of(),
+                        new StringFeatureType());
+
+        public static Feature featureVolume =
+                new Feature(
+                        "feature6Id",
+                        "Volumen",
+                        "The volume of an object",
+                        List.of(),
+                        new NumericFeatureType(QudtQuantityKind.VOLUME, QudtUnit.CUBIC_METRE));
+        public static Feature featurePhaseGebaut =
+                new Feature(
+                        "feature7Id",
+                        "Phase gebaut",
+                        "the phase in which the object was built",
+                        List.of(),
+                        new StringFeatureType());
+
         static Organization organization1 = new Organization("org1Id", "Org one");
         static Project project1 =
                 new Project("project1Id", "Project One", "a project", List.of(), List.of());

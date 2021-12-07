@@ -76,13 +76,11 @@ public class ParsedIfcFile {
     }
 
     public <T extends IfcLine> void removeProperty(T element, Predicate<IfcLine> predicate) {
-        List<IfcRelDefinesByPropertiesLine> relDefByProps =
-                getRelDefinesByPropertiesLinesReferencing(element);
-        relDefByProps.stream()
+        getRelDefinesByPropertiesLinesReferencing(element).stream()
                 .filter(IfcRelDefinesByPropertiesLine::isSharedPropertySet)
                 .forEach(ps -> splitSharedPropertySet(element, ps, predicate));
         List<Pair<IfcPropertySetLine, IfcSinglePropertyValueLine>> toDelete =
-                relDefByProps.stream()
+                getRelDefinesByPropertiesLinesReferencing(element).stream()
                         .filter(not(IfcRelDefinesByPropertiesLine::isSharedPropertySet))
                         .map(this::getPropertySet)
                         .filter(Optional::isPresent)
@@ -206,12 +204,18 @@ public class ParsedIfcFile {
 
     private void removeSinglePropertyFromPropertySet(
             IfcPropertySetLine propertySetLine, IfcSinglePropertyValueLine propertyValueLine) {
+        removeFromLookupTables(propertySetLine);
+        removeFromLookupTables(propertyValueLine);
         propertySetLine.removeReferenceTo(propertyValueLine);
         if (propertySetLine.getPropertyIds().isEmpty()) {
             removeLine(propertySetLine);
+        } else {
+            addToLookupTables(propertySetLine);
         }
         if (getReferencingLines(propertyValueLine).isEmpty()) {
             removeLine(propertyValueLine);
+        } else {
+            addToLookupTables(propertyValueLine);
         }
     }
 
