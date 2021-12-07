@@ -93,7 +93,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                         (p1, p2) ->
                                 condition.getConnective() == Connective.AND
                                         ? p1.and(p2)
-                                        : p2.or(p2))
+                                        : p1.or(p2))
                 .get();
     }
 
