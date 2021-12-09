@@ -1,7 +1,6 @@
 package at.researchstudio.sat.merkmalservice.ifc.convert.support;
 
-import static java.util.stream.Collectors.toList;
-
+import at.researchstudio.sat.merkmalservice.api.graphql.types.AddAction;
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRuleFactory;
@@ -9,16 +8,28 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.ParsedIfcFileModificatio
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.modification.Modification;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
-import at.researchstudio.sat.merkmalservice.model.mapping.*;
+import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
+import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
+import at.researchstudio.sat.merkmalservice.model.mapping.MappingPredicate;
+import at.researchstudio.sat.merkmalservice.model.mapping.action.Action;
+import at.researchstudio.sat.merkmalservice.model.mapping.action.ActionGroup;
+import at.researchstudio.sat.merkmalservice.model.mapping.action.delete.DeleteAction;
+import at.researchstudio.sat.merkmalservice.model.mapping.condition.Condition;
+import at.researchstudio.sat.merkmalservice.model.mapping.condition.ConditionGroup;
+import at.researchstudio.sat.merkmalservice.model.mapping.condition.Connective;
+import at.researchstudio.sat.merkmalservice.model.mapping.condition.SingleCondition;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 public class MappingConversionRuleFactory implements ConversionRuleFactory {
     private static final Logger logger =
