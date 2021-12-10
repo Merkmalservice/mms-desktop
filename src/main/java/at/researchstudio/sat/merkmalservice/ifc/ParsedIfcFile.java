@@ -10,6 +10,7 @@ import at.researchstudio.sat.merkmalservice.ifc.model.element.IfcBuiltElementLin
 import at.researchstudio.sat.merkmalservice.ifc.model.type.IfcTypeObjectLine;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
+import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
@@ -75,10 +76,31 @@ public class ParsedIfcFile {
         return properties;
     }
 
+    public <T extends IfcLine> void addProperty(T element, Feature feature, MappingExecutionValue value, String propertySetName){
+        splitPropertySetsMatching(element, pset -> propertySetName.equals(pset.getName()));
+        List<IfcPropertySetLine> propSets =
+                        getRelDefinesByPropertiesLinesReferencing(element).stream()
+                                        .filter(not(IfcRelDefinesByPropertiesLine::isSharedPropertySet))
+                                        .map(this::getPropertySet)
+                                        .filter(Optional::isPresent)
+                                        .map(Optional::get)
+                                        .filter(pset -> propertySetName.equals(pset.getName()))
+                        .collect(toList());
+        IfcPropertySetLine pSet = null;
+        if (propSets.isEmpty()){
+            pSet = addPropertySet(propertySetName, element);
+        } else {
+            pSet = propSets.get(0);
+        }
+        addProperty(pSet, feature, value);
+    }
+
+    private void addProperty(IfcPropertySetLine pSet, Feature feature, MappingExecutionValue value) {
+        IfcSinglePropertyValueLine prop = new IfcSinglePropertyValueLine()
+    }
+
     public <T extends IfcLine> void removeProperty(T element, Predicate<IfcLine> predicate) {
-        getRelDefinesByPropertiesLinesReferencing(element).stream()
-                .filter(IfcRelDefinesByPropertiesLine::isSharedPropertySet)
-                .forEach(ps -> splitSharedPropertySet(element, ps, predicate));
+        splitPropertySetsWithPropertyMatching(element, predicate);
         List<Pair<IfcPropertySetLine, IfcSinglePropertyValueLine>> toDelete =
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
                         .filter(not(IfcRelDefinesByPropertiesLine::isSharedPropertySet))
@@ -97,8 +119,36 @@ public class ParsedIfcFile {
                                 pSetAndProp.getLeft(), pSetAndProp.getRight()));
     }
 
+    private <T extends IfcLine> void splitPropertySetsWithPropertyMatching(T element, Predicate<IfcLine> predicate) {
+        getRelDefinesByPropertiesLinesReferencing(element)
+                .stream()
+                .filter( (IfcRelDefinesByPropertiesLine psRel) -> {
+                    Optional<IfcPropertySetLine> ps = getPropertySet(psRel);
+                    return ps.map(pset -> getPropertySetChildLines(pset).stream().anyMatch(predicate)).orElse(false);
+                })
+                .filter(IfcRelDefinesByPropertiesLine::isSharedPropertySet)
+                .forEach(ps -> splitSharedPropertySet(element, ps));
+    }
+
+    private <T extends IfcLine> void splitPropertySetsMatching(T element, Predicate<IfcPropertySetLine> predicate) {
+        getRelDefinesByPropertiesLinesReferencing(element)
+                        .stream()
+                        .filter( (IfcRelDefinesByPropertiesLine psRel) -> {
+                            return getPropertySet(psRel).map(predicate::test).orElse(false);
+                        })
+                        .forEach(ps -> splitSharedPropertySet(element, ps));
+    }
+
+
+    private <T extends IfcLine> IfcPropertySetLine addPropertySet(String name, T toElement){
+        Integer id = nextFreeLineId();
+        IfcPropertySetLine pSet = new IfcPropertySetLine(id, name, UUID.randomUUID().toString(), 10101, null, null);
+        registerNewIfcLine(pSet, false);
+        return pSet;
+    }
+
     private <T extends IfcLine> void splitSharedPropertySet(
-            T element, IfcRelDefinesByPropertiesLine relDefByProps, Predicate<IfcLine> predicate) {
+                    T element, IfcRelDefinesByPropertiesLine relDefByProps) {
         IfcPropertySetLine pSet =
                 castTo(
                         dataLines.get(relDefByProps.getRelatingPropertySetId()),
@@ -120,7 +170,13 @@ public class ParsedIfcFile {
     }
 
     private void registerNewIfcLine(IfcLine newLine) {
-        newLine.changeIdTo(nextFreeLineId());
+        registerNewIfcLine(newLine, true);
+    }
+
+    private void registerNewIfcLine(IfcLine newLine, boolean changeIdToNextFreeId) {
+        if (changeIdToNextFreeId) {
+            newLine.changeIdTo(nextFreeLineId());
+        }
         if (dataLines.put(newLine.getId(), newLine) != null) {
             throw new IllegalStateException(
                     String.format(

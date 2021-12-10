@@ -583,18 +583,29 @@ public class ConversionEngineTests {
         MappingConversionRuleFactory factory =
                 new MappingConversionRuleFactory(
                         List.of(
-                                delete(
-                                        Inst.featurePhaseErstellt,
-                                        "byEquals",
-                                        Inst.featureCpiFitMatchKey,
-                                        MappingPredicate.EQUALS,
-                                        new MappingExecutionValue("ABCDEFG")),
-                                delete(
-                                        Inst.featurePhaseGebaut,
-                                        "byEquals",
-                                        Inst.featureCpiFitMatchKey,
-                                        MappingPredicate.EQUALS,
-                                        new MappingExecutionValue("RSTUVWX"))));
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .deleteActionGroup()
+                                        /*--*/ .deleteAction()
+                                        /*----*/ .feature(Inst.featurePhaseErstellt)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build(),
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("RSTUVWX")
+                                        /*--*/ .end()
+                                        /**/ .deleteActionGroup()
+                                        /*--*/ .deleteAction()
+                                        /*----*/ .feature(Inst.featurePhaseGebaut)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
+
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_two_different_properties_from_pset_shared_by_3_objects", engine);
     }
@@ -604,28 +615,113 @@ public class ConversionEngineTests {
             throws IOException {
         MappingConversionRuleFactory factory =
                 new MappingConversionRuleFactory(
-                                List.of(
-                                        Mapping.builder()
-                                                .id("m1")
-                                                .name("mapping1")
-                                                .project(Inst.project1)
-                                                .anyMatch()
-                                                .matches()
-                                                .feature(Inst.featureCpiFitMatchKey)
-                                                .predicate(MappingPredicate.EQUALS)
-                                                .value("ABCDEFG")
-                                                .end()
-                                                .matches()
-                                                .feature(Inst.featureCpiFitMatchKey)
-                                                .predicate(MappingPredicate.EQUALS)
-                                                .value("RSTUVWX")
-                        .end()
-                        .delete()
-                        .action()
-                        .feature(Inst.featurePhaseErstellt)
-                        .build();
+                        List.of(
+                                Mapping.builder()
+                                        /*--*/ .anyMatch()
+                                        /*----*/ .matches()
+                                        /*------*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*------*/ .valueEquals("ABCDEFG")
+                                        /*------*/ .end()
+                                        /*----*/ .matches()
+                                        /*------*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*------*/ .valueEquals("RSTUVWX")
+                                        /*------*/ .end()
+                                        /*----*/ .end()
+                                        /*--*/ .deleteActionGroup()
+                                        /*----*/ .deleteAction()
+                                        /*------*/ .feature(Inst.featurePhaseErstellt)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_two_identical_properties_from_pset_shared_by_3_objects", engine);
+    }
+
+    @Test
+    public void test_delete_with_two_levels_of_conditions() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .allMatch()
+                                        /*----*/ .matches()
+                                        /*------*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*------*/ .valueMatches("ABC.+")
+                                        /*------*/ .end()
+                                        /*----*/ .matches()
+                                        /*------*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*------*/ .valueMatches("[A-D]+EFG$")
+                                        /*------*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .deleteActionGroup()
+                                        /*--*/ .deleteAction()
+                                        /*----*/ .feature(Inst.featurePhaseErstellt)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build(),
+                                Mapping.builder()
+                                        /**/ .anyMatch()
+                                        /*----*/ .matches()
+                                        /*------*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*------*/ .valueMatches("[RST]+.+")
+                                        /*------*/ .end()
+                                        /*----*/ .matches()
+                                        /*------*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*------*/ .valueMatches("DONTFINDTHIS")
+                                        /*------*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .deleteActionGroup()
+                                        /*--*/ .deleteAction()
+                                        /*----*/ .feature(Inst.featurePhaseGebaut)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
+
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("delete_two_different_properties_from_pset_shared_by_3_objects", engine);
+    }
+
+    @Test
+    public void test_add_IFCLABEL() throws IOException {
+        MappingConversionRuleFactory factory =
+                        new MappingConversionRuleFactory(
+                                        List.of(
+                                                        Mapping.builder()
+                                                                        /**/ .matches()
+                                                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                                                        /*--*/ .valueEquals("ABCDEFG")
+                                                                        /*--*/ .end()
+                                                                        /**/ .addActionGroup()
+                                                                        /*--*/ .addAction()
+                                                                        /*----*/ .feature(Inst.featurePhaseGeprüft)
+                                                                        /*----*/ .end()
+                                                                        /*--*/ .end()
+                                                                        /**/ .build()));
+
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("add_phase_geprüft_where_cpiFitMatchKey_ABC", engine);
+    }
+
+    @Test
+    public void test_add_IFCLABEL_to_Pset() throws IOException {
+        MappingConversionRuleFactory factory =
+                        new MappingConversionRuleFactory(
+                                        List.of(
+                                                        Mapping.builder()
+                                                                        /**/ .matches()
+                                                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                                                        /*--*/ .valueEquals("ABCDEFG")
+                                                                        /*--*/ .end()
+                                                                        /**/ .addActionGroup()
+                                                                        /*--*/ .addAction()
+                                                                        /*----*/ .feature(Inst.featurePhaseGeprüft)
+                                                                        /*----*/ .value("Phasen")
+                                                                        /*----*/ .end()
+                                                                        /*--*/ .end()
+                                                                        /**/ .build()));
+
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("add_phase_geprüft_where_cpiFitMatchKey_ABC", engine);
     }
 
     @NotNull
@@ -676,6 +772,13 @@ public class ConversionEngineTests {
                         "the phase in which the object was planned",
                         List.of(),
                         new StringFeatureType());
+        public static Feature featurePhaseGeprüft =
+                        new Feature(
+                                        "feature8Id",
+                                        "Phase geprüft",
+                                        "the phase in which the object was checked",
+                                        List.of(),
+                                        new StringFeatureType());
         public static Feature featureVolume =
                 new Feature(
                         "feature6Id",

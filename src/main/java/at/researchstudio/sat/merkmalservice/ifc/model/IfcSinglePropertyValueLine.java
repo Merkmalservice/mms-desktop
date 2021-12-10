@@ -15,8 +15,23 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
     private String description;
     private String type;
     private String value;
-    private String unitIdString;
     private int unitId;
+
+    public IfcSinglePropertyValueLine(Integer id, String name, String description, String type, String value,
+                    Integer unitId) {
+        super(makeLine(id, name, description, type, value, unitId, unitId));
+        this.name = name;
+        this.description = description;
+        this.type = type;
+        this.value = value;
+        this.unitId = unitId;
+    }
+
+    private static String makeLine(Integer id, String name, String description, String type, String value, Integer unitId,
+                    Integer unitId1) {
+        return new StringBuilder()
+                        .append()
+    }
 
     public IfcSinglePropertyValueLine(String line) {
         super(line);
@@ -27,7 +42,7 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
             type = StringUtils.trimToNull(matcher.group("type"));
             description = StringUtils.trimToNull(matcher.group("description"));
             value = StringUtils.trimToNull(matcher.group("value"));
-            unitIdString = StringUtils.trimToNull(matcher.group("unitId"));
+            String unitIdString = StringUtils.trimToNull(matcher.group("unitId"));
             if (Objects.nonNull(unitIdString)) {
                 unitId = Integer.parseInt(unitIdString);
                 unitIdString = "#" + unitIdString;
@@ -57,7 +72,4 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
         return unitId;
     }
 
-    public String getUnitIdString() {
-        return unitIdString;
-    }
 }

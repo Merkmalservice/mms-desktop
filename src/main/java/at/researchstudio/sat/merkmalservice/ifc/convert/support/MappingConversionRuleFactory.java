@@ -1,6 +1,7 @@
 package at.researchstudio.sat.merkmalservice.ifc.convert.support;
 
-import at.researchstudio.sat.merkmalservice.api.graphql.types.AddAction;
+import static java.util.stream.Collectors.toList;
+
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRuleFactory;
@@ -13,23 +14,22 @@ import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingPredicate;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.Action;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.ActionGroup;
+import at.researchstudio.sat.merkmalservice.model.mapping.action.add.AddAction;
+import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ConvertAction;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.delete.DeleteAction;
 import at.researchstudio.sat.merkmalservice.model.mapping.condition.Condition;
 import at.researchstudio.sat.merkmalservice.model.mapping.condition.ConditionGroup;
 import at.researchstudio.sat.merkmalservice.model.mapping.condition.Connective;
 import at.researchstudio.sat.merkmalservice.model.mapping.condition.SingleCondition;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MappingConversionRuleFactory implements ConversionRuleFactory {
     private static final Logger logger =
@@ -82,6 +82,10 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
         }
         if (action instanceof AddAction) {
             throw new UnsupportedOperationException("TODO implement Modifications for AddAction!");
+        }
+        if (action instanceof ConvertAction) {
+            throw new UnsupportedOperationException(
+                    "TODO implement Modifications for ConvertAction!");
         }
         throw new IllegalStateException(
                 "Cannot generate modification for action of type " + action.getClass().getName());
