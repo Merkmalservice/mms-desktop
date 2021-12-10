@@ -604,112 +604,26 @@ public class ConversionEngineTests {
             throws IOException {
         MappingConversionRuleFactory factory =
                 new MappingConversionRuleFactory(
-                        List.of(
-                                Mapping.builder()
-                                        .id("m1")
-                                        .name("mapping1")
-                                        .project(Inst.project1)
-                                        .anyMatch(
-                                                b ->
-                                                        b.matches(
-                                                                        s ->
-                                                                                s.feature(
-                                                                                                Inst
-                                                                                                        .featureCpiFitMatchKey)
-                                                                                        .predicate(
-                                                                                                MappingPredicate
-                                                                                                        .EQUALS)
-                                                                                        .value(
-                                                                                                "ABCDEFG"))
-                                                                .matches(
-                                                                        s ->
-                                                                                s.feature(
-                                                                                                Inst
-                                                                                                        .featureCpiFitMatchKey)
-                                                                                        .predicate(
-                                                                                                MappingPredicate
-                                                                                                        .EQUALS)
-                                                                                        .value(
-                                                                                                "RSTUVWX")))
-                                        .actionGroup(
-                                                ag ->
-                                                        ag.deleteActionGroup()
-                                                                .action(
-                                                                        a ->
-                                                                                a.feature(
-                                                                                        Inst
-                                                                                                .featurePhaseErstellt)))
-                                        .build()));
-        ConversionEngine engine = new ConversionEngine(factory.getRules());
-        testInOut("delete_two_identical_properties_from_pset_shared_by_3_objects", engine);
-    }
-
-    @Test
-    public void
-            test_delete_two_different_properties_from_shared_pset_using_two_levels_of_conditiongroups()
-                    throws IOException {
-        MappingConversionRuleFactory factory =
-                new MappingConversionRuleFactory(
-                        List.of(
-                                Mapping.builder()
-                                        .id("m1")
-                                        .name("mapping1")
-                                        .project(Inst.project1)
-                                        .anyMatch(
-                                                b ->
-                                                        b.allMatch(
-                                                                        b2 ->
-                                                                                b2.matches(
-                                                                                                s ->
-                                                                                                        s.feature(
-                                                                                                                        Inst
-                                                                                                                                .featureCpiFitMatchKey)
-                                                                                                                .predicate(
-                                                                                                                        MappingPredicate
-                                                                                                                                .MATCHES)
-                                                                                                                .value(
-                                                                                                                        "ABC.+"))
-                                                                                        .matches(
-                                                                                                s ->
-                                                                                                        s.feature(
-                                                                                                                        Inst
-                                                                                                                                .featureCpiFitMatchKey)
-                                                                                                                .predicate(
-                                                                                                                        MappingPredicate
-                                                                                                                                .MATCHES)
-                                                                                                                .value(
-                                                                                                                        ".+DEF.*")))
-                                                                .allMatch(
-                                                                                        b2 ->
-                                                                                                b2.matches(
-                                                                                                                s ->
-                                                                                                                        s.feature(
-                                                                                                                                        Inst
-                                                                                                                                                .featureCpiFitMatchKey)
-                                                                                                                                .predicate(
-                                                                                                                                        MappingPredicate
-                                                                                                                                                .MATCHES)
-                                                                                                                                .value(
-                                                                                                                                        "RST.+"))
-                                                                                                        .matches(
-                                                                                                                s ->
-                                                                                                                        s.feature(
-                                                                                                                                        Inst
-                                                                                                                                                .featureCpiFitMatchKey)
-                                                                                                                                .predicate(
-                                                                                                                                        MappingPredicate
-                                                                                                                                                .MATCHES)
-                                                                                                                                .value(
-                                                                                                                                        ".+UVW.*"))))
-                                        .actionGroup(
-                                                ag ->
-                                                        ag.deleteActionGroup()
-                                                                .action(
-                                                                        a ->
-                                                                                a.feature(
-                                                                                        Inst
-                                                                                                .featurePhaseErstellt)))
-                                        .build()));
+                                List.of(
+                                        Mapping.builder()
+                                                .id("m1")
+                                                .name("mapping1")
+                                                .project(Inst.project1)
+                                                .anyMatch()
+                                                .matches()
+                                                .feature(Inst.featureCpiFitMatchKey)
+                                                .predicate(MappingPredicate.EQUALS)
+                                                .value("ABCDEFG")
+                                                .end()
+                                                .matches()
+                                                .feature(Inst.featureCpiFitMatchKey)
+                                                .predicate(MappingPredicate.EQUALS)
+                                                .value("RSTUVWX")
+                        .end()
+                        .delete()
+                        .action()
+                        .feature(Inst.featurePhaseErstellt)
+                        .build();
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_two_identical_properties_from_pset_shared_by_3_objects", engine);
     }
