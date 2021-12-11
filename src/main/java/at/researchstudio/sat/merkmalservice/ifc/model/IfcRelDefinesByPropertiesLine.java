@@ -1,10 +1,13 @@
 package at.researchstudio.sat.merkmalservice.ifc.model;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+
+import static java.util.stream.Collectors.joining;
 
 public class IfcRelDefinesByPropertiesLine extends IfcRelationLine {
     public static final String IDENTIFIER = "IFCRELDEFINESBYPROPERTIES";
@@ -54,4 +57,5 @@ public class IfcRelDefinesByPropertiesLine extends IfcRelationLine {
         this.relatedObjectIds.remove(itemId);
         return relatingPropertySetId == itemId || relatedObjectIds.isEmpty();
     }
+
 }

@@ -138,7 +138,7 @@ public class IfcUtils {
 
     public static String toStepId(Integer id){
         Objects.requireNonNull(id);
-        return "+" + id.toString();
+        return "#" + id.toString();
     }
 
     public static String toOptionalStepId(Integer id){
@@ -147,6 +147,11 @@ public class IfcUtils {
 
     public static String toOptionalStepIds(Collection<Integer> id){
         return id == null ? "$" : id.stream().map(IfcUtils::toStepId).collect(joining(",","(",")"));
+    }
+
+    public static String toStepToken(String s) {
+        Objects.requireNonNull(s);
+        return s;
     }
 
 }

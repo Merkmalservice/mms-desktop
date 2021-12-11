@@ -611,7 +611,7 @@ public class ConversionEngineTests {
     }
 
     @Test
-    public void test_delete_two_different_properties_from_shared_pset_using_or()
+    public void test_delete_two_identical_properties_from_shared_pset_using_or()
             throws IOException {
         MappingConversionRuleFactory factory =
                 new MappingConversionRuleFactory(
@@ -682,7 +682,7 @@ public class ConversionEngineTests {
     }
 
     @Test
-    public void test_add_IFCLABEL() throws IOException {
+    public void test_add_StringFeature() throws IOException {
         MappingConversionRuleFactory factory =
                         new MappingConversionRuleFactory(
                                         List.of(
@@ -694,12 +694,13 @@ public class ConversionEngineTests {
                                                                         /**/ .addActionGroup()
                                                                         /*--*/ .addAction()
                                                                         /*----*/ .feature(Inst.featurePhaseGeprüft)
+                                                                        /*----*/ .value("Phase 3")
                                                                         /*----*/ .end()
                                                                         /*--*/ .end()
                                                                         /**/ .build()));
 
         ConversionEngine engine = new ConversionEngine(factory.getRules());
-        testInOut("add_phase_geprüft_where_cpiFitMatchKey_ABC", engine);
+        testInOut("add_property_phase_geprüft_where_cpiFitMatchKey_ABC", engine);
     }
 
     @Test
@@ -713,15 +714,16 @@ public class ConversionEngineTests {
                                                                         /*--*/ .valueEquals("ABCDEFG")
                                                                         /*--*/ .end()
                                                                         /**/ .addActionGroup()
+                                                                        /*--*/ .propertySetName("Phasen")
                                                                         /*--*/ .addAction()
                                                                         /*----*/ .feature(Inst.featurePhaseGeprüft)
-                                                                        /*----*/ .value("Phasen")
+                                                                        /*----*/ .value("Phase 3")
                                                                         /*----*/ .end()
                                                                         /*--*/ .end()
                                                                         /**/ .build()));
 
         ConversionEngine engine = new ConversionEngine(factory.getRules());
-        testInOut("add_phase_geprüft_where_cpiFitMatchKey_ABC", engine);
+        testInOut("add_property_phase_geprüft_where_cpiFitMatchKey_ABC", engine);
     }
 
     @NotNull

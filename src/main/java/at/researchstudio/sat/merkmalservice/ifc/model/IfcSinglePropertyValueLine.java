@@ -5,6 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
+import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.*;
+
 public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPropertyLineInterface {
     public static final String IDENTIFIER = "IFCPROPERTYSINGLEVALUE";
     private static final Pattern extractPattern =
@@ -15,7 +17,7 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
     private String description;
     private String type;
     private String value;
-    private int unitId;
+    private Integer unitId;
 
     public IfcSinglePropertyValueLine(Integer id, String name, String description, String type, String value,
                     Integer unitId) {
@@ -30,7 +32,21 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
     private static String makeLine(Integer id, String name, String description, String type, String value, Integer unitId,
                     Integer unitId1) {
         return new StringBuilder()
-                        .append()
+                        .append(toStepId(id))
+                        .append("= ")
+                        .append(IDENTIFIER)
+                        .append("(")
+                        .append(toStepValue(name))
+                        .append(",")
+                        .append(toOptionalStepValue(description))
+                        .append(",")
+                        .append(toStepToken(type))
+                        .append("(")
+                        .append(toStepValue(value))
+                        .append("),")
+                        .append(toOptionalStepId(unitId))
+                        .append(");")
+                        .toString();
     }
 
     public IfcSinglePropertyValueLine(String line) {
@@ -68,7 +84,7 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
         return value;
     }
 
-    public int getUnitId() {
+    public Integer getUnitId() {
         return unitId;
     }
 

@@ -2,13 +2,17 @@ package at.researchstudio.sat.merkmalservice.ifc.model;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.events.Event;
 
 import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.*;
+import static java.util.stream.Collectors.joining;
 
 public class IfcPropertySetLine extends IfcLine {
     public static final String IDENTIFIER = "IFCPROPERTYSET";
@@ -35,7 +39,7 @@ public class IfcPropertySetLine extends IfcLine {
                     List<Integer> propertyIds) {
         return new StringBuilder()
                         .append(toStepId(id))
-                        .append(" =")
+                        .append("= ")
                         .append(IDENTIFIER)
                         .append("(")
                         .append(toStepValue(globalId))
@@ -47,6 +51,7 @@ public class IfcPropertySetLine extends IfcLine {
                         .append(toOptionalStepValue(description))
                         .append(",")
                         .append(toOptionalStepIds(propertyIds))
+                        .append(");")
                         .toString();
     }
 
@@ -102,5 +107,13 @@ public class IfcPropertySetLine extends IfcLine {
         super.removeReferenceTo(itemId);
         this.propertyIds.remove(itemId);
         return propertyIds.isEmpty();
+    }
+
+    public void addPropertyId(Integer itemId){
+        super.getReferences().add(itemId);
+        String oldIdlist = this.propertyIds.stream().map(IfcUtils::toStepId).collect(joining(",","(",")"));
+        this.propertyIds.add(itemId);
+        String newIdList = this.propertyIds.stream().map(IfcUtils::toStepId).collect(joining(",","(",")"));
+        modifyLine(line -> line.replaceAll(Pattern.quote(oldIdlist), newIdList));
     }
 }

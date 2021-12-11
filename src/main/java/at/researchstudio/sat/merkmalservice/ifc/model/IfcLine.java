@@ -3,6 +3,7 @@ package at.researchstudio.sat.merkmalservice.ifc.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
@@ -111,5 +112,9 @@ public class IfcLine {
         this.modifiedLine =
                 (modifiedLine == null ? line : modifiedLine)
                         .replaceAll("#" + oldValue + "\\b", "#" + newValue);
+    }
+
+    protected void modifyLine(Function<String, String> lineModifier){
+        this.modifiedLine = lineModifier.apply(this.modifiedLine == null ? this.line : this.modifiedLine);
     }
 }

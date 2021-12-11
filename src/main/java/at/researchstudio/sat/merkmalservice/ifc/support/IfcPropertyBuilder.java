@@ -85,7 +85,7 @@ public class IfcPropertyBuilder {
                         NullPointerException.class,
                         IllegalArgumentException.class);
 
-        if (line.getUnitId() != 0) {
+        if (line.getUnitId() != null) {
             this.unit = getIfcUnitWithId(line.getUnitId(), projectUnits);
             if (Objects.isNull(this.unit)) {
                 logger.warn(
