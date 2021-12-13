@@ -1,11 +1,11 @@
 package at.researchstudio.sat.merkmalservice.ifc.model;
 
+import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.*;
+
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
-
-import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.*;
 
 public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPropertyLineInterface {
     public static final String IDENTIFIER = "IFCPROPERTYSINGLEVALUE";
@@ -19,8 +19,13 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
     private String value;
     private Integer unitId;
 
-    public IfcSinglePropertyValueLine(Integer id, String name, String description, String type, Object value,
-                    Integer unitId) {
+    public IfcSinglePropertyValueLine(
+            Integer id,
+            String name,
+            String description,
+            String type,
+            Object value,
+            Integer unitId) {
         super(makeLine(id, name, description, type, value, unitId, unitId));
         this.name = name;
         this.description = description;
@@ -29,24 +34,30 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
         this.unitId = unitId;
     }
 
-    private static String makeLine(Integer id, String name, String description, String type, Object value, Integer unitId,
-                    Integer unitId1) {
+    private static String makeLine(
+            Integer id,
+            String name,
+            String description,
+            String type,
+            Object value,
+            Integer unitId,
+            Integer unitId1) {
         return new StringBuilder()
-                        .append(toStepId(id))
-                        .append("= ")
-                        .append(IDENTIFIER)
-                        .append("(")
-                        .append(toStepValue(name))
-                        .append(",")
-                        .append(toOptionalStepValue(description))
-                        .append(",")
-                        .append(toStepToken(type))
-                        .append("(")
-                        .append(toStepValue(value))
-                        .append("),")
-                        .append(toOptionalStepId(unitId))
-                        .append(");")
-                        .toString();
+                .append(toStepId(id))
+                .append("= ")
+                .append(IDENTIFIER)
+                .append("(")
+                .append(toStepValue(name))
+                .append(",")
+                .append(toOptionalStepValue(description))
+                .append(",")
+                .append(toStepToken(type))
+                .append("(")
+                .append(toStepValue(value))
+                .append("),")
+                .append(toOptionalStepId(unitId))
+                .append(");")
+                .toString();
     }
 
     public IfcSinglePropertyValueLine(String line) {
@@ -87,5 +98,4 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
     public Integer getUnitId() {
         return unitId;
     }
-
 }

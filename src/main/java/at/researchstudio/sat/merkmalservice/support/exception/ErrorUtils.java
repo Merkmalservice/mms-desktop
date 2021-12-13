@@ -1,15 +1,15 @@
 package at.researchstudio.sat.merkmalservice.support.exception;
 
+import java.lang.invoke.MethodHandles;
+import java.util.Objects;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Objects;
-import java.util.function.Supplier;
-
 public abstract class ErrorUtils {
-    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final Logger logger =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     public static <T> T logThrowableMessage(Supplier<T> supplier) {
         return logThrowableMessage(supplier, Level.INFO);

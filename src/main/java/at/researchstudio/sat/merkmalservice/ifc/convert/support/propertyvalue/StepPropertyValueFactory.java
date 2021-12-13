@@ -4,10 +4,9 @@ import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.featuretype.FeatureType;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class StepPropertyValueFactory {
     public static class StepValueAndType {
@@ -28,7 +27,8 @@ public abstract class StepPropertyValueFactory {
         }
     }
 
-    public static StepValueAndType toStepPropertyValue(Feature feature, MappingExecutionValue value) {
+    public static StepValueAndType toStepPropertyValue(
+            Feature feature, MappingExecutionValue value) {
         String featureType = feature.getType().getType();
         FeatureType.Types type = FeatureType.Types.valueOf(featureType);
         switch (type) {
@@ -44,7 +44,8 @@ public abstract class StepPropertyValueFactory {
                 return getNumericValue(feature, value);
         }
         throw new IllegalArgumentException(
-                        String.format("Cannot generate STEP value for feature %s with value %s", feature, value));
+                String.format(
+                        "Cannot generate STEP value for feature %s with value %s", feature, value));
     }
 
     private static StepValueAndType getNumericValue(Feature feature, MappingExecutionValue value) {
@@ -54,30 +55,37 @@ public abstract class StepPropertyValueFactory {
 
     private static void unsupported(Feature feature, MappingExecutionValue value) {
         throw new UnsupportedOperationException(
-                        String.format("STEP value generation not yet implemented for feature %s with value %s",
-                                        feature, value));
+                String.format(
+                        "STEP value generation not yet implemented for feature %s with value %s",
+                        feature, value));
     }
 
-    private static StepValueAndType getEnumerationValue(Feature feature, MappingExecutionValue value) {
+    private static StepValueAndType getEnumerationValue(
+            Feature feature, MappingExecutionValue value) {
         Object v = value.getValue();
         if (value.getStringValue().isPresent()) {
-            return new  StepValueAndType(value.getStringValue().get(), IfcPropertyType.LABEL.getStepTypeName());
+            return new StepValueAndType(
+                    value.getStringValue().get(), IfcPropertyType.LABEL.getStepTypeName());
         }
         unsupported(feature, value);
         return null;
     }
 
-    private static StepValueAndType getReferenceValue(Feature feature, MappingExecutionValue value) {
+    private static StepValueAndType getReferenceValue(
+            Feature feature, MappingExecutionValue value) {
         Optional<String> v = value.getStringValue();
         String s = v.orElseThrow(supplyWrongValueTypeException("ReferenceValue", "String", value));
         return new StepValueAndType(s, IfcPropertyType.IDENTIFIER.getStepTypeName());
     }
 
-    @NotNull private static Supplier<IllegalArgumentException> supplyWrongValueTypeException(
-                    String featureType, String expectedValueType, MappingExecutionValue value) {
-        return () -> new IllegalArgumentException(
-                        String.format("When generating a %s feature, Action's value is expected to be a %s, but %s was provided",
-                                        featureType, expectedValueType, value));
+    @NotNull
+    private static Supplier<IllegalArgumentException> supplyWrongValueTypeException(
+            String featureType, String expectedValueType, MappingExecutionValue value) {
+        return () ->
+                new IllegalArgumentException(
+                        String.format(
+                                "When generating a %s feature, Action's value is expected to be a %s, but %s was provided",
+                                featureType, expectedValueType, value));
     }
 
     private static StepValueAndType getBooleanValue(Feature feature, MappingExecutionValue value) {
@@ -89,9 +97,10 @@ public abstract class StepPropertyValueFactory {
     private static StepValueAndType getStringValue(Feature feature, MappingExecutionValue value) {
         Optional<String> v = value.getStringValue();
         String s = v.orElseThrow(supplyWrongValueTypeException("StringValue", "String", value));
-        String type = s.length() > 255 ?
-                        IfcPropertyType.TEXT.getStepTypeName() :
-                        IfcPropertyType.LABEL.getStepTypeName();
+        String type =
+                s.length() > 255
+                        ? IfcPropertyType.TEXT.getStepTypeName()
+                        : IfcPropertyType.LABEL.getStepTypeName();
         return new StepValueAndType(s, type);
     }
 }

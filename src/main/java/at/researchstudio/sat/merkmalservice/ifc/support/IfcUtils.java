@@ -1,5 +1,8 @@
 package at.researchstudio.sat.merkmalservice.ifc.support;
 
+import static at.researchstudio.sat.merkmalservice.utils.Utils.convertUtf8ToIFCString;
+import static java.util.stream.Collectors.joining;
+
 import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
@@ -17,9 +20,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ResourceUtils;
-
-import static at.researchstudio.sat.merkmalservice.utils.Utils.convertUtf8ToIFCString;
-import static java.util.stream.Collectors.joining;
 
 public class IfcUtils {
     private static final Logger logger =
@@ -117,12 +117,11 @@ public class IfcUtils {
         return sw.toString();
     }
 
-
     public static String toOptionalStepValue(Object o) {
-        return o == null ? "$": toStepValue(o);
+        return o == null ? "$" : toStepValue(o);
     }
 
-    public static String toStepValue(Object o){
+    public static String toStepValue(Object o) {
         Objects.requireNonNull(o);
         if (o instanceof String) {
             return "'" + convertUtf8ToIFCString((String) o) + "'";
@@ -131,30 +130,28 @@ public class IfcUtils {
             return (((Boolean) o).booleanValue()) ? ".T." : ".F.";
         }
         if (o instanceof Collection) {
-            return ((Collection<?>)o)
-                            .stream()
-                            .map(IfcUtils::toStepValue)
-                            .collect(joining(",","(",")"));
-        }
-        else return o.toString();
+            return ((Collection<?>) o)
+                    .stream().map(IfcUtils::toStepValue).collect(joining(",", "(", ")"));
+        } else return o.toString();
     }
 
-    public static String toStepId(Integer id){
+    public static String toStepId(Integer id) {
         Objects.requireNonNull(id);
         return "#" + id.toString();
     }
 
-    public static String toOptionalStepId(Integer id){
+    public static String toOptionalStepId(Integer id) {
         return id == null ? "$" : toStepId(id);
     }
 
-    public static String toOptionalStepIds(Collection<Integer> id){
-        return id == null ? "$" : id.stream().map(IfcUtils::toStepId).collect(joining(",","(",")"));
+    public static String toOptionalStepIds(Collection<Integer> id) {
+        return id == null
+                ? "$"
+                : id.stream().map(IfcUtils::toStepId).collect(joining(",", "(", ")"));
     }
 
     public static String toStepToken(String s) {
         Objects.requireNonNull(s);
         return s;
     }
-
 }

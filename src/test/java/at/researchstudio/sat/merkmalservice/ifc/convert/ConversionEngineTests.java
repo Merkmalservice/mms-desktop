@@ -22,7 +22,6 @@ import at.researchstudio.sat.merkmalservice.model.mapping.condition.Connective;
 import at.researchstudio.sat.merkmalservice.model.mapping.condition.SingleCondition;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.featuretype.BooleanFeatureType;
-import at.researchstudio.sat.merkmalservice.model.mapping.feature.featuretype.EnumFeatureType;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.featuretype.NumericFeatureType;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.featuretype.StringFeatureType;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
@@ -685,20 +684,20 @@ public class ConversionEngineTests {
     @Test
     public void test_add_StringFeature_no_Pset() throws IOException {
         MappingConversionRuleFactory factory =
-                        new MappingConversionRuleFactory(
-                                        List.of(
-                                                        Mapping.builder()
-                                                                        /**/ .matches()
-                                                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
-                                                                        /*--*/ .valueEquals("ABCDEFG")
-                                                                        /*--*/ .end()
-                                                                        /**/ .addActionGroup()
-                                                                        /*--*/ .addAction()
-                                                                        /*----*/ .feature(Inst.featurePhaseGeprüft)
-                                                                        /*----*/ .value("Phase 3")
-                                                                        /*----*/ .end()
-                                                                        /*--*/ .end()
-                                                                        /**/ .build()));
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featurePhaseGeprüft)
+                                        /*----*/ .value("Phase 3")
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
 
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_phase_geprüft_where_cpiFitMatchKey_ABC_donothing", engine);
@@ -707,21 +706,21 @@ public class ConversionEngineTests {
     @Test
     public void test_add_IFCLABEL_to_Pset() throws IOException {
         MappingConversionRuleFactory factory =
-                        new MappingConversionRuleFactory(
-                                        List.of(
-                                                        Mapping.builder()
-                                                                        /**/ .matches()
-                                                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
-                                                                        /*--*/ .valueEquals("ABCDEFG")
-                                                                        /*--*/ .end()
-                                                                        /**/ .addActionGroup()
-                                                                        /*--*/ .propertySetName("Phasen")
-                                                                        /*--*/ .addAction()
-                                                                        /*----*/ .feature(Inst.featureIfcLabel)
-                                                                        /*----*/ .value("Phase 3")
-                                                                        /*----*/ .end()
-                                                                        /*--*/ .end()
-                                                                        /**/ .build()));
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .propertySetName("Phasen")
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featureIfcLabel)
+                                        /*----*/ .value("Phase 3")
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
 
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCLABEL_where_cpiFitMatchKey_ABC", engine);
@@ -730,21 +729,21 @@ public class ConversionEngineTests {
     @Test
     public void test_add_IFCIDENTIFIER_to_Pset() throws IOException {
         MappingConversionRuleFactory factory =
-                        new MappingConversionRuleFactory(
-                                        List.of(
-                                                        Mapping.builder()
-                                                                        /**/ .matches()
-                                                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
-                                                                        /*--*/ .valueEquals("ABCDEFG")
-                                                                        /*--*/ .end()
-                                                                        /**/ .addActionGroup()
-                                                                        /*--*/ .propertySetName("Phasen")
-                                                                        /*--*/ .addAction()
-                                                                        /*----*/ .feature(Inst.featureIfcIdentifier)
-                                                                        /*----*/ .value("Phase-3")
-                                                                        /*----*/ .end()
-                                                                        /*--*/ .end()
-                                                                        /**/ .build()));
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .propertySetName("Phasen")
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featureIfcIdentifier)
+                                        /*----*/ .value("Phase-3")
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
 
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCIDENTIFIER_where_cpiFitMatchKey_ABC", engine);
@@ -753,21 +752,21 @@ public class ConversionEngineTests {
     @Test
     public void test_add_IFCBOOLEAN_to_Pset() throws IOException {
         MappingConversionRuleFactory factory =
-                        new MappingConversionRuleFactory(
-                                        List.of(
-                                                        Mapping.builder()
-                                                                        /**/ .matches()
-                                                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
-                                                                        /*--*/ .valueEquals("ABCDEFG")
-                                                                        /*--*/ .end()
-                                                                        /**/ .addActionGroup()
-                                                                        /*--*/ .propertySetName("Phasen")
-                                                                        /*--*/ .addAction()
-                                                                        /*----*/ .feature(Inst.featureIfcBoolean)
-                                                                        /*----*/ .value(true)
-                                                                        /*----*/ .end()
-                                                                        /*--*/ .end()
-                                                                        /**/ .build()));
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .propertySetName("Phasen")
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featureIfcBoolean)
+                                        /*----*/ .value(true)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
 
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCBOOLEAN_where_cpiFitMatchKey_ABC", engine);
@@ -776,21 +775,21 @@ public class ConversionEngineTests {
     @Test
     public void test_add_Enum_Label_to_Pset() throws IOException {
         MappingConversionRuleFactory factory =
-                        new MappingConversionRuleFactory(
-                                        List.of(
-                                                        Mapping.builder()
-                                                                        /**/ .matches()
-                                                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
-                                                                        /*--*/ .valueEquals("ABCDEFG")
-                                                                        /*--*/ .end()
-                                                                        /**/ .addActionGroup()
-                                                                        /*--*/ .propertySetName("Phasen")
-                                                                        /*--*/ .addAction()
-                                                                        /*----*/ .feature(Inst.featureEnumLabel)
-                                                                        /*----*/ .value("string option 2")
-                                                                        /*----*/ .end()
-                                                                        /*--*/ .end()
-                                                                        /**/ .build()));
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .propertySetName("Phasen")
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featureEnumLabel)
+                                        /*----*/ .value("string option 2")
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
 
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCLABEL_fromEnum_where_cpiFitMatchKey_ABC", engine);
@@ -845,12 +844,12 @@ public class ConversionEngineTests {
                         List.of(),
                         new StringFeatureType());
         public static Feature featurePhaseGeprüft =
-                        new Feature(
-                                        "feature8Id",
-                                        "Phase geprüft",
-                                        "the phase in which the object was checked",
-                                        List.of(),
-                                        new StringFeatureType());
+                new Feature(
+                        "feature8Id",
+                        "Phase geprüft",
+                        "the phase in which the object was checked",
+                        List.of(),
+                        new StringFeatureType());
         public static Feature featureVolume =
                 new Feature(
                         "feature6Id",
@@ -865,30 +864,34 @@ public class ConversionEngineTests {
                         "the phase in which the object was built",
                         List.of(),
                         new StringFeatureType());
-        public static Feature featureIfcIdentifier = Feature.builder()
+        public static Feature featureIfcIdentifier =
+                Feature.builder()
                         .name("featureIfcIdentifier")
                         .referenceType()
                         .description("an ifc identifier")
                         .build();
-        public static Feature featureIfcLabel = Feature.builder()
+        public static Feature featureIfcLabel =
+                Feature.builder()
                         .name("featureIfcLabel")
                         .stringType()
                         .description("a string feature mapped to IfcLabel")
                         .build();
-        public static Feature featureIfcBoolean = Feature.builder()
+        public static Feature featureIfcBoolean =
+                Feature.builder()
                         .name("featureIfcBoolean")
                         .description("an ifc boolean")
                         .booleanType()
                         .build();
-        public static Feature featureEnumLabel = Feature.builder()
+        public static Feature featureEnumLabel =
+                Feature.builder()
                         .name("ifcLabelFeatureFromEnum")
                         .description("an ifc label with a value from an mms enum")
                         .enumType()
-                        /**/.allowMultiple(false)
-                        /**/.option("string option 1", "first option")
-                        /**/.option( "string option 2", "second option")
-                        /**/.option("string option 3", "third option")
-                        /**/.end()
+                        /**/ .allowMultiple(false)
+                        /**/ .option("string option 1", "first option")
+                        /**/ .option("string option 2", "second option")
+                        /**/ .option("string option 3", "third option")
+                        /**/ .end()
                         .build();
         static Organization organization1 = new Organization("org1Id", "Org one");
         static Project project1 =

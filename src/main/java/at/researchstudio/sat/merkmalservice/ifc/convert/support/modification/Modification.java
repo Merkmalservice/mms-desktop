@@ -5,7 +5,6 @@ import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
-
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -59,8 +58,7 @@ public abstract class Modification {
     }
 
     public static <T extends IfcLine> ParsedIfcFileModification addProperty(
-        Feature feature, MappingExecutionValue value, String propertySetName, T toElement
-    ){
+            Feature feature, MappingExecutionValue value, String propertySetName, T toElement) {
         return new AddPropertyModification<T>(toElement, feature, value, propertySetName);
     }
 }

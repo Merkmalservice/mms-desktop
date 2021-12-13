@@ -114,7 +114,8 @@ public class IfcLine {
                         .replaceAll("#" + oldValue + "\\b", "#" + newValue);
     }
 
-    protected void modifyLine(Function<String, String> lineModifier){
-        this.modifiedLine = lineModifier.apply(this.modifiedLine == null ? this.line : this.modifiedLine);
+    protected void modifyLine(Function<String, String> lineModifier) {
+        this.modifiedLine =
+                lineModifier.apply(this.modifiedLine == null ? this.line : this.modifiedLine);
     }
 }
