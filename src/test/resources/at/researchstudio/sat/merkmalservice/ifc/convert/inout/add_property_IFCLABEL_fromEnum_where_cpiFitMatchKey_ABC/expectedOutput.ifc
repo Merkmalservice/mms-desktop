@@ -416,7 +416,7 @@ DATA;
 #708= IFCRELDEFINESBYTYPE('3rIcASVfz8xu9vOxD0OQhy',#41,$,$,(#417),#476);
 #711= IFCRELDEFINESBYPROPERTIES('2nspHK8_H09BJNex6pdhOO',#41,$,$,(#129),#639);
 #723= IFCPRESENTATIONLAYERASSIGNMENT('A-WALL-____-OTLN',$,(#152,#170,#330,#341,#402,#413,#437,#461),$);
-#725= IFCPROPERTYSINGLEVALUE('Phase gepr\X2\00FC\X0\ft','the phase in which the object was checked',IFCLABEL('Phase 3'),$);
+#725= IFCPROPERTYSINGLEVALUE('ifcLabelFeatureFromEnum','an ifc label with a value from an mms enum',IFCLABEL('string option 2'),$);
 ENDSEC;
 
 END-ISO-10303-21;

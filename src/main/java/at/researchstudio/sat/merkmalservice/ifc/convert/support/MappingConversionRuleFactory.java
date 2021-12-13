@@ -21,6 +21,7 @@ import at.researchstudio.sat.merkmalservice.model.mapping.condition.ConditionGro
 import at.researchstudio.sat.merkmalservice.model.mapping.condition.Connective;
 import at.researchstudio.sat.merkmalservice.model.mapping.condition.SingleCondition;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
+import at.researchstudio.sat.merkmalservice.support.exception.ErrorUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,8 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                 Stream<ParsedIfcFileModification> modifications =
                                 actionGroups.stream()
                                                 .flatMap(group -> group.getActions().stream()
-                                                                .map(a -> makeModification(group, a, line)));
+                                                                .map(a -> ErrorUtils.logThrowableMessage(() -> makeModification(group, a, line))))
+                                                .filter(Objects::nonNull);
                 return Modification.multiple(modifications);
             }
         };
@@ -85,21 +87,21 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
         }
         if (action instanceof AddAction) {
             AddActionGroup addActionGroup = (AddActionGroup) actionGroup;
-            Optional<String> propertySetName = addActionGroup.getValue().getStringValue();
+            Optional<String> propertySetName = Optional.ofNullable(addActionGroup.getValue())
+                            .map(MappingExecutionValue::getStringValue).orElse(Optional.empty());
             if (propertySetName.isPresent()) {
                 return Modification.addProperty(((AddAction) action).getFeature(), ((AddAction) action).getValue(),
                                 propertySetName.get(), line);
             } else {
-                throw new UnsupportedOperationException(String.format("cannot handle action group 'value' %s",
-                                ((AddActionGroup) actionGroup).getValue()));
+                throw new UnsupportedOperationException("TODO: Cannot handle action group without property set name yet");
             }
         }
         if (action instanceof ConvertAction) {
             throw new UnsupportedOperationException(
-                            "TODO implement Modifications for ConvertAction!");
+                            "TODO: implement Modifications for ConvertAction!");
         }
         throw new IllegalStateException(
-                        "Cannot generate modification for action of type " + action.getClass().getName());
+                        "TODO: Cannot generate modification for action of type " + action.getClass().getName());
     }
 
     private Predicate<IfcLineAndModel> buildRulePredicate(Condition condition) {

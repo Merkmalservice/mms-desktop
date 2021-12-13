@@ -19,17 +19,17 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
     private String value;
     private Integer unitId;
 
-    public IfcSinglePropertyValueLine(Integer id, String name, String description, String type, String value,
+    public IfcSinglePropertyValueLine(Integer id, String name, String description, String type, Object value,
                     Integer unitId) {
         super(makeLine(id, name, description, type, value, unitId, unitId));
         this.name = name;
         this.description = description;
         this.type = type;
-        this.value = value;
+        this.value = toStepValue(value);
         this.unitId = unitId;
     }
 
-    private static String makeLine(Integer id, String name, String description, String type, String value, Integer unitId,
+    private static String makeLine(Integer id, String name, String description, String type, Object value, Integer unitId,
                     Integer unitId1) {
         return new StringBuilder()
                         .append(toStepId(id))

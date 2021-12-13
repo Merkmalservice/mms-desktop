@@ -127,6 +127,9 @@ public class IfcUtils {
         if (o instanceof String) {
             return "'" + convertUtf8ToIFCString((String) o) + "'";
         }
+        if (o instanceof Boolean) {
+            return (((Boolean) o).booleanValue()) ? ".T." : ".F.";
+        }
         if (o instanceof Collection) {
             return ((Collection<?>)o)
                             .stream()
