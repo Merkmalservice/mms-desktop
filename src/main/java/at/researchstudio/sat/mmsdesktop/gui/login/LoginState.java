@@ -49,6 +49,10 @@ public class LoginState {
         return userSession;
     }
 
+    public void setLoggedIn(boolean loggedIn) {
+        this.loggedIn.set(loggedIn);
+    }
+
     public void setUserSession(UserSession userSession) {
         if (userSession != null) {
             this.userSession = userSession;

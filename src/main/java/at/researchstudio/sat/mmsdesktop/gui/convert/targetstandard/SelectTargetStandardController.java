@@ -375,6 +375,8 @@ public class SelectTargetStandardController implements Initializable {
                         runnable.run();
                     } catch (Exception ex) {
                         logger.error("Could not Load Data also not with Refresh Token");
+                        stateService.getLoginState().setUserSession(null);
+                        stateService.getLoginState().setLoggedIn(false);
                     }
                 });
         refreshTokenTask.setOnCancelled(
