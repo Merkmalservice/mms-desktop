@@ -64,7 +64,9 @@ public class ProjectsController implements Initializable {
                     gson.fromJson(result, DataResult.class).getData().getProjects();
             loadedProjects.setAll(projects);
         } catch (TokenVerificationException e) {
-            Task<UserSession> refreshTokenTask = authService.getRefreshTokenTask();
+            Task<UserSession> refreshTokenTask =
+                    authService.getRefreshTokenTask(
+                            stateService.getLoginState().getUserSession().getRefreshTokenString());
             stateService.getLoginState().setUserSession(refreshTokenTask.getValue());
             try {
                 String queryString =

@@ -267,28 +267,28 @@ public class SelectTargetStandardController implements Initializable {
 
     @FXML
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
-        String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
         Platform.runLater(
                 () -> {
                     try {
-                        setLoadedProjects(idTokenString);
+                        setLoadedProjects();
                     } catch (Exception e) {
-                        Task<UserSession> refreshTokenTask = authService.getRefreshTokenTask();
+                        Task<UserSession> refreshTokenTask =
+                                authService.getRefreshTokenTask(
+                                        stateService
+                                                .getLoginState()
+                                                .getUserSession()
+                                                .getRefreshTokenString());
                         setRefreshTokenTaskActions(
                                 refreshTokenTask,
                                 () -> {
-                                    String newIdTokenString =
-                                            stateService
-                                                    .getLoginState()
-                                                    .getUserSession()
-                                                    .getIdTokenString();
-                                    setLoadedProjects(newIdTokenString);
+                                    setLoadedProjects();
                                 });
                     }
                 });
     }
 
-    private void setLoadedProjects(String idTokenString) {
+    private void setLoadedProjects() {
+        String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
         List<Project> loadedProjects = dataService.getProjectsWithFeatureSets(idTokenString);
         this.projects.setAll(loadedProjects);
         restoreProjectStandardSelection();
@@ -324,7 +324,6 @@ public class SelectTargetStandardController implements Initializable {
 
     @FXML
     public void handleLoadMappingsAction(ActionEvent actionEvent) {
-        String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
         Platform.runLater(
                 () -> {
                     if (!(this.selectedProject.isNotNull().and(this.selectedStandard.isNotNull()))
@@ -344,24 +343,25 @@ public class SelectTargetStandardController implements Initializable {
                                     .map(Mapping::getId)
                                     .collect(Collectors.toList());
                     try {
-                        setLoadedMappings(mappingIds, idTokenString);
+                        setLoadedMappings(mappingIds);
                     } catch (Exception e) {
-                        Task<UserSession> refreshTokenTask = authService.getRefreshTokenTask();
+                        Task<UserSession> refreshTokenTask =
+                                authService.getRefreshTokenTask(
+                                        stateService
+                                                .getLoginState()
+                                                .getUserSession()
+                                                .getRefreshTokenString());
                         setRefreshTokenTaskActions(
                                 refreshTokenTask,
                                 () -> {
-                                    String newIdTokenString =
-                                            stateService
-                                                    .getLoginState()
-                                                    .getUserSession()
-                                                    .getIdTokenString();
-                                    setLoadedMappings(mappingIds, newIdTokenString);
+                                    setLoadedMappings(mappingIds);
                                 });
                     }
                 });
     }
 
-    private void setLoadedMappings(List<String> mappingIds, String idTokenString) {
+    private void setLoadedMappings(List<String> mappingIds) {
+        String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
         List<Mapping> loadedMappings = dataService.getMappings(mappingIds, idTokenString);
         this.mappings.setAll(loadedMappings);
     }

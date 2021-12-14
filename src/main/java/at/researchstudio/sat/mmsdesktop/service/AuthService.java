@@ -25,7 +25,7 @@ public class AuthService {
         this.keycloak.setLocale(Locale.getDefault());
         this.loginTask = generateLoginTask();
         this.logoutTask = generateLogoutTask();
-        this.refreshTokenTask = generateRefreshTokenTask();
+        this.refreshTokenTask = generateRefreshTokenTask(null);
     }
 
     private Task<UserSession> generateLoginTask() {
@@ -46,12 +46,12 @@ public class AuthService {
         };
     }
 
-    private Task<UserSession> generateRefreshTokenTask() {
+    private Task<UserSession> generateRefreshTokenTask(String refreshToken) {
         return new Task<>() {
             @Override
             public UserSession call() throws Exception {
                 try {
-                    keycloak.refreshToken();
+                    keycloak.refreshToken(refreshToken);
                     return new UserSession(
                             keycloak.getToken(),
                             keycloak.getTokenString(),
@@ -94,7 +94,7 @@ public class AuthService {
         return logoutTask;
     }
 
-    public Task<UserSession> getRefreshTokenTask() {
-        return generateRefreshTokenTask();
+    public Task<UserSession> getRefreshTokenTask(String refreshToken) {
+        return generateRefreshTokenTask(refreshToken);
     }
 }
