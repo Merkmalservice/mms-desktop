@@ -18,12 +18,14 @@ public class AuthService {
     private final JavaFXKeycloakInstalled keycloak;
     private Task<UserSession> loginTask;
     private Task<LogoutResult> logoutTask;
+    private Task<UserSession> refreshTokenTask;
 
     public AuthService(HostServices hostService) {
         this.keycloak = new JavaFXKeycloakInstalled(hostService);
         this.keycloak.setLocale(Locale.getDefault());
         this.loginTask = generateLoginTask();
         this.logoutTask = generateLogoutTask();
+        this.refreshTokenTask = generateRefreshTokenTask();
     }
 
     private Task<UserSession> generateLoginTask() {
@@ -32,9 +34,30 @@ public class AuthService {
             public UserSession call() throws Exception {
                 try {
                     keycloak.loginDesktop();
-                    return new UserSession(keycloak.getToken(), keycloak.getTokenString());
+                    return new UserSession(
+                            keycloak.getToken(),
+                            keycloak.getTokenString(),
+                            keycloak.getRefreshToken());
                 } catch (InterruptedException e) {
                     logger.warn("Login process cancelled by User");
+                }
+                return null;
+            }
+        };
+    }
+
+    private Task<UserSession> generateRefreshTokenTask() {
+        return new Task<>() {
+            @Override
+            public UserSession call() throws Exception {
+                try {
+                    keycloak.refreshToken();
+                    return new UserSession(
+                            keycloak.getToken(),
+                            keycloak.getTokenString(),
+                            keycloak.getRefreshToken());
+                } catch (Exception e) {
+                    logger.warn("Refresh token not successful due to {}", e);
                 }
                 return null;
             }
@@ -69,5 +92,9 @@ public class AuthService {
 
     public Task<LogoutResult> getLogoutTask() {
         return logoutTask;
+    }
+
+    public Task<UserSession> getRefreshTokenTask() {
+        return generateRefreshTokenTask();
     }
 }

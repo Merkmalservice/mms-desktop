@@ -13,7 +13,6 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +27,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.keycloak.exceptions.TokenVerificationException;
+import org.keycloak.representations.JsonWebToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,8 @@ public class DataService {
                 });
     }
 
-    public String callGraphQlEndpoint(String queryString, String idTokenString) {
+    public String callGraphQlEndpoint(String queryString, String idTokenString)
+            throws TokenVerificationException {
         Objects.requireNonNull(queryString);
         Objects.requireNonNull(idTokenString);
         HttpPost post = new HttpPost(apiEndpoint);
@@ -102,6 +104,9 @@ public class DataService {
             response.getEntity().getContent().close();
             if (response.getStatusLine().getStatusCode() == 200) {
                 return result;
+            } else if (response.getStatusLine().getStatusCode() == 403) {
+                logger.info("Start Refresh Token process");
+                throw new TokenVerificationException(new JsonWebToken());
             } else {
                 String message =
                         String.format(
@@ -122,7 +127,7 @@ public class DataService {
         GraphQLResponse response =
                 getGraphQLClient(idTokenString).reactiveExecuteQuery(queryString).block();
         if (response == null) {
-            return Collections.emptyList();
+            throw new NullPointerException("Empty Response for project query");
         }
         return response.dataAsObject(GraphqlResult.class).getProjects();
     }
@@ -142,7 +147,7 @@ public class DataService {
                                                                     new PrintWriter(System.err)))
                                             .block();
                             if (response == null) {
-                                return null;
+                                throw new NullPointerException("Empty Response for mappings query");
                             }
                             return response.dataAsObject(GraphqlResult.class).getMapping();
                         })

@@ -9,6 +9,9 @@ import at.researchstudio.sat.merkmalservice.model.Organization;
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
+import at.researchstudio.sat.mmsdesktop.gui.component.about.AboutController;
+import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
+import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import com.jfoenix.controls.JFXComboBox;
@@ -26,6 +29,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -60,6 +64,7 @@ public class SelectTargetStandardController implements Initializable {
     @FXML private JFXListView<Mapping> mappingsList;
     @Autowired ResourceLoader resourceLoader;
     @Autowired DataService dataService;
+    @Autowired AuthService authService;
     private final ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
 
     @Autowired
@@ -239,7 +244,6 @@ public class SelectTargetStandardController implements Initializable {
     }
 
     private String makeMappingLabelText(Mapping mapping) {
-
         StringBuilder sb = new StringBuilder();
         sb.append(resourceBundle.getString("label.mapping.name"))
                 .append(": ")
@@ -266,9 +270,28 @@ public class SelectTargetStandardController implements Initializable {
         String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
         Platform.runLater(
                 () -> {
-                    this.projects.setAll(dataService.getProjectsWithFeatureSets(idTokenString));
-                    restoreProjectStandardSelection();
+                    try {
+                        setLoadedProjects(idTokenString);
+                    } catch (Exception e) {
+                        Task<UserSession> refreshTokenTask = authService.getRefreshTokenTask();
+                        setRefreshTokenTaskActions(
+                                refreshTokenTask,
+                                () -> {
+                                    String newIdTokenString =
+                                            stateService
+                                                    .getLoginState()
+                                                    .getUserSession()
+                                                    .getIdTokenString();
+                                    setLoadedProjects(newIdTokenString);
+                                });
+                    }
                 });
+    }
+
+    private void setLoadedProjects(String idTokenString) {
+        List<Project> loadedProjects = dataService.getProjectsWithFeatureSets(idTokenString);
+        this.projects.setAll(loadedProjects);
+        restoreProjectStandardSelection();
     }
 
     public void restoreProjectStandardSelection() {
@@ -320,10 +343,55 @@ public class SelectTargetStandardController implements Initializable {
                                                                                     s.getId())))
                                     .map(Mapping::getId)
                                     .collect(Collectors.toList());
-                    List<Mapping> loadedMappings =
-                            dataService.getMappings(mappingIds, idTokenString);
-                    this.mappings.setAll(loadedMappings);
+                    try {
+                        setLoadedMappings(mappingIds, idTokenString);
+                    } catch (Exception e) {
+                        Task<UserSession> refreshTokenTask = authService.getRefreshTokenTask();
+                        setRefreshTokenTaskActions(
+                                refreshTokenTask,
+                                () -> {
+                                    String newIdTokenString =
+                                            stateService
+                                                    .getLoginState()
+                                                    .getUserSession()
+                                                    .getIdTokenString();
+                                    setLoadedMappings(mappingIds, newIdTokenString);
+                                });
+                    }
                 });
+    }
+
+    private void setLoadedMappings(List<String> mappingIds, String idTokenString) {
+        List<Mapping> loadedMappings = dataService.getMappings(mappingIds, idTokenString);
+        this.mappings.setAll(loadedMappings);
+    }
+
+    private void setRefreshTokenTaskActions(Task<UserSession> refreshTokenTask, Runnable runnable) {
+        refreshTokenTask.setOnSucceeded(
+                t -> {
+                    stateService.getLoginState().setUserSession(refreshTokenTask.getValue());
+                    authService.resetLoginTask();
+                    try {
+                        runnable.run();
+                    } catch (Exception ex) {
+                        logger.error("Could not Load Data also not with Refresh Token");
+                    }
+                });
+        refreshTokenTask.setOnCancelled(
+                t -> {
+                    // TODO: Cancelled views
+                    stateService.getViewState().switchCenterPane(AboutController.class);
+                    stateService.getLoginState().setUserSession(null);
+                    authService.resetLoginTask();
+                });
+        refreshTokenTask.setOnFailed(
+                t -> {
+                    // TODO: Error Handling
+                    stateService.getViewState().switchCenterPane(AboutController.class);
+                    stateService.getLoginState().setUserSession(null);
+                    authService.resetLoginTask();
+                });
+        new Thread(refreshTokenTask).start();
     }
 
     public ObservableList<Project> getProjects() {
