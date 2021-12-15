@@ -2,7 +2,10 @@ package at.researchstudio.sat.mmsdesktop.gui.login;
 
 import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
-import com.thoughtworks.xstream.XStream;
+import at.researchstudio.sat.mmsdesktop.support.exception.UserDataDirException;
+import java.io.*;
+import java.lang.invoke.MethodHandles;
+import java.nio.charset.Charset;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -13,20 +16,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.lang.invoke.MethodHandles;
-import java.nio.charset.Charset;
-
-import static org.apache.commons.io.IOUtils.close;
-
 @Component
 public class LoginState {
     private static final Logger logger =
-                    LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final String DATA_DIR_NAME = ".mms";
+    private static final String TOKEN_FILENAME = "refreshtoken.txt";
     private final BooleanProperty loggedIn;
     private final StringProperty fullName;
     private final StringProperty userInitials;
-    private final File settingsFile;
+    private final File tokenFile;
     private UserSession userSession;
     private final AuthService authService;
 
@@ -34,7 +33,7 @@ public class LoginState {
         loggedIn = new SimpleBooleanProperty(false);
         fullName = new SimpleStringProperty("Anonymous");
         userInitials = new SimpleStringProperty("AN");
-        settingsFile = new File(getUserDataDirectory() + ".msSettings");
+        tokenFile = new File(getUserDataDirectory() + File.separator + TOKEN_FILENAME);
         this.authService = authService;
         loadRefreshTokenAndLogin();
     }
@@ -44,9 +43,9 @@ public class LoginState {
         if (refreshToken != null) {
             Task<UserSession> refreshTokenTask = authService.getRefreshTokenTask(refreshToken);
             refreshTokenTask.setOnSucceeded(
-                            t -> {
-                                setUserSession(refreshTokenTask.getValue());
-                            });
+                    t -> {
+                        setUserSession(refreshTokenTask.getValue());
+                    });
             new Thread(refreshTokenTask).start();
         }
     }
@@ -90,10 +89,12 @@ public class LoginState {
             fullNameProperty().setValue(StringUtils.abbreviate(this.userSession.getFullName(), 18));
             userInitialsProperty().setValue(this.userSession.getInitials());
             try {
-                File settingsFile = new File(getUserDataDirectory() + ".msSettings");
-                writeToXML(this.userSession.getRefreshTokenString(), settingsFile);
+                writeToFile(this.userSession.getRefreshTokenString(), tokenFile);
             } catch (Exception e) {
-                logger.error("Could not store RefreshToken due to {}", e);
+                logger.error(
+                        "Could not store RefreshToken in {}: {}",
+                        tokenFile.getAbsolutePath(),
+                        e.getMessage());
             }
         } else {
             this.userSession = null;
@@ -101,61 +102,59 @@ public class LoginState {
             fullNameProperty().setValue("Anonymous");
             userInitialsProperty().setValue("AN");
             try {
-                if (settingsFile.delete()) {
-                    logger.info(settingsFile.getName() + " deleted");
+                if (tokenFile.delete()) {
+                    logger.info(tokenFile.getName() + " deleted");
                 } else {
-                    logger.error("Failed to delete {}", settingsFile.getName());
+                    logger.error("Failed to delete {}", tokenFile.getName());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                logger.error("Failed to delete {}", settingsFile.getName());
+                logger.error("Failed to delete {}", tokenFile.getName());
             }
         }
     }
 
-    public void writeToXML(Object object, File file) throws Exception {
-        XStream xStream = new XStream();
-        OutputStream outputStream = null;
-        Writer writer = null;
-        try {
-            outputStream = new FileOutputStream(file);
-            writer = new OutputStreamWriter(outputStream, Charset.forName("UTF-8"));
-            xStream.toXML(object, writer);
+    public void writeToFile(String token, File file) throws Exception {
+        try (OutputStream outputStream = new FileOutputStream(file);
+                Writer writer = new BufferedWriter(new OutputStreamWriter(outputStream))) {
+            writer.write(token);
         } catch (Exception e) {
             throw e;
-        } finally {
-            close(writer);
-            close(outputStream);
         }
     }
 
     public String loadRefreshToken() {
         try {
-            Object o = readFromXML(settingsFile);
+            Object o = readTokenFromFile(tokenFile);
             return o.toString();
         } catch (Exception e) {
-            logger.error("Could not store RefreshToken due to {}", e);
+            logger.info("Could not load refresh token from {}:{}", tokenFile, e.getMessage());
             return null;
         }
     }
 
-    public Object readFromXML(File file) throws Exception {
-        XStream xStream = new XStream();
-        FileInputStream fileInputStream = null;
-        Reader reder = null;
-        try {
-            fileInputStream = new FileInputStream(file);
-            reder = new InputStreamReader(fileInputStream, Charset.forName("UTF-8"));
-            return xStream.fromXML(reder);
+    public String readTokenFromFile(File file) throws Exception {
+        try (FileInputStream fileInputStream = new FileInputStream(file);
+                BufferedReader reader =
+                        new BufferedReader(
+                                new InputStreamReader(
+                                        fileInputStream, Charset.forName("UTF-8"))); ) {
+            return reader.readLine();
         } catch (Exception e) {
             throw e;
-        } finally {
-            close(reder);
-            close(fileInputStream);
         }
     }
 
     public String getUserDataDirectory() {
-        return System.getProperty("user.home") + File.separator;
+        String dataDir = System.getProperty("user.home") + File.separator + DATA_DIR_NAME;
+        File dataDirFile = new File(dataDir);
+        if (!dataDirFile.exists()) {
+            boolean success = new File(dataDir).mkdir();
+            if (!success) {
+                throw new UserDataDirException(
+                        String.format("Could not create user data directory under %s", dataDir));
+            }
+        }
+        return dataDir;
     }
 }
