@@ -1,9 +1,8 @@
 package at.researchstudio.sat.merkmalservice.ifc.model;
 
 import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.*;
-import static java.util.stream.Collectors.joining;
 
-import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -34,7 +33,7 @@ public class IfcPropertySetLine extends IfcLine {
         this.globalId = globalId;
         this.historyId = historyId;
         this.description = description;
-        this.propertyIds = propertyIds;
+        this.propertyIds = propertyIds == null ? new ArrayList<>() : new ArrayList<>(propertyIds);
     }
 
     private static String makeLine(
@@ -44,22 +43,20 @@ public class IfcPropertySetLine extends IfcLine {
             String name,
             String description,
             List<Integer> propertyIds) {
-        return new StringBuilder()
-                .append(toStepId(id))
-                .append("= ")
-                .append(IDENTIFIER)
-                .append("(")
-                .append(toStepValue(globalId))
-                .append(",")
-                .append(toOptionalStepId(historyId))
-                .append(",")
-                .append(toOptionalStepValue(name))
-                .append(",")
-                .append(toOptionalStepValue(description))
-                .append(",")
-                .append(toOptionalStepIds(propertyIds))
-                .append(");")
-                .toString();
+        return toStepId(id)
+                + "= "
+                + IDENTIFIER
+                + "("
+                + toStepValue(globalId)
+                + ","
+                + toOptionalStepId(historyId)
+                + ","
+                + toOptionalStepValue(name)
+                + ","
+                + toOptionalStepValue(description)
+                + ","
+                + toOptionalStepIds(propertyIds)
+                + ");";
     }
 
     public IfcPropertySetLine(String line) {
@@ -118,11 +115,7 @@ public class IfcPropertySetLine extends IfcLine {
 
     public void addPropertyId(Integer itemId) {
         super.getReferences().add(itemId);
-        String oldIdlist =
-                this.propertyIds.stream().map(IfcUtils::toStepId).collect(joining(",", "(", ")"));
         this.propertyIds.add(itemId);
-        String newIdList =
-                this.propertyIds.stream().map(IfcUtils::toStepId).collect(joining(",", "(", ")"));
-        modifyLine(line -> line.replaceAll(Pattern.quote(oldIdlist), newIdList));
+        modifyLine(line -> makeLine(getId(), globalId, historyId, name, description, propertyIds));
     }
 }

@@ -33,6 +33,7 @@ public abstract class Modification {
             String propertyName, T fromElement) {
         return new RemovePropertyOrQuantityModification<>(
                 IfcLinePredicates.isPropertyWithName(propertyName)
+                        .or(IfcLinePredicates.isQuantityWithName(propertyName))
                         .or(IfcLinePredicates.isEnumValueWithName(propertyName)),
                 fromElement);
     }
@@ -41,24 +42,13 @@ public abstract class Modification {
             String regex, T fromElement) {
         return new RemovePropertyOrQuantityModification<>(
                 IfcLinePredicates.isPropertyWithNameMatching(regex)
+                        .or((IfcLinePredicates.isQuantityWithNameMatching(regex)))
                         .or(IfcLinePredicates.isEnumValueWithNameMatching(regex)),
                 fromElement);
     }
 
-    public static <T extends IfcLine> ParsedIfcFileModification removeQuantityWithName(
-            String quantityName, T fromElement) {
-        return new RemovePropertyOrQuantityModification<>(
-                IfcLinePredicates.isQuantityWithName(quantityName), fromElement);
-    }
-
-    public static <T extends IfcLine> ParsedIfcFileModification removeQuantityWithMatchingName(
-            String regex, T fromElement) {
-        return new RemovePropertyOrQuantityModification<>(
-                IfcLinePredicates.isQuantityWithNameMatching(regex), fromElement);
-    }
-
     public static <T extends IfcLine> ParsedIfcFileModification addProperty(
             Feature feature, MappingExecutionValue value, String propertySetName, T toElement) {
-        return new AddPropertyModification<T>(toElement, feature, value, propertySetName);
+        return new AddPropertyModification<>(toElement, feature, value, propertySetName);
     }
 }

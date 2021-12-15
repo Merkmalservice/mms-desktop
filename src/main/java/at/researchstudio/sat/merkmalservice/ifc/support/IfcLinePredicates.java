@@ -268,14 +268,16 @@ public abstract class IfcLinePredicates {
     }
 
     public static Predicate<IfcLine> isProperty() {
-        return line -> line instanceof IfcSinglePropertyValueLine;
+        return line ->
+                line instanceof IfcSinglePropertyValueLine || line instanceof IfcQuantityLine;
     }
 
     public static Predicate<IfcLine> isRealProperty() {
         return line ->
-                castToOpt(line, IfcSinglePropertyValueLine.class)
-                        .map(IfcLinePredicates::isRealValue)
-                        .orElse(false);
+                castToOpt(line, IfcQuantityLine.class).isPresent()
+                        || castToOpt(line, IfcSinglePropertyValueLine.class)
+                                .map(IfcLinePredicates::isRealValue)
+                                .orElse(false);
     }
 
     public static Predicate<IfcLine> isIntegerProperty() {
@@ -301,9 +303,10 @@ public abstract class IfcLinePredicates {
 
     public static Predicate<IfcLine> isNumericProperty() {
         return line ->
-                castToOpt(line, IfcSinglePropertyValueLine.class)
-                        .map(l -> isRealValue(l) || isIntegerValue(l))
-                        .orElse(false);
+                castToOpt(line, IfcQuantityLine.class).isPresent()
+                        || castToOpt(line, IfcSinglePropertyValueLine.class)
+                                .map(l -> isRealValue(l) || isIntegerValue(l))
+                                .orElse(false);
     }
 
     private static boolean isRealValue(IfcSinglePropertyValueLine p) {
@@ -317,6 +320,13 @@ public abstract class IfcLinePredicates {
                 .filter(IfcLinePredicates::isRealValue)
                 .map(IfcSinglePropertyValueLine::getValue)
                 .map(Double::valueOf)
+                .orElse(null);
+    }
+
+    private static Double getRealValue(IfcQuantityLine line) {
+        return Optional.ofNullable(line)
+                .filter(isRealProperty())
+                .map(IfcQuantityLine::getValue)
                 .orElse(null);
     }
 

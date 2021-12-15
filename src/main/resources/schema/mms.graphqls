@@ -171,7 +171,7 @@ type Mapping {
     actionGroups: [ActionGroup!]!
 }
 
-union ActionGroup = DeleteActionGroup | AddActionGroup #TODO: OTHER ACTION GROUPS
+union ActionGroup = DeleteActionGroup | AddActionGroup | ConvertActionGroup #TODO: OTHER ACTION GROUPS
 
 type DeleteActionGroup {
     id: ID!
@@ -181,7 +181,13 @@ type DeleteActionGroup {
 type AddActionGroup {
     id: ID!
     actions: [AddAction!]!
-    value: MappingExecutionValue
+    addToPropertySet: MappingExecutionValue
+}
+
+type ConvertActionGroup {
+    id: ID!
+    actions: [ConvertAction!]!
+    addToPropertySet: MappingExecutionValue
 }
 
 type DeleteAction {
@@ -195,13 +201,14 @@ type AddAction {
     value: MappingExecutionValue!
 }
 
-#type Condition {
-#    id: ID!
-#    type: ConditionType!
-#}
-#
+type ConvertAction {
+    id: ID!
+    inputFeature: Feature!
+    outputFeature: Feature!
+}
+
 union Condition = SingleCondition | ConditionGroup
-#
+
 type SingleCondition {
     id: ID!
     feature: Feature!
@@ -228,7 +235,7 @@ input ActionGroupInput {
     #TODO: DeleteActionGroupInput will not be mandatory when multiple actionGroupTypes are possible
     deleteActionGroup: DeleteActionGroupInput
     addActionGroup: AddActionGroupInput
-#    convertActionGroup: ID!
+    convertActionGroup: ConvertActionGroupInput
 #    combineActionGroup: ID!
 }
 
@@ -241,6 +248,11 @@ input AddActionGroupInput {
     value: MappingExecutionInput
 }
 
+input ConvertActionGroupInput {
+    actions: [ConvertActionInput!]!
+    addToPropertySet: MappingExecutionValueInput
+}
+
 input DeleteActionInput {
     feature: ID!
 }
@@ -248,6 +260,12 @@ input DeleteActionInput {
 input AddActionInput {
     feature: ID!
     value: MappingExecutionInput!
+}
+
+input ConvertActionInput {
+    inputFeature: ID!
+    outputFeature: ID!
+    #TODO: MORE POSSIBILITIES
 }
 
 input ConditionInput {

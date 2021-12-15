@@ -60,7 +60,7 @@ public class ConversionEngineTests {
             Assertions.assertEquals(expectedOutput, actualOutput);
         } catch (AssertionFailedError e) {
             File outFolder = new File(targetFolder, folderName);
-            outFolder.mkdirs();
+            boolean mkdirs = outFolder.mkdirs();
             IfcFileWriter.write(output, new File(outFolder, "output.ifc"));
             throw e;
         }
@@ -152,9 +152,7 @@ public class ConversionEngineTests {
                                     @Override
                                     public ParsedIfcFileModification applyTo(
                                             IfcLine line, ParsedIfcFile ifcModel) {
-                                        return multiple(
-                                                removePropertyWithMatchingName(".*", line),
-                                                removeQuantityWithMatchingName(".*", line));
+                                        return multiple(removePropertyWithMatchingName(".*", line));
                                     }
                                 });
         ConversionEngine engine = new ConversionEngine(factory.getRules());
@@ -180,9 +178,7 @@ public class ConversionEngineTests {
                                     @Override
                                     public ParsedIfcFileModification applyTo(
                                             IfcLine line, ParsedIfcFile ifcModel) {
-                                        return multiple(
-                                                removePropertyWithMatchingName(".*", line),
-                                                removeQuantityWithMatchingName(".*", line));
+                                        return multiple(removePropertyWithMatchingName(".*", line));
                                     }
                                 });
         ConversionEngine engine = new ConversionEngine(factory.getRules());
@@ -569,6 +565,7 @@ public class ConversionEngineTests {
                                                 Connective.AND),
                                         List.of(
                                                 new DeleteActionGroup(
+                                                        "delAg1",
                                                         List.of(
                                                                 new DeleteAction(
                                                                         "del1",
@@ -693,7 +690,7 @@ public class ConversionEngineTests {
                                         /*--*/ .end()
                                         /**/ .addActionGroup()
                                         /*--*/ .addAction()
-                                        /*----*/ .feature(Inst.featurePhaseGeprüft)
+                                        /*----*/ .feature(Inst.featurePhaseGeprueft)
                                         /*----*/ .value("Phase 3")
                                         /*----*/ .end()
                                         /*--*/ .end()
@@ -773,7 +770,53 @@ public class ConversionEngineTests {
     }
 
     @Test
-    public void test_add_Enum_Label_to_Pset() throws IOException {
+    public void test_add_IFCREAL_to_Pset() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .propertySetName("Phasen")
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featureIfcReal)
+                                        /*----*/ .value(Math.PI)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
+
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("add_property_IFCREAL_where_cpiFitMatchKey_ABC", engine);
+    }
+
+    @Test
+    public void test_add_IFCLENGTHMEASURE_to_Pset() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .propertySetName("Phasen")
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featureIfcLengthMeasure)
+                                        /*----*/ .value(Math.PI)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
+
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("add_property_IFCLENGTHMEASURE_where_cpiFitMatchKey_ABC", engine);
+    }
+
+    @Test
+    public void test_add_IFCLABEL_fromEnum_to_Pset() throws IOException {
         MappingConversionRuleFactory factory =
                 new MappingConversionRuleFactory(
                         List.of(
@@ -793,6 +836,75 @@ public class ConversionEngineTests {
 
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCLABEL_fromEnum_where_cpiFitMatchKey_ABC", engine);
+    }
+
+    @Test
+    public void test_add_IFCBOOLEAN_fromEnum_to_Pset() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .propertySetName("Phasen")
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featureEnumBoolean)
+                                        /*----*/ .value(true)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
+
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("add_property_IFCBOOLEAN_fromEnum_where_cpiFitMatchKey_ABC", engine);
+    }
+
+    @Test
+    public void test_add_IFCREAL_fromEnum_to_Pset() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .propertySetName("Phasen")
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featureEnumNumeric)
+                                        /*----*/ .value(Math.PI)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
+
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("add_property_IFCREAL_fromEnum_where_cpiFitMatchKey_ABC", engine);
+    }
+
+    @Test
+    public void test_add_IFCIDENTIFIER_fromEnum_to_Pset() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /*--*/ .feature(Inst.featureCpiFitMatchKey)
+                                        /*--*/ .valueEquals("ABCDEFG")
+                                        /*--*/ .end()
+                                        /**/ .addActionGroup()
+                                        /*--*/ .propertySetName("Phasen")
+                                        /*--*/ .addAction()
+                                        /*----*/ .feature(Inst.featureEnumIdentifier)
+                                        /*----*/ .value("identifier-1", "SOME_GRAPHQLVALUE")
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
+
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("add_property_IFCIDENTIFIER_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
 
     @NotNull
@@ -843,7 +955,7 @@ public class ConversionEngineTests {
                         "the phase in which the object was planned",
                         List.of(),
                         new StringFeatureType());
-        public static Feature featurePhaseGeprüft =
+        public static Feature featurePhaseGeprueft =
                 new Feature(
                         "feature8Id",
                         "Phase geprüft",
@@ -882,6 +994,24 @@ public class ConversionEngineTests {
                         .description("an ifc boolean")
                         .booleanType()
                         .build();
+        public static Feature featureIfcReal =
+                Feature.builder()
+                        .name("featureIfcReal")
+                        .description("an ifc real value")
+                        .numericType()
+                        /**/ .unitless()
+                        /**/ .dimensionless()
+                        /**/ .end()
+                        .build();
+        public static Feature featureIfcLengthMeasure =
+                Feature.builder()
+                        .name("featureIfcLengthMeasure")
+                        .description("an ifc length measure")
+                        .numericType()
+                        /**/ .unit(QudtUnit.METRE)
+                        /**/ .quantityKind(QudtQuantityKind.LENGTH)
+                        /**/ .end()
+                        .build();
         public static Feature featureEnumLabel =
                 Feature.builder()
                         .name("ifcLabelFeatureFromEnum")
@@ -893,42 +1023,64 @@ public class ConversionEngineTests {
                         /**/ .option("string option 3", "third option")
                         /**/ .end()
                         .build();
+        public static Feature featureEnumBoolean =
+                Feature.builder()
+                        .name("ifcBooleanFeatureFromEnum")
+                        .description("an ifc label with a value from an mms enum")
+                        .enumType()
+                        /**/ .allowMultiple(false)
+                        /**/ .option(true, "boolean option 1")
+                        /**/ .option(true, "boolean option 2")
+                        /**/ .option(false, "boolean option 3")
+                        /**/ .end()
+                        .build();
+        public static Feature featureEnumNumeric =
+                Feature.builder()
+                        .name("ifcRealFeatureFromEnum")
+                        .description("an ifc label with a value from an mms enum")
+                        .enumType()
+                        /**/ .allowMultiple(false)
+                        /**/ .option(Math.PI, "pi")
+                        /**/ .option(Math.E, "e")
+                        /**/ .option(Math.sqrt(2), "square root of 2")
+                        /**/ .end()
+                        .build();
+        public static Feature featureEnumIdentifier =
+                Feature.builder()
+                        .name("ifcIdentifierFeatureFromEnum")
+                        .description("an ifc label with a value from an mms enum")
+                        .enumType()
+                        /**/ .allowMultiple(false)
+                        /**/ .option("identifier-1", "first identifier")
+                        /**/ .option("identifier-2", "second identifier")
+                        /**/ .end()
+                        .build();
         static Organization organization1 = new Organization("org1Id", "Org one");
         static Project project1 =
                 new Project("project1Id", "Project One", "a project", List.of(), List.of());
         static Standard standard1 =
                 new Standard("standard1Id", "standard one", false, organization1);
-        static Mapping mappingDeleteCpiFitMatchKey =
-                new Mapping(
-                        "mapping1Id",
-                        "Delete cpiFitMatchKey",
-                        project1,
-                        List.of(),
-                        new SingleCondition(
-                                "singleCondition1Id",
-                                featureCpiFitMatchKey,
-                                MappingPredicate.PRESENT,
-                                null),
-                        List.of(
-                                new DeleteActionGroup(
-                                        List.of(
-                                                new DeleteAction(
-                                                        "deleteAction1Id",
-                                                        featureCpiFitMatchKey)))));
     }
 
     private Mapping delete(
             String name, Feature feature, MappingPredicate predicate, MappingExecutionValue value) {
-        return new Mapping(
-                "mappingIdDelete" + name + feature.getName(),
-                "DeleteMapping " + name + " " + feature.getName(),
-                Inst.project1,
-                List.of(),
-                new SingleCondition(
-                        "singleCondition" + name + feature.getName(), feature, predicate, value),
-                List.of(
-                        new DeleteActionGroup(
-                                List.of(new DeleteAction("actionId" + name, feature)))));
+        return Mapping.builder()
+                .id("mappingIdDelete" + name + feature.getName())
+                .name("DeleteMapping " + name + " " + feature.getName())
+                .project(Inst.project1)
+                .matches()
+                /**/ .id("singleCondition" + name + feature.getName())
+                /**/ .feature(feature)
+                /**/ .predicate(predicate)
+                /**/ .value(value)
+                /**/ .end()
+                .deleteActionGroup()
+                /**/ .deleteAction()
+                /*--*/ .id("actionId" + name)
+                /*--*/ .feature(feature)
+                /*--*/ .end()
+                /**/ .end()
+                .build();
     }
 
     private Mapping delete(
@@ -949,6 +1101,7 @@ public class ConversionEngineTests {
                         value),
                 List.of(
                         new DeleteActionGroup(
+                                "delAg" + name,
                                 List.of(new DeleteAction("actionId" + name, deleteFeature)))));
     }
 }

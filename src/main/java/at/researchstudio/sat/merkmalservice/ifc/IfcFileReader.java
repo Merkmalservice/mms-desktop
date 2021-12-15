@@ -7,6 +7,7 @@ import at.researchstudio.sat.merkmalservice.ifc.parser.IfcLineParser;
 import at.researchstudio.sat.merkmalservice.ifc.parser.IfcLineParserImpl;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcPropertyBuilder;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
+import at.researchstudio.sat.merkmalservice.ifc.support.ProjectUnits;
 import at.researchstudio.sat.merkmalservice.model.BooleanFeature;
 import at.researchstudio.sat.merkmalservice.model.EnumFeature;
 import at.researchstudio.sat.merkmalservice.model.Feature;
@@ -149,6 +150,7 @@ public class IfcFileReader {
                 }
             }
         }
+        Map<Integer, IfcUnit> projectUnitsById = new HashMap<>();
         Map<Class<? extends IfcLine>, List<IfcLine>> ifcLinesGrouped =
                 lines.parallelStream().collect(Collectors.groupingBy(IfcLine::getClass));
         int projectUnitLineId = 0;
@@ -164,6 +166,7 @@ public class IfcFileReader {
         if (projectUnitLineId == 0) {
             throw new IOException("File: " + ifcFile.getPath() + " is not a valid ifc step file");
         }
+        // collect project default units
         List<Integer> defaultProjectUnitIds = Collections.emptyList();
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(
@@ -178,25 +181,29 @@ public class IfcFileReader {
                     "Extracted " + defaultProjectUnitIds.size() + " IfcProjectUnit Assignments",
                     0);
         }
+        // collect SI units
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(IfcSIUnitLine.class, Collections.emptyList())) {
             IfcSIUnitLine unitLine = (IfcSIUnitLine) line;
-            projectUnits.add(
+            IfcUnit unit =
                     new IfcSIUnit(
                             unitLine.getStringId(),
                             unitLine.getType(),
                             unitLine.getMeasure(),
                             unitLine.getPrefix(),
-                            defaultProjectUnitIds.contains(unitLine.getId())));
+                            defaultProjectUnitIds.contains(unitLine.getId()));
+            projectUnits.add(unit); // TODO CONTINUE HERE!
+            projectUnitsById.put(line.getId(), unit);
         }
         List<IfcUnit> projectSIUnits =
                 projectUnits.stream()
                         .filter(unit -> unit instanceof IfcSIUnit)
                         .collect(Collectors.toList());
+        // collect derived units
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(IfcDerivedUnitLine.class, Collections.emptyList())) {
             IfcDerivedUnitLine unitLine = (IfcDerivedUnitLine) line;
-            IfcDerivedUnit tempDerivedUnit =
+            IfcDerivedUnit derivedUnit =
                     new IfcDerivedUnit(
                             unitLine.getStringId(),
                             unitLine.getType(),
@@ -212,19 +219,22 @@ public class IfcFileReader {
                 IfcDerivedUnitElementLine derivedUnitElementLine = (IfcDerivedUnitElementLine) l;
                 for (IfcUnit unit : projectSIUnits) {
                     if (unit.getId().equals(derivedUnitElementLine.getUnitIdString())) {
-                        tempDerivedUnit.addDerivedUnitElement(
+                        derivedUnit.addDerivedUnitElement(
                                 (IfcSIUnit) unit, derivedUnitElementLine.getExponent());
                     }
                 }
             }
-            projectUnits.add(tempDerivedUnit);
+            projectUnits.add(derivedUnit);
+            projectUnitsById.put(unitLine.getId(), derivedUnit);
         }
         if (updateProgress) {
             taskProgressListener.notifyProgress(
                     null, "Extracted " + projectUnits.size() + " IfcUnits", 0);
         }
+        // map unit type -> unit
         Map<IfcUnitType, List<IfcUnit>> projectUnitsMap =
                 projectUnits.stream().collect(Collectors.groupingBy(IfcUnit::getType));
+        // extract properties
         Set<IfcProperty> extractedProperties = new HashSet<>();
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(
@@ -300,7 +310,10 @@ public class IfcFileReader {
                     null, "Extracted " + extractedProperties.size() + " IfcProperties", 0);
         }
         StringBuilder extractLog = new StringBuilder();
-        ParsedIfcFile parsedIfcFile = new ParsedIfcFile(lines, extractedProperties, extractLog);
+        ProjectUnits projectUnitsObject = new ProjectUnits(projectUnitsMap, projectUnitsById);
+
+        ParsedIfcFile parsedIfcFile =
+                new ParsedIfcFile(lines, extractedProperties, projectUnitsObject, extractLog);
         if (updateProgress) {
             taskProgressListener.notifyProgress(null, extractLog.toString(), 0);
         }

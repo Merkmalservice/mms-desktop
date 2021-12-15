@@ -6,8 +6,10 @@ query mapping($mappingId :ID!) {
             id
         }
         actionGroups {
+            __typename
             ... on DeleteActionGroup {
                 __typename
+                id
                 actions {
                     ... on DeleteAction {
                         __typename
@@ -22,9 +24,50 @@ query mapping($mappingId :ID!) {
                     }
                 }
             }
+            ... on ConvertActionGroup {
+                __typename
+                id
+                actions {
+                    ... on ConvertAction {
+                        __typename
+                        id
+                        inputFeature {
+                            id
+                            name
+                            type {
+                                __typename
+                            }
+                        }
+                        outputFeature {
+                            id
+                            name
+                            type {
+                                __typename
+                            }
+                        }
+                    }
+                }
+            }
             ... on AddActionGroup {
                 __typename
                 id
+                addToPropertySet {
+                    ... on MEBooleanValue {
+                        booleanValue
+                    }
+                    ... on MEFloatValue {
+                        floatValue
+                    }
+                    ... on MEIDValue {
+                        idValue
+                    }
+                    ... on MEIntegerValue {
+                        integerValue
+                    }
+                    ... on MEStringValue {
+                        stringValue
+                    }
+                }
                 actions {
                     ... on AddAction {
                         __typename

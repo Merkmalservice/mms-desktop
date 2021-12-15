@@ -31,7 +31,7 @@ public class IfcUtils {
 
     public static String extractQudtUnitFromProperty(IfcProperty property) {
         try {
-            return QudtUnit.extractUnitFromIfcUnit(property.getUnit());
+            return QudtUnit.mapIfcUnitToQudtUnit(property.getUnit());
         } catch (IllegalArgumentException | NullPointerException e) {
             logger.warn(e.getMessage());
             logger.warn(
@@ -127,7 +127,7 @@ public class IfcUtils {
             return "'" + convertUtf8ToIFCString((String) o) + "'";
         }
         if (o instanceof Boolean) {
-            return (((Boolean) o).booleanValue()) ? ".T." : ".F.";
+            return ((Boolean) o) ? ".T." : ".F.";
         }
         if (o instanceof Collection) {
             return ((Collection<?>) o)
@@ -137,7 +137,7 @@ public class IfcUtils {
 
     public static String toStepId(Integer id) {
         Objects.requireNonNull(id);
-        return "#" + id.toString();
+        return "#" + id;
     }
 
     public static String toOptionalStepId(Integer id) {
@@ -145,7 +145,7 @@ public class IfcUtils {
     }
 
     public static String toOptionalStepIds(Collection<Integer> id) {
-        return id == null
+        return id == null || id.isEmpty()
                 ? "$"
                 : id.stream().map(IfcUtils::toStepId).collect(joining(",", "(", ")"));
     }

@@ -1,6 +1,9 @@
 package at.researchstudio.sat.merkmalservice.ifc.model;
 
+import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.*;
+
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -33,6 +36,30 @@ public class IfcRelDefinesByPropertiesLine extends IfcRelationLine {
         } else {
             throw new IllegalArgumentException("IfcPropertyEnumeration invalid: " + line);
         }
+    }
+
+    public IfcRelDefinesByPropertiesLine(
+            Integer id, Integer propertySetId, Integer... relatedObjectIds) {
+        this(makeLine(id, propertySetId, relatedObjectIds));
+    }
+
+    private static String makeLine(Integer id, Integer propertySetId, Integer[] relatedObjectIds) {
+        return toStepId(id)
+                + "= "
+                + IDENTIFIER
+                + "("
+                + toStepValue(UUID.randomUUID().toString())
+                + ","
+                + toStepId(10101)
+                + ","
+                + toOptionalStepValue(null)
+                + ","
+                + toOptionalStepValue(null)
+                + ","
+                + toOptionalStepIds(Arrays.asList(relatedObjectIds))
+                + ","
+                + toStepId(propertySetId)
+                + ");";
     }
 
     public boolean isSharedPropertySet() {

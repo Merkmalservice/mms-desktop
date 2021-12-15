@@ -1,15 +1,16 @@
 package at.researchstudio.sat.merkmalservice.ifc;
 
-import static at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.StepPropertyValueFactory.toStepPropertyValue;
 import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castTo;
 import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castToOptAndLogFailure;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.*;
 
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.StepPropertyValueFactory;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.unit.QudtUnitConverter;
 import at.researchstudio.sat.merkmalservice.ifc.model.*;
 import at.researchstudio.sat.merkmalservice.ifc.model.element.IfcBuiltElementLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.type.IfcTypeObjectLine;
+import at.researchstudio.sat.merkmalservice.ifc.support.ProjectUnits;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
@@ -40,7 +41,9 @@ public class ParsedIfcFile {
     private final Set<FeatureSet> featureSets;
     private final Map<Integer, List<Integer>> reverseLookupRelDefinesByProperties;
     private final Map<Integer, List<Integer>> reverseLookupReferencingLines;
-    private AtomicInteger nextFreeLineId = new AtomicInteger(1);
+    private final StepPropertyValueFactory stepPropertyValueFactory;
+    private final ProjectUnits projectUnits;
+    private final AtomicInteger nextFreeLineId = new AtomicInteger(1);
 
     private Integer nextFreeLineId() {
         return nextFreeLineId.getAndIncrement();
@@ -58,11 +61,20 @@ public class ParsedIfcFile {
     public <T extends IfcLine> List<? extends IfcLine> getProperties(
             T element, Predicate<IfcLine> predicate) {
         List<IfcLine> properties =
-                getRelDefinesByPropertiesLinesReferencing(element).stream()
-                        .map(this::getPropertySet)
-                        .filter(Optional::isPresent)
-                        .flatMap(ps -> getPropertySetChildLines(ps.get()).stream())
-                        .filter(predicate)
+                Stream.concat(
+                                getRelDefinesByPropertiesLinesReferencing(element).stream()
+                                        .map(this::getPropertySet)
+                                        .filter(Optional::isPresent)
+                                        .flatMap(ps -> getPropertySetChildLines(ps.get()).stream())
+                                        .filter(predicate),
+                                getRelDefinesByPropertiesLinesReferencing(element).stream()
+                                        .map(this::getElementQuantity)
+                                        .filter(Optional::isPresent)
+                                        .flatMap(
+                                                ps ->
+                                                        getElementQuantityChildLines(ps.get())
+                                                                .stream())
+                                        .filter(predicate))
                         .collect(toList());
         return properties;
     }
@@ -105,7 +117,8 @@ public class ParsedIfcFile {
             IfcPropertySetLine pSet,
             at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
             MappingExecutionValue value) {
-        StepPropertyValueFactory.StepValueAndType vat = toStepPropertyValue(feature, value);
+        StepPropertyValueFactory.StepValueAndType vat =
+                stepPropertyValueFactory.toStepPropertyValue(feature, value);
         IfcSinglePropertyValueLine prop =
                 new IfcSinglePropertyValueLine(
                         nextFreeLineId(),
@@ -169,9 +182,8 @@ public class ParsedIfcFile {
         getRelDefinesByPropertiesLinesReferencing(element).stream()
                 .filter(IfcRelDefinesByPropertiesLine::isSharedPropertySet)
                 .filter(
-                        (IfcRelDefinesByPropertiesLine psRel) -> {
-                            return getPropertySet(psRel).map(predicate::test).orElse(false);
-                        })
+                        (IfcRelDefinesByPropertiesLine psRel) ->
+                                getPropertySet(psRel).map(predicate::test).orElse(false))
                 .forEach(ps -> splitSharedPropertySet(element, ps));
     }
 
@@ -180,6 +192,12 @@ public class ParsedIfcFile {
         IfcPropertySetLine pSet =
                 new IfcPropertySetLine(id, name, UUID.randomUUID().toString(), 10101, null, null);
         registerNewIfcLine(pSet, false);
+        IfcRelDefinesByPropertiesLine rel =
+                new IfcRelDefinesByPropertiesLine(
+                        nextFreeLineId(), pSet.getId(), toElement.getId());
+        registerNewIfcLine(rel);
+        addToLookupTables(rel);
+        addToLookupTables(pSet);
         return pSet;
     }
 
@@ -253,7 +271,9 @@ public class ParsedIfcFile {
                         this.reverseLookupRelDefinesByProperties.putIfAbsent(
                                 objectId, List.of(newLine.getId()));
                 if (existingRefs != null) {
-                    existingRefs.add(newLine.getId());
+                    List<Integer> refs = new ArrayList<>(existingRefs);
+                    refs.add(newLine.getId());
+                    this.reverseLookupRelDefinesByProperties.put(objectId, refs);
                 }
             }
         }
@@ -262,7 +282,9 @@ public class ParsedIfcFile {
                     this.reverseLookupReferencingLines.putIfAbsent(
                             objectId, List.of(newLine.getId()));
             if (existingRefs != null) {
-                existingRefs.add(newLine.getId());
+                List<Integer> refs = new ArrayList<>(existingRefs);
+                refs.add(newLine.getId());
+                this.reverseLookupReferencingLines.put(objectId, refs);
             }
         }
     }
@@ -329,8 +351,13 @@ public class ParsedIfcFile {
     public Optional<IfcPropertySetLine> getPropertySet(
             IfcRelDefinesByPropertiesLine propertySetRel) {
         IfcLine related = getDataLines().get(propertySetRel.getRelatingPropertySetId());
-        return TypeConverter.castToOptAndLogFailure(
-                related, IfcPropertySetLine.class, "find reference to a property set");
+        return TypeConverter.castToOpt(related, IfcPropertySetLine.class);
+    }
+
+    public Optional<IfcElementQuantityLine> getElementQuantity(
+            IfcRelDefinesByPropertiesLine propertySetRel) {
+        IfcLine related = getDataLines().get(propertySetRel.getRelatingPropertySetId());
+        return TypeConverter.castToOpt(related, IfcElementQuantityLine.class);
     }
 
     public List<IfcPropertySetLine> getPropertySets(IfcRelDefinesByTypeLine propertySetRel) {
@@ -367,9 +394,11 @@ public class ParsedIfcFile {
     public ParsedIfcFile(
             List<IfcLine> lines,
             @NonNull Set<IfcProperty> extractedProperties,
+            ProjectUnits projectUnits,
             StringBuilder extractLog) {
         this.lines = lines;
         this.extractedProperties = extractedProperties;
+        this.projectUnits = projectUnits;
         this.extractedPropertyMap =
                 extractedProperties.stream().collect(groupingBy(IfcProperty::getType));
         if (Objects.nonNull(lines) && lines.size() > 0) {
@@ -532,6 +561,8 @@ public class ParsedIfcFile {
             if (!dataLines.isEmpty()) {
                 this.markLineIdUsed(dataLines.keySet().stream().max(Integer::compareTo).get());
             }
+            stepPropertyValueFactory =
+                    new StepPropertyValueFactory(this, new QudtUnitConverter(projectUnits));
         } else {
             this.dataLines = Collections.emptyMap();
             this.dataLinesByClass = Collections.emptyMap();
@@ -539,6 +570,8 @@ public class ParsedIfcFile {
             this.features = Collections.emptyList();
             this.reverseLookupRelDefinesByProperties = Collections.emptyMap();
             this.reverseLookupReferencingLines = Collections.emptyMap();
+            stepPropertyValueFactory =
+                    new StepPropertyValueFactory(this, new QudtUnitConverter(projectUnits));
         }
     }
 
@@ -564,6 +597,9 @@ public class ParsedIfcFile {
         this.reverseLookupRelDefinesByProperties =
                 new HashMap<>(toCopy.reverseLookupRelDefinesByProperties);
         this.reverseLookupReferencingLines = new HashMap<>(toCopy.reverseLookupReferencingLines);
+        this.projectUnits = new ProjectUnits(toCopy.projectUnits);
+        this.stepPropertyValueFactory =
+                new StepPropertyValueFactory(this, new QudtUnitConverter(this.projectUnits));
         this.markLineIdUsed(toCopy.nextFreeLineId());
     }
 
@@ -593,6 +629,10 @@ public class ParsedIfcFile {
 
     public Map<Class<? extends IfcLine>, List<IfcLine>> getDataLinesByClass() {
         return dataLinesByClass;
+    }
+
+    public ProjectUnits getProjectUnits() {
+        return projectUnits;
     }
 
     public Feature getFeatureForNamedPropertyLine(IfcNamedPropertyLineInterface ifcLine) {

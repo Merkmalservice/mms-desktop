@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class MappingConversionRuleFactory implements ConversionRuleFactory {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private Collection<Mapping> mappings;
+    private final Collection<Mapping> mappings;
 
     public MappingConversionRuleFactory(Collection<Mapping> mappings) {
         this.mappings = new ArrayList<>(mappings);
@@ -97,9 +97,8 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
         if (action instanceof AddAction) {
             AddActionGroup addActionGroup = (AddActionGroup) actionGroup;
             Optional<String> propertySetName =
-                    Optional.ofNullable(addActionGroup.getValue())
-                            .map(MappingExecutionValue::getStringValue)
-                            .orElse(Optional.empty());
+                    Optional.ofNullable(addActionGroup.getAddToPropertySet())
+                            .flatMap(MappingExecutionValue::getStringValue);
             if (propertySetName.isPresent()) {
                 return Modification.addProperty(
                         ((AddAction) action).getFeature(),
@@ -157,7 +156,10 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
     private static List<? extends IfcLine> getProperties(IfcLineAndModel ilam, Feature feature) {
         return ilam.getIfcModel()
                 .getProperties(
-                        ilam.ifcLine, IfcLinePredicates.isPropertyWithName(feature.getName()));
+                        ilam.ifcLine,
+                        IfcLinePredicates.isPropertyWithName(feature.getName())
+                                .or(IfcLinePredicates.isQuantityWithName(feature.getName()))
+                                .or(IfcLinePredicates.isEnumValueWithName(feature.getName())));
     }
 
     private static final Map<
@@ -266,7 +268,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
         }
     }
 
-    private class IfcLineAndModel {
+    private static class IfcLineAndModel {
         private final IfcLine ifcLine;
         private final ParsedIfcFile ifcModel;
 
