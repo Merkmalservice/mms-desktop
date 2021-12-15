@@ -1,5 +1,5 @@
 {
-  "realm": "mmsedge",
+  "realm": "merkmalservice",
   "auth-server-url": "https://keycloak.researchstudio.at/auth",
   "ssl-required": "external",
   "resource": "merkmalservice-frontend",
