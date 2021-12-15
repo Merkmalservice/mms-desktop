@@ -12,6 +12,7 @@ public class UserSession {
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final AccessToken accessToken;
     private final String idTokenString;
+    private final String refreshTokenString;
 
     public UserSession(AccessToken accessToken) {
         logger.info("Logged in...");
@@ -19,22 +20,25 @@ public class UserSession {
         logger.info("Username: " + accessToken.getPreferredUsername());
         this.accessToken = accessToken;
         this.idTokenString = null;
+        this.refreshTokenString = null;
     }
 
-    public UserSession(AccessToken accessToken, String idTokenString) {
+    public UserSession(AccessToken accessToken, String idTokenString, String refreshTokenString) {
         logger.info("Logged in...");
         logger.info("Token: " + accessToken.getSubject());
         logger.info("Username: " + accessToken.getPreferredUsername());
         this.accessToken = accessToken;
         this.idTokenString = idTokenString;
+        this.refreshTokenString = refreshTokenString;
     }
 
-    public UserSession(String idTokenString) {
+    public UserSession(String idTokenString, String refreshTokenString) {
         logger.info("Logged in...");
         logger.info("Only with tokenString");
         logger.info("TokenSring: " + idTokenString);
         this.accessToken = null;
         this.idTokenString = idTokenString;
+        this.refreshTokenString = refreshTokenString;
     }
 
     public String getUsername() {
@@ -69,5 +73,9 @@ public class UserSession {
 
     public String getIdTokenString() {
         return idTokenString;
+    }
+
+    public String getRefreshTokenString() {
+        return refreshTokenString;
     }
 }
