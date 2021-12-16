@@ -57,7 +57,7 @@ public class AuthService {
                             keycloak.getTokenString(),
                             keycloak.getRefreshToken());
                 } catch (Exception e) {
-                    logger.warn("Refresh token not successful due to {}", e);
+                   logger.info("Unable to refresh token - user is not logged in");
                 }
                 return null;
             }

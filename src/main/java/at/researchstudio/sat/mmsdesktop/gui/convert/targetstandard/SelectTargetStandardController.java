@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toSet;
 import static javafx.beans.binding.Bindings.not;
 
 import at.researchstudio.sat.merkmalservice.api.DataService;
+import at.researchstudio.sat.merkmalservice.api.graphql.TokenRefreshingDataService;
 import at.researchstudio.sat.merkmalservice.model.Organization;
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
@@ -63,7 +64,7 @@ public class SelectTargetStandardController implements Initializable {
     @FXML private VBox mappingsView;
     @FXML private JFXListView<Mapping> mappingsList;
     @Autowired ResourceLoader resourceLoader;
-    @Autowired DataService dataService;
+    @Autowired TokenRefreshingDataService dataService;
     @Autowired AuthService authService;
     private final ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
 
