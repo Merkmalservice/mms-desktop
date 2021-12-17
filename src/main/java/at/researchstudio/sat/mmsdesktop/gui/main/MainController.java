@@ -19,6 +19,9 @@ import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.view.components.JFXStepButton;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import com.jfoenix.controls.JFXButton;
+import java.lang.invoke.MethodHandles;
+import java.util.Objects;
+import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -35,10 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.lang.invoke.MethodHandles;
-import java.util.Objects;
-import java.util.ResourceBundle;
 
 @Component
 @FxmlView("main.fxml")
@@ -260,21 +259,18 @@ public class MainController implements Initializable {
         loginTask.setOnSucceeded(
                 t -> {
                     stateService.getViewState().switchCenterPane(AboutController.class);
-                    stateService.getLoginState().setUserSession(loginTask.getValue());
                     authService.resetLoginTask();
                 });
         loginTask.setOnCancelled(
                 t -> {
                     // TODO: Cancelled views
                     stateService.getViewState().switchCenterPane(AboutController.class);
-                    stateService.getLoginState().setUserSession(null);
                     authService.resetLoginTask();
                 });
         loginTask.setOnFailed(
                 t -> {
                     // TODO: Error Handling
                     stateService.getViewState().switchCenterPane(AboutController.class);
-                    stateService.getLoginState().setUserSession(null);
                     authService.resetLoginTask();
                 });
         new Thread(loginTask).start();
@@ -286,7 +282,6 @@ public class MainController implements Initializable {
         logoutTask.setOnSucceeded(
                 t -> {
                     stateService.getViewState().switchCenterPane(AboutController.class);
-                    stateService.getLoginState().setUserSession(null);
                     authService.resetLogoutTask();
                 });
         logoutTask.setOnCancelled(

@@ -11,27 +11,27 @@ public class UserSession {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final AccessToken accessToken;
-    private final String idTokenString;
+    private final String tokenString;
     private final String refreshTokenString;
 
     public UserSession(AccessToken accessToken) {
         logger.info("Logged in as '{}'", accessToken.getPreferredUsername());
         this.accessToken = accessToken;
-        this.idTokenString = null;
+        this.tokenString = null;
         this.refreshTokenString = null;
     }
 
-    public UserSession(AccessToken accessToken, String idTokenString, String refreshTokenString) {
+    public UserSession(AccessToken accessToken, String tokenString, String refreshTokenString) {
         logger.info("Logged in as '{}'", accessToken.getPreferredUsername());
         this.accessToken = accessToken;
-        this.idTokenString = idTokenString;
+        this.tokenString = tokenString;
         this.refreshTokenString = refreshTokenString;
     }
 
-    public UserSession(String idTokenString, String refreshTokenString) {
+    public UserSession(String tokenString, String refreshTokenString) {
         logger.info("Logged in without access token");
         this.accessToken = null;
-        this.idTokenString = idTokenString;
+        this.tokenString = tokenString;
         this.refreshTokenString = refreshTokenString;
     }
 
@@ -65,8 +65,8 @@ public class UserSession {
         return accessToken;
     }
 
-    public String getIdTokenString() {
-        return idTokenString;
+    public String getTokenString() {
+        return tokenString;
     }
 
     public String getRefreshTokenString() {

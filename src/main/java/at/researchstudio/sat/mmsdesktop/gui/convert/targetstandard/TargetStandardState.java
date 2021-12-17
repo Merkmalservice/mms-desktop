@@ -17,11 +17,15 @@ public class TargetStandardState {
     private final SimpleObjectProperty<Standard> targetStandard;
     private final SimpleObjectProperty<ProcessState> stepTargetStandardStatus;
     private final ObservableList<Mapping> mappings;
+    private final ObservableList<Project> projects;
+    private final ObservableList<Standard> standards;
 
     public TargetStandardState() {
         this.targetStandard = new SimpleObjectProperty<>();
         this.project = new SimpleObjectProperty<>();
         this.mappings = FXCollections.observableArrayList();
+        this.projects = FXCollections.observableArrayList();
+        this.standards = FXCollections.observableArrayList();
         this.stepTargetStandardStatus = new SimpleObjectProperty<>(STEP_ACTIVE);
     }
 
@@ -39,5 +43,13 @@ public class TargetStandardState {
 
     public ObservableList<Mapping> mappingsProperty() {
         return mappings;
+    }
+
+    public ObservableList<Project> projectsProperty() {
+        return projects;
+    }
+
+    public ObservableList<Standard> standardsProperty() {
+        return standards;
     }
 }

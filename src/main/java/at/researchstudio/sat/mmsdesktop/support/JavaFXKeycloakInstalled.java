@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.support;
 
+import at.researchstudio.sat.merkmalservice.api.auth.KeycloakService;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
@@ -34,34 +35,26 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.OAuthErrorException;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.adapters.ServerRequest;
-import org.keycloak.adapters.rotation.AdapterTokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.common.util.Base64Url;
-import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.common.util.RandomString;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.IDToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class JavaFXKeycloakInstalled {
     private static final String KEYCLOAK_JSON = "META-INF/keycloak.json";
-
-    private KeycloakDeployment deployment;
+    private final KeycloakService keycloakService;
 
     private enum Status {
         LOGGED_MANUAL,
         LOGGED_DESKTOP
     }
 
-    private AccessTokenResponse tokenResponse;
-    private String tokenString;
-    private String idTokenString;
-    private IDToken idToken;
-    private AccessToken token;
-    private String refreshToken;
     private JavaFXKeycloakInstalled.Status status;
     private Locale locale;
     private ResteasyClient resteasyClient;
@@ -72,24 +65,10 @@ public class JavaFXKeycloakInstalled {
 
     private final HostServices hostServices;
 
-    public JavaFXKeycloakInstalled(HostServices hostServices) {
-        this(
-                hostServices,
-                Thread.currentThread().getContextClassLoader().getResourceAsStream(KEYCLOAK_JSON));
-    }
-
-    public JavaFXKeycloakInstalled(HostServices hostServices, InputStream config) {
+    public JavaFXKeycloakInstalled(
+            @Autowired HostServices hostServices, @Autowired KeycloakService keycloakService) {
         this.hostServices = hostServices;
-        deployment = KeycloakDeploymentBuilder.build(config);
-    }
-
-    public JavaFXKeycloakInstalled(HostServices hostServices, KeycloakDeployment deployment) {
-        this.hostServices = hostServices;
-        this.deployment = deployment;
-    }
-
-    public void setResteasyClient(ResteasyClient resteasyClient) {
-        this.resteasyClient = resteasyClient;
+        this.keycloakService = keycloakService;
     }
 
     public Locale getLocale() {
@@ -124,15 +103,7 @@ public class JavaFXKeycloakInstalled {
         if (status == JavaFXKeycloakInstalled.Status.LOGGED_DESKTOP) {
             logoutDesktop();
         }
-
-        tokenString = null;
-        token = null;
-
-        idTokenString = null;
-        idToken = null;
-
-        refreshToken = null;
-
+        keycloakService.logout();
         status = null;
     }
 
@@ -145,9 +116,10 @@ public class JavaFXKeycloakInstalled {
 
         String redirectUri = "http://localhost:" + callback.getLocalPort();
         String state = UUID.randomUUID().toString();
-        JavaFXKeycloakInstalled.Pkce pkce = deployment.isPkce() ? generatePkce() : null;
+        KeycloakService.Pkce pkce =
+                keycloakService.getDeployment().isPkce() ? keycloakService.generatePkce() : null;
 
-        String authUrl = createAuthUrl(redirectUri, state, pkce);
+        String authUrl = keycloakService.createAuthUrl(redirectUri, state, pkce);
 
         hostServices.showDocument(authUrl);
 
@@ -166,37 +138,9 @@ public class JavaFXKeycloakInstalled {
             throw new VerificationException("Invalid state");
         }
 
-        processCode(callback.code, redirectUri, pkce);
+        keycloakService.obtainAccessToken(callback.code, redirectUri, pkce);
 
         status = JavaFXKeycloakInstalled.Status.LOGGED_DESKTOP;
-    }
-
-    protected String createAuthUrl(
-            String redirectUri, String state, JavaFXKeycloakInstalled.Pkce pkce) {
-
-        KeycloakUriBuilder builder =
-                deployment
-                        .getAuthUrl()
-                        .clone()
-                        .queryParam(OAuth2Constants.RESPONSE_TYPE, OAuth2Constants.CODE)
-                        .queryParam(OAuth2Constants.CLIENT_ID, deployment.getResourceName())
-                        .queryParam(OAuth2Constants.REDIRECT_URI, redirectUri)
-                        .queryParam(OAuth2Constants.SCOPE, OAuth2Constants.SCOPE_OPENID);
-
-        if (state != null) {
-            builder.queryParam(OAuth2Constants.STATE, state);
-        }
-
-        if (locale != null) {
-            builder.queryParam(OAuth2Constants.UI_LOCALES_PARAM, locale.getLanguage());
-        }
-
-        if (pkce != null) {
-            builder.queryParam(OAuth2Constants.CODE_CHALLENGE, pkce.getCodeChallenge());
-            builder.queryParam(OAuth2Constants.CODE_CHALLENGE_METHOD, "S256");
-        }
-
-        return builder.build().toString();
     }
 
     protected JavaFXKeycloakInstalled.Pkce generatePkce() {
@@ -211,7 +155,7 @@ public class JavaFXKeycloakInstalled {
         String redirectUri = "http://localhost:" + callback.getLocalPort();
 
         String logoutUrl =
-                deployment
+                keycloakService
                         .getLogoutUrl()
                         .queryParam(OAuth2Constants.REDIRECT_URI, redirectUri)
                         .build()
@@ -235,10 +179,8 @@ public class JavaFXKeycloakInstalled {
             throws IOException, ServerRequest.HttpFailure, VerificationException {
 
         String redirectUri = "urn:ietf:wg:oauth:2.0:oob";
-
-        JavaFXKeycloakInstalled.Pkce pkce = generatePkce();
-
-        String authUrl = createAuthUrl(redirectUri, null, pkce);
+        KeycloakService.Pkce pkce = keycloakService.generatePkce();
+        String authUrl = keycloakService.createAuthUrl(redirectUri, null, pkce);
 
         printer.println(
                 "Open the following URL in a browser. After login copy/paste the code back and press <enter>");
@@ -247,9 +189,19 @@ public class JavaFXKeycloakInstalled {
         printer.print("Code: ");
 
         String code = readCode(reader);
-        processCode(code, redirectUri, pkce);
+        keycloakService.obtainAccessToken(code, redirectUri, pkce);
 
         status = JavaFXKeycloakInstalled.Status.LOGGED_MANUAL;
+    }
+
+    public void refreshToken()
+            throws IOException, ServerRequest.HttpFailure, VerificationException {
+        keycloakService.refreshToken();
+    }
+
+    public void refreshToken(String refreshToken)
+            throws IOException, ServerRequest.HttpFailure, VerificationException {
+        keycloakService.refreshToken(refreshToken);
     }
 
     public static class Console {
@@ -399,11 +351,14 @@ public class JavaFXKeycloakInstalled {
     public boolean loginCommandLine(String redirectUri)
             throws IOException, ServerRequest.HttpFailure, VerificationException {
         String authUrl =
-                deployment
+                keycloakService
+                        .getDeployment()
                         .getAuthUrl()
                         .clone()
                         .queryParam(OAuth2Constants.RESPONSE_TYPE, OAuth2Constants.CODE)
-                        .queryParam(OAuth2Constants.CLIENT_ID, deployment.getResourceName())
+                        .queryParam(
+                                OAuth2Constants.CLIENT_ID,
+                                keycloakService.getDeployment().getResourceName())
                         .queryParam(OAuth2Constants.REDIRECT_URI, redirectUri)
                         .queryParam("display", "console")
                         .queryParam(OAuth2Constants.SCOPE, OAuth2Constants.SCOPE_OPENID)
@@ -482,7 +437,7 @@ public class JavaFXKeycloakInstalled {
                             response.close();
                             client.close();
                             String code = m.group(1);
-                            processCode(code, redirectUri, null);
+                            keycloakService.obtainAccessToken(code, redirectUri, null);
                             return true;
                         }
                         if (response.getStatus() == 302 && redirectCount++ > 4) {
@@ -516,85 +471,6 @@ public class JavaFXKeycloakInstalled {
                 .build();
     }
 
-    public String getTokenString() {
-        return tokenString;
-    }
-
-    public String getTokenString(long minValidity, TimeUnit unit)
-            throws VerificationException, IOException, ServerRequest.HttpFailure {
-        long expires = ((long) token.getExpiration()) * 1000 - unit.toMillis(minValidity);
-        if (expires < System.currentTimeMillis()) {
-            refreshToken();
-        }
-
-        return tokenString;
-    }
-
-    public void refreshToken()
-            throws IOException, ServerRequest.HttpFailure, VerificationException {
-        AccessTokenResponse tokenResponse = ServerRequest.invokeRefresh(deployment, refreshToken);
-        parseAccessToken(tokenResponse);
-    }
-
-    public void refreshToken(String refreshToken)
-            throws IOException, ServerRequest.HttpFailure, VerificationException {
-        AccessTokenResponse tokenResponse = ServerRequest.invokeRefresh(deployment, refreshToken);
-        parseAccessToken(tokenResponse);
-    }
-
-    private void parseAccessToken(AccessTokenResponse tokenResponse) throws VerificationException {
-        this.tokenResponse = tokenResponse;
-        tokenString = tokenResponse.getToken();
-        refreshToken = tokenResponse.getRefreshToken();
-        idTokenString = tokenResponse.getIdToken();
-
-        AdapterTokenVerifier.VerifiedTokens tokens =
-                AdapterTokenVerifier.verifyTokens(tokenString, idTokenString, deployment);
-        token = tokens.getAccessToken();
-        idToken = tokens.getIdToken();
-    }
-
-    public AccessToken getToken() {
-        return token;
-    }
-
-    public IDToken getIdToken() {
-        return idToken;
-    }
-
-    public String getIdTokenString() {
-        return idTokenString;
-    }
-
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public AccessTokenResponse getTokenResponse() {
-        return tokenResponse;
-    }
-
-    public boolean isDesktopSupported() {
-        return hostServices != null;
-    }
-
-    public KeycloakDeployment getDeployment() {
-        return deployment;
-    }
-
-    private void processCode(String code, String redirectUri, JavaFXKeycloakInstalled.Pkce pkce)
-            throws IOException, ServerRequest.HttpFailure, VerificationException {
-
-        AccessTokenResponse tokenResponse =
-                ServerRequest.invokeAccessCodeToToken(
-                        deployment,
-                        code,
-                        redirectUri,
-                        null,
-                        pkce == null ? null : pkce.getCodeVerifier());
-        parseAccessToken(tokenResponse);
-    }
-
     private String readCode(Reader reader) throws IOException {
         StringBuilder sb = new StringBuilder();
 
@@ -609,6 +485,34 @@ public class JavaFXKeycloakInstalled {
         }
 
         return sb.toString();
+    }
+
+    public boolean isDesktopSupported() {
+        return hostServices != null;
+    }
+
+    public String getTokenString() {
+        return keycloakService.getTokenString();
+    }
+
+    public AccessToken getToken() {
+        return keycloakService.getToken();
+    }
+
+    public IDToken getIdToken() {
+        return keycloakService.getIdToken();
+    }
+
+    public String getIdTokenString() {
+        return keycloakService.getIdTokenString();
+    }
+
+    public String getRefreshToken() {
+        return keycloakService.getRefreshToken();
+    }
+
+    public AccessTokenResponse getTokenResponse() {
+        return keycloakService.getTokenResponse();
     }
 
     class CallbackListener implements HttpHandler {
@@ -687,7 +591,8 @@ public class JavaFXKeycloakInstalled {
         }
 
         private String getRedirectUrl() {
-            String redirectUrl = deployment.getTokenUrl().replace("/token", "/delegated");
+            String redirectUrl =
+                    keycloakService.getDeployment().getTokenUrl().replace("/token", "/delegated");
 
             if (error != null) {
                 redirectUrl += "?error=true";

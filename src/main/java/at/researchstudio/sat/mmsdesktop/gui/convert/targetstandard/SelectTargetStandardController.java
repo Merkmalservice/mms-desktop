@@ -4,14 +4,11 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static javafx.beans.binding.Bindings.not;
 
-import at.researchstudio.sat.merkmalservice.api.DataService;
 import at.researchstudio.sat.merkmalservice.api.graphql.TokenRefreshingDataService;
 import at.researchstudio.sat.merkmalservice.model.Organization;
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
-import at.researchstudio.sat.mmsdesktop.gui.component.about.AboutController;
-import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
@@ -30,7 +27,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -53,39 +49,24 @@ public class SelectTargetStandardController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ReactiveStateService stateService;
-    private final ObservableList<Project> projects;
-    private final ObservableList<Standard> standards;
-    private final ObservableList<Mapping> mappings;
-    private final SimpleObjectProperty<Project> selectedProject;
-    private final SimpleObjectProperty<Standard> selectedStandard;
+
     @FXML private JFXComboBox<Project> projectList;
     @FXML private JFXComboBox<Standard> standardList;
     @FXML private Button reloadButton;
     @FXML private VBox mappingsView;
     @FXML private JFXListView<Mapping> mappingsList;
+    @FXML private ObservableList<Mapping> mappings;
     @Autowired ResourceLoader resourceLoader;
     @Autowired TokenRefreshingDataService dataService;
     @Autowired AuthService authService;
     private final ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
+    private final TargetStandardState state;
 
     @Autowired
     public SelectTargetStandardController(ReactiveStateService stateService) {
         this.stateService = stateService;
-        this.projects = FXCollections.observableArrayList();
-        this.standards = FXCollections.observableArrayList();
+        this.state = stateService.getConvertState().getTargetStandardState();
         this.mappings = FXCollections.observableArrayList();
-        this.selectedProject = new SimpleObjectProperty<>();
-        this.selectedStandard = new SimpleObjectProperty<>();
-        this.stateService
-                .getConvertState()
-                .getTargetStandardState()
-                .projectProperty()
-                .bind(selectedProject);
-        this.stateService
-                .getConvertState()
-                .getTargetStandardState()
-                .targetStandardProperty()
-                .bind(selectedStandard);
     }
 
     @Override
@@ -96,19 +77,16 @@ public class SelectTargetStandardController implements Initializable {
                 .addListener(
                         (observable, deSelected, selected) -> {
                             if (selected != null) {
-                                if (selectedProject.get() == null
-                                        || !selectedProject.get().equals(selected)) {
-                                    selectedProject.set(selected);
-                                    selectedStandard.set(null);
+                                if (state.projectProperty().get() == null
+                                        || !state.projectProperty().get().equals(selected)) {
+                                    state.projectProperty().set(selected);
+                                    state.targetStandardProperty().set(null);
                                     standardList.getSelectionModel().clearSelection();
                                 }
-                                if (!standards.equals(selected.getStandards())) {
-                                    standards.setAll(selected.getStandards());
+                                if (!state.standardsProperty().equals(selected.getStandards())) {
+                                    state.standardsProperty().setAll(selected.getStandards());
                                 }
-                                stateService
-                                        .getConvertState()
-                                        .getTargetStandardState()
-                                        .stepTargetStandardStatusProperty()
+                                state.stepTargetStandardStatusProperty()
                                         .set(ProcessState.STEP_ACTIVE);
                             }
                         });
@@ -197,19 +175,16 @@ public class SelectTargetStandardController implements Initializable {
                 .selectedItemProperty()
                 .addListener(
                         (observable, deSelected, selected) -> {
-                            if (selectedStandard.get() == null
-                                    || selectedStandard.get() != selected) {
-                                selectedStandard.set(selected);
+                            if (state.targetStandardProperty().get() == null
+                                    || state.targetStandardProperty().get() != selected) {
+                                state.targetStandardProperty().set(selected);
                             }
                             handleLoadMappingsAction(null);
-                            stateService
-                                    .getConvertState()
-                                    .getTargetStandardState()
-                                    .stepTargetStandardStatusProperty()
+                            state.stepTargetStandardStatusProperty()
                                     .set(ProcessState.STEP_COMPLETE);
                         });
-        this.mappingsView.visibleProperty().bind(selectedStandard.isNotNull());
-        this.mappingsView.managedProperty().bind(selectedStandard.isNotNull());
+        this.mappingsView.visibleProperty().bind(state.targetStandardProperty().isNotNull());
+        this.mappingsView.managedProperty().bind(state.targetStandardProperty().isNotNull());
         this.mappingsList.setCellFactory(
                 param ->
                         new JFXListCell<>() {
@@ -229,16 +204,13 @@ public class SelectTargetStandardController implements Initializable {
                 (ListChangeListener<Mapping>)
                         c -> {
                             while (c.next()) {}
-                            this.stateService
-                                    .getConvertState()
-                                    .getTargetStandardState()
-                                    .mappingsProperty()
-                                    .setAll(this.mappings);
+                            this.state.mappingsProperty().setAll(this.mappings);
                         });
         this.reloadButton
                 .disableProperty()
                 .bind(not(stateService.getLoginState().loggedInProperty()));
-        if (stateService.getLoginState().isLoggedIn() && selectedStandard.isNull().get()) {
+        if (stateService.getLoginState().isLoggedIn()
+                && state.targetStandardProperty().isNull().get()) {
             handleLoadProjectsAction(null);
         }
         restoreProjectStandardSelection();
@@ -270,41 +242,21 @@ public class SelectTargetStandardController implements Initializable {
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
         Platform.runLater(
                 () -> {
-                    try {
-                        setLoadedProjects();
-                    } catch (Exception e) {
-                        Task<UserSession> refreshTokenTask =
-                                authService.getRefreshTokenTask(
-                                        stateService
-                                                .getLoginState()
-                                                .getUserSession()
-                                                .getRefreshTokenString());
-                        setRefreshTokenTaskActions(
-                                refreshTokenTask,
-                                () -> {
-                                    setLoadedProjects();
-                                });
-                    }
+                    state.projectsProperty().setAll(dataService.getProjectsWithFeatureSets());
+                    restoreProjectStandardSelection();
                 });
-    }
-
-    private void setLoadedProjects() {
-        String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
-        List<Project> loadedProjects = dataService.getProjectsWithFeatureSets(idTokenString);
-        this.projects.setAll(loadedProjects);
-        restoreProjectStandardSelection();
     }
 
     public void restoreProjectStandardSelection() {
         Platform.runLater(
                 () -> {
                     selectPreviouslySelected(
-                            this.selectedProject,
-                            this.projects,
+                            this.state.projectProperty(),
+                            this.state.projectsProperty(),
                             this.projectList.getSelectionModel());
                     selectPreviouslySelected(
-                            this.selectedStandard,
-                            this.standards,
+                            this.state.targetStandardProperty(),
+                            this.state.standardsProperty(),
                             this.standardList.getSelectionModel());
                 });
     }
@@ -327,13 +279,16 @@ public class SelectTargetStandardController implements Initializable {
     public void handleLoadMappingsAction(ActionEvent actionEvent) {
         Platform.runLater(
                 () -> {
-                    if (!(this.selectedProject.isNotNull().and(this.selectedStandard.isNotNull()))
+                    if (!(this.state
+                                    .projectProperty()
+                                    .isNotNull()
+                                    .and(this.state.targetStandardProperty().isNotNull()))
                             .get()) {
                         return;
                     }
-                    String standardId = selectedStandard.get().getId();
+                    String standardId = state.targetStandardProperty().get().getId();
                     List<String> mappingIds =
-                            selectedProject.get().getMappings().stream()
+                            state.projectProperty().get().getMappings().stream()
                                     .filter(
                                             m ->
                                                     m.getFeatureSets().stream()
@@ -343,66 +298,17 @@ public class SelectTargetStandardController implements Initializable {
                                                                                     s.getId())))
                                     .map(Mapping::getId)
                                     .collect(Collectors.toList());
-                    try {
-                        setLoadedMappings(mappingIds);
-                    } catch (Exception e) {
-                        Task<UserSession> refreshTokenTask =
-                                authService.getRefreshTokenTask(
-                                        stateService
-                                                .getLoginState()
-                                                .getUserSession()
-                                                .getRefreshTokenString());
-                        setRefreshTokenTaskActions(
-                                refreshTokenTask,
-                                () -> {
-                                    setLoadedMappings(mappingIds);
-                                });
-                    }
+                    List<Mapping> loadedMappings = dataService.getMappings(mappingIds);
+                    this.mappings.setAll(loadedMappings);
                 });
-    }
-
-    private void setLoadedMappings(List<String> mappingIds) {
-        String idTokenString = stateService.getLoginState().getUserSession().getIdTokenString();
-        List<Mapping> loadedMappings = dataService.getMappings(mappingIds, idTokenString);
-        this.mappings.setAll(loadedMappings);
-    }
-
-    private void setRefreshTokenTaskActions(Task<UserSession> refreshTokenTask, Runnable runnable) {
-        refreshTokenTask.setOnSucceeded(
-                t -> {
-                    stateService.getLoginState().setUserSession(refreshTokenTask.getValue());
-                    authService.resetLoginTask();
-                    try {
-                        runnable.run();
-                    } catch (Exception ex) {
-                        logger.error("Could not Load Data also not with Refresh Token");
-                        stateService.getLoginState().setUserSession(null);
-                        stateService.getLoginState().setLoggedIn(false);
-                    }
-                });
-        refreshTokenTask.setOnCancelled(
-                t -> {
-                    // TODO: Cancelled views
-                    stateService.getViewState().switchCenterPane(AboutController.class);
-                    stateService.getLoginState().setUserSession(null);
-                    authService.resetLoginTask();
-                });
-        refreshTokenTask.setOnFailed(
-                t -> {
-                    // TODO: Error Handling
-                    stateService.getViewState().switchCenterPane(AboutController.class);
-                    stateService.getLoginState().setUserSession(null);
-                    authService.resetLoginTask();
-                });
-        new Thread(refreshTokenTask).start();
     }
 
     public ObservableList<Project> getProjects() {
-        return projects;
+        return state.projectsProperty();
     }
 
     public ObservableList<Standard> getStandards() {
-        return standards;
+        return state.standardsProperty();
     }
 
     public ObservableList<Mapping> getMappings() {
