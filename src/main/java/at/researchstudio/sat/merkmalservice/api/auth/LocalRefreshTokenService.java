@@ -2,13 +2,12 @@ package at.researchstudio.sat.merkmalservice.api.auth;
 
 import at.researchstudio.sat.merkmalservice.api.auth.event.UserLoggedInEvent;
 import at.researchstudio.sat.merkmalservice.api.auth.event.UserLoggedOutEvent;
-import at.researchstudio.sat.mmsdesktop.support.exception.UserDataDirException;
+import at.researchstudio.sat.merkmalservice.api.userdata.UserDataDirService;
 import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -16,22 +15,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 @Component
+@DependsOn("userDataDirService")
 public class LocalRefreshTokenService implements InitializingBean, ApplicationListener {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String DATA_DIR_NAME = ".mms";
     private static final String TOKEN_FILENAME = "refreshtoken.txt";
     KeycloakService keycloakService;
     private final File tokenFile;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     @Autowired private ApplicationEventPublisher eventPublisher;
+    private UserDataDirService userDataDirService;
 
-    public LocalRefreshTokenService(@Autowired KeycloakService keycloakService) {
+    public LocalRefreshTokenService(
+            @Autowired KeycloakService keycloakService,
+            @Autowired UserDataDirService userDataDirService) {
         this.keycloakService = keycloakService;
-        tokenFile = new File(getUserDataDir() + File.separator + TOKEN_FILENAME);
+        tokenFile = new File(userDataDirService.getUserDataDir() + File.separator + TOKEN_FILENAME);
+        this.userDataDirService = userDataDirService;
     }
 
     @Override
@@ -39,7 +43,6 @@ public class LocalRefreshTokenService implements InitializingBean, ApplicationLi
         executorService.submit(
                 () -> {
                     try {
-                        ensureUserDataDirExists();
                         String refreshToken = loadRefreshToken();
                         if (refreshToken != null) {
                             keycloakService.refreshToken(refreshToken);
@@ -117,24 +120,5 @@ public class LocalRefreshTokenService implements InitializingBean, ApplicationLi
         } catch (Exception e) {
             throw e;
         }
-    }
-
-    public String ensureUserDataDirExists() {
-        String dataDir = getUserDataDir();
-        File dataDirFile = new File(dataDir);
-        if (!dataDirFile.exists()) {
-            boolean success = new File(dataDir).mkdir();
-            if (!success) {
-                throw new UserDataDirException(
-                        String.format("Could not create user data directory under %s", dataDir));
-            }
-        }
-        return dataDir;
-    }
-
-    @NotNull
-    private String getUserDataDir() {
-        String dataDir = System.getProperty("user.home") + File.separator + DATA_DIR_NAME;
-        return dataDir;
     }
 }
