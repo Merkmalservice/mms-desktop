@@ -128,7 +128,7 @@ public class GraphQLDataService implements InitializingBean {
         if (response == null) {
             writeToLog("graphql response is null");
         } else {
-            writeToLog("GraphQL Response" + response.getJson().replaceAll("\r?\n", " "));
+            writeToLog("GraphQL Response: " + response.getJson().replaceAll("\r?\n", " "));
         }
     }
 

@@ -77,6 +77,45 @@ query mapping($mappingId :ID!) {
                             name
                             type {
                                 __typename
+                                ... on EnumerationValue {
+                                    __typename
+                                    id
+                                    allowMultiple
+                                    options {
+                                        __typename
+                                        id
+                                        description
+                                        value {
+                                            ... on MEBooleanValue {
+                                                booleanValue
+                                            }
+                                            ... on MEFloatValue {
+                                                floatValue
+                                            }
+                                            ... on MEIDValue {
+                                                idValue
+                                            }
+                                            ... on MEIntegerValue {
+                                                integerValue
+                                            }
+                                            ... on MEStringValue {
+                                                stringValue
+                                            }
+                                        }
+                                    }
+                                }
+                                ... on NumericValue {
+                                    quantityKind {
+                                        id
+                                        label
+                                        description
+                                    }
+                                    unit {
+                                        id
+                                        label
+                                        description
+                                    }
+                                }
                             }
                         }
                         value {

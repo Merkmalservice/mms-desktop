@@ -1,5 +1,7 @@
 package at.researchstudio.sat.merkmalservice.ifc.convert.support.modification;
 
+import static at.researchstudio.sat.merkmalservice.ifc.convert.support.ConversionRuleUtils.getEffectiveActionValue;
+
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
@@ -10,6 +12,7 @@ public class AddPropertyModification<T extends IfcLine> extends ElementModificat
     private String propertySetName;
     private Feature feature;
     private MappingExecutionValue value;
+    private MappingExecutionValue effectiveValue;
 
     public AddPropertyModification(
             T element, Feature feature, MappingExecutionValue value, String propertySetName) {
@@ -17,10 +20,11 @@ public class AddPropertyModification<T extends IfcLine> extends ElementModificat
         this.feature = feature;
         this.propertySetName = propertySetName;
         this.value = value;
+        this.effectiveValue = getEffectiveActionValue(feature, value);
     }
 
     @Override
     protected void modify(T element, ParsedIfcFile ifcModel) {
-        ifcModel.addProperty(element, feature, value, propertySetName);
+        ifcModel.addProperty(element, feature, effectiveValue, propertySetName);
     }
 }

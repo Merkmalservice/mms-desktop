@@ -602,7 +602,6 @@ public class ConversionEngineTests {
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_two_different_properties_from_pset_shared_by_3_objects", engine);
     }
@@ -673,7 +672,6 @@ public class ConversionEngineTests {
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_two_different_properties_from_pset_shared_by_3_objects", engine);
     }
@@ -695,7 +693,6 @@ public class ConversionEngineTests {
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_phase_geprüft_where_cpiFitMatchKey_ABC_donothing", engine);
     }
@@ -718,7 +715,6 @@ public class ConversionEngineTests {
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCLABEL_where_cpiFitMatchKey_ABC", engine);
     }
@@ -741,7 +737,6 @@ public class ConversionEngineTests {
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCIDENTIFIER_where_cpiFitMatchKey_ABC", engine);
     }
@@ -764,7 +759,6 @@ public class ConversionEngineTests {
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCBOOLEAN_where_cpiFitMatchKey_ABC", engine);
     }
@@ -787,7 +781,6 @@ public class ConversionEngineTests {
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCREAL_where_cpiFitMatchKey_ABC", engine);
     }
@@ -810,7 +803,6 @@ public class ConversionEngineTests {
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCLENGTHMEASURE_where_cpiFitMatchKey_ABC", engine);
     }
@@ -829,11 +821,10 @@ public class ConversionEngineTests {
                                         /*--*/ .propertySetName("Phasen")
                                         /*--*/ .addAction()
                                         /*----*/ .feature(Inst.featureEnumLabel)
-                                        /*----*/ .value("string option 2")
+                                        /*----*/ .idValue("sopt2")
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCLABEL_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
@@ -852,11 +843,10 @@ public class ConversionEngineTests {
                                         /*--*/ .propertySetName("Phasen")
                                         /*--*/ .addAction()
                                         /*----*/ .feature(Inst.featureEnumBoolean)
-                                        /*----*/ .value(true)
+                                        /*----*/ .idValue("boolOpt1")
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCBOOLEAN_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
@@ -875,11 +865,10 @@ public class ConversionEngineTests {
                                         /*--*/ .propertySetName("Phasen")
                                         /*--*/ .addAction()
                                         /*----*/ .feature(Inst.featureEnumNumeric)
-                                        /*----*/ .value(Math.PI)
+                                        /*----*/ .idValue("Math.pi")
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCREAL_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
@@ -898,11 +887,10 @@ public class ConversionEngineTests {
                                         /*--*/ .propertySetName("Phasen")
                                         /*--*/ .addAction()
                                         /*----*/ .feature(Inst.featureEnumIdentifier)
-                                        /*----*/ .value("identifier-1", "SOME_GRAPHQLVALUE")
+                                        /*----*/ .idValue("id1")
                                         /*----*/ .end()
                                         /*--*/ .end()
                                         /**/ .build()));
-
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCIDENTIFIER_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
@@ -1018,9 +1006,21 @@ public class ConversionEngineTests {
                         .description("an ifc label with a value from an mms enum")
                         .enumType()
                         /**/ .allowMultiple(false)
-                        /**/ .option("string option 1", "first option")
-                        /**/ .option("string option 2", "second option")
-                        /**/ .option("string option 3", "third option")
+                        /**/ .option()
+                        /*--*/ .value("string option 1")
+                        /*--*/ .description("first string option")
+                        /*--*/ .id("sopt1")
+                        /*--*/ .end()
+                        /**/ .option()
+                        /*--*/ .value("string option 2")
+                        /*--*/ .description("second string option")
+                        /*--*/ .id("sopt2")
+                        /*--*/ .end()
+                        /**/ .option()
+                        /*--*/ .value("string option 3")
+                        /*--*/ .description("third string option")
+                        /*--*/ .id("sopt3")
+                        /*--*/ .end()
                         /**/ .end()
                         .build();
         public static Feature featureEnumBoolean =
@@ -1029,9 +1029,21 @@ public class ConversionEngineTests {
                         .description("an ifc label with a value from an mms enum")
                         .enumType()
                         /**/ .allowMultiple(false)
-                        /**/ .option(true, "boolean option 1")
-                        /**/ .option(true, "boolean option 2")
-                        /**/ .option(false, "boolean option 3")
+                        /**/ .option()
+                        /*--*/ .value(true)
+                        /*--*/ .description("boolean option 1")
+                        /*--*/ .id("boolOpt1")
+                        /*--*/ .end()
+                        /**/ .option()
+                        /*--*/ .value(true)
+                        /*--*/ .description("boolean option 2")
+                        /*--*/ .id("boolOpt2")
+                        /*--*/ .end()
+                        /**/ .option()
+                        /*--*/ .value(false)
+                        /*--*/ .description("boolean option 3")
+                        /*--*/ .id("boolOpt3")
+                        /*--*/ .end()
                         /**/ .end()
                         .build();
         public static Feature featureEnumNumeric =
@@ -1040,9 +1052,21 @@ public class ConversionEngineTests {
                         .description("an ifc label with a value from an mms enum")
                         .enumType()
                         /**/ .allowMultiple(false)
-                        /**/ .option(Math.PI, "pi")
-                        /**/ .option(Math.E, "e")
-                        /**/ .option(Math.sqrt(2), "square root of 2")
+                        /**/ .option()
+                        /*--*/ .value(Math.PI)
+                        /*--*/ .description("pi")
+                        /*--*/ .id("Math.pi")
+                        /*--*/ .end()
+                        /**/ .option()
+                        /*--*/ .value(Math.E)
+                        /*--*/ .description("e")
+                        /*--*/ .id("Math.e")
+                        /*--*/ .end()
+                        /**/ .option()
+                        /*--*/ .value(Math.sqrt(2))
+                        /*--*/ .description("square root of 2")
+                        /*--*/ .id("Math.sqrt2")
+                        /*--*/ .end()
                         /**/ .end()
                         .build();
         public static Feature featureEnumIdentifier =
@@ -1051,8 +1075,16 @@ public class ConversionEngineTests {
                         .description("an ifc label with a value from an mms enum")
                         .enumType()
                         /**/ .allowMultiple(false)
-                        /**/ .option("identifier-1", "first identifier")
-                        /**/ .option("identifier-2", "second identifier")
+                        /**/ .option()
+                        /*--*/ .idValue("identifier-1")
+                        /*--*/ .description("first identifier")
+                        /*--*/ .id("id1")
+                        /*--*/ .end()
+                        /**/ .option()
+                        /*--*/ .idValue("identifier-2")
+                        /*--*/ .description("second identifier")
+                        /*--*/ .id("id2")
+                        /*--*/ .end()
                         /**/ .end()
                         .build();
         static Organization organization1 = new Organization("org1Id", "Org one");
