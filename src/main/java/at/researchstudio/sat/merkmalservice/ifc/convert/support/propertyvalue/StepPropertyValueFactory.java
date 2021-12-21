@@ -67,11 +67,11 @@ public class StepPropertyValueFactory {
                 value.getFloatValue()
                         .orElseThrow(supplyWrongValueTypeException("Numeric", "FloatValue", value));
         NumericFeatureType numericType = (NumericFeatureType) feature.getType();
-        if (QudtQuantityKind.DIMENSIONLESS.equals(numericType.getQuantityKind())
-                && QudtUnit.UNITLESS.equals(numericType.getUnit())) {
+        if (QudtQuantityKind.DIMENSIONLESS.equals(numericType.getQuantityKind().getId())
+                && QudtUnit.UNITLESS.equals(numericType.getUnit().getId())) {
             return new StepValueAndType(v, IfcPropertyType.REAL.getStepTypeName());
         }
-        if (QudtQuantityKind.LENGTH.equals(numericType.getQuantityKind())) {
+        if (QudtQuantityKind.LENGTH.equals(numericType.getQuantityKind().getId())) {
             // TODO: here, we have to handle all qudt QKs that have skos:broader qudt:Length. Same
             // for all other Ifc Unit types
             IfcUnitType unitType = IfcUnitType.LENGTHUNIT;
