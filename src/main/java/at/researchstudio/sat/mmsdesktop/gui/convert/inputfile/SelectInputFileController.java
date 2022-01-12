@@ -10,8 +10,10 @@ import at.researchstudio.sat.merkmalservice.ifc.support.FeatureUtils;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import at.researchstudio.sat.mmsdesktop.gui.component.feature.FeatureLabel;
 import at.researchstudio.sat.mmsdesktop.gui.component.ifc.IfcLineClassLabel;
+import at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard.SelectTargetStandardController;
 import at.researchstudio.sat.mmsdesktop.model.task.IfcFileVO;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
+import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import com.jfoenix.controls.JFXListView;
 import com.jfoenix.controls.JFXProgressBar;
 import java.io.File;
@@ -24,6 +26,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
@@ -35,6 +38,7 @@ import org.springframework.stereotype.Component;
 @Component
 @FxmlView("selectInputFile.fxml")
 public class SelectInputFileController implements Initializable {
+
     private FileChooser fileChooser;
     private final ReactiveStateService stateService;
 
@@ -42,6 +46,7 @@ public class SelectInputFileController implements Initializable {
 
     @FXML private HBox topInputFile;
     @FXML private BorderPane centerInputFile;
+    @FXML private AnchorPane bottomInputFile;
     @FXML private HBox topPickFile;
 
     @FXML private JFXProgressBar centerProgressProgressBar;
@@ -118,6 +123,24 @@ public class SelectInputFileController implements Initializable {
                                 .stepFileStatusProperty()
                                 .isEqualTo(STEP_COMPLETE));
         centerInputFile
+                .managedProperty()
+                .bind(
+                        stateService
+                                .getConvertState()
+                                .getInputFileState()
+                                .stepFileStatusProperty()
+                                .isEqualTo(STEP_COMPLETE));
+
+        bottomInputFile
+                .visibleProperty()
+                .bind(
+                        stateService
+                                .getConvertState()
+                                .getInputFileState()
+                                .stepFileStatusProperty()
+                                .isEqualTo(STEP_COMPLETE));
+
+        bottomInputFile
                 .managedProperty()
                 .bind(
                         stateService
@@ -203,6 +226,35 @@ public class SelectInputFileController implements Initializable {
         fileChooser
                 .getExtensionFilters()
                 .addAll(new FileChooser.ExtensionFilter("IFC File", "*.ifc"));
+    }
+
+    @FXML
+    public void handleToTargetStandardPicker(ActionEvent actionEvent) {
+        stateService.getViewState().switchCenterPane(SelectTargetStandardController.class);
+        if (stateService
+                .getConvertState()
+                .getInputFileState()
+                .stepFileStatusProperty()
+                .get()
+                .isActive()) {
+            stateService
+                    .getConvertState()
+                    .getInputFileState()
+                    .stepFileStatusProperty()
+                    .set(ProcessState.STEP_OPEN);
+        }
+        if (stateService
+                .getConvertState()
+                .getTargetStandardState()
+                .stepTargetStandardStatusProperty()
+                .get()
+                .isOpen()) {
+            stateService
+                    .getConvertState()
+                    .getTargetStandardState()
+                    .stepTargetStandardStatusProperty()
+                    .set(ProcessState.STEP_ACTIVE);
+        }
     }
 
     @FXML

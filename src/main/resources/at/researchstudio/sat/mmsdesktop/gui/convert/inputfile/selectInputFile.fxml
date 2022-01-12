@@ -18,7 +18,7 @@
                 <Insets bottom="10.0"/>
             </padding>
             <Label style="-fx-font-weight: bold;"
-                   text="%label.convert">
+                   text="%label.convert.chooseFile.header">
                 <font>
                     <Font size="18.0"/>
                 </font>
@@ -162,6 +162,29 @@
         </AnchorPane>
     </center>
     <bottom>
-
+        <AnchorPane fx:id="bottomInputFile" managed="false" visible="false">
+            <padding>
+                <Insets top="10.0"/>
+            </padding>
+            <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                       fx:id="toTargetStandardPickerButton"
+                       onAction="#handleToTargetStandardPicker" prefHeight="32.0" prefWidth="220.0"
+                       AnchorPane.topAnchor="0.0"
+                       AnchorPane.rightAnchor="0.0"
+                       AnchorPane.bottomAnchor="0.0"
+                       AnchorPane.leftAnchor="0.0"
+                       ripplerFill="WHITE"
+                       style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                       text="%label.next"
+                       textFill="#c1fff9">
+                <graphic>
+                    <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-arrow-right"
+                              iconSize="24"/>
+                </graphic>
+                <padding>
+                    <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                </padding>
+            </JFXButton>
+        </AnchorPane>
     </bottom>
 </BorderPane>

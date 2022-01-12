@@ -5,6 +5,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+<?import com.jfoenix.controls.JFXButton?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 <BorderPane prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -18,7 +20,7 @@
                 <Insets bottom="10.0"/>
             </padding>
             <Label style="-fx-font-weight: bold;"
-                   text="%label.convert">
+                   text="%label.convert.chooseTarget.header">
                 <font>
                     <Font size="18.0"/>
                 </font>
@@ -26,73 +28,71 @@
         </VBox>
     </top>
     <center>
-        <BorderPane>
-            <top>
-                <VBox spacing="10">
-                    <padding>
-                        <Insets bottom="10.0"/>
-                    </padding>
-                    <Label style="-fx-font-weight: bold;"
-                           text="%label.convert.chooseTarget">
+        <VBox spacing="5">
+            <HBox spacing="5">
+                <VBox>
+                    <Label text="%label.projectpicker.project">
                         <font>
                             <Font size="16.0"/>
                         </font>
+                        <padding>
+                            <Insets bottom="10.0"/>
+                        </padding>
                     </Label>
-
+                    <JFXComboBox prefWidth="250" items="${controller.projects}" fx:id="projectList"/>
                 </VBox>
-            </top>
-            <center>
                 <VBox>
-
-                    <HBox>
-                        <VBox>
-                            <Label text="%label.projectpicker.project">
-                                <font>
-                                    <Font size="16.0"/>
-                                </font>
-                                <padding>
-                                    <Insets bottom="10.0"/>
-                                </padding>
-                            </Label>
-                            <JFXComboBox prefWidth="250" items="${controller.projects}" fx:id="projectList"/>
-                        </VBox>
-                        <HBox prefWidth="50"/>
-                        <VBox>
-                            <Label text="%label.projectpicker.featureset">
-                                <font>
-                                    <Font size="16.0"/>
-                                </font>
-                                <padding>
-                                    <Insets bottom="10.0"/>
-                                </padding>
-                            </Label>
-                            <JFXComboBox prefWidth="250" items="${controller.standards}" fx:id="standardList"/>
-                        </VBox>
-                    </HBox>
-                    <VBox fx:id="mappingsView" visible="false" managed="false">
-                        <Label text="%label.projectpicker.mappings">
-                            <font>
-                                <Font size="16.0"/>
-                            </font>
-                            <padding>
-                                <Insets top="10" bottom="10.0"/>
-                            </padding>
-                        </Label>
-                        <JFXListView items="${controller.mappings}" fx:id="mappingsList">
-                        </JFXListView>
-                    </VBox>
+                    <Label text="%label.projectpicker.featureset">
+                        <font>
+                            <Font size="16.0"/>
+                        </font>
+                        <padding>
+                            <Insets bottom="10.0"/>
+                        </padding>
+                    </Label>
+                    <JFXComboBox prefWidth="250" items="${controller.standards}" fx:id="standardList"/>
                 </VBox>
-            </center>
-            <bottom>
-
-                <HBox>
+                <Button text="%label.projectpicker.reload" fx:id="reloadButton" onAction="#handleLoadProjectsAction"/>
+            </HBox>
+            <VBox fx:id="mappingsView" visible="false" managed="false">
+                <Label text="%label.projectpicker.mappings">
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
                     <padding>
                         <Insets top="10" bottom="10.0"/>
                     </padding>
-                    <Button text="%label.projectpicker.reload" fx:id="reloadButton"
-                            onAction="#handleLoadProjectsAction"/>
-                </HBox>
-            </bottom>
-        </BorderPane>
+                </Label>
+                <JFXListView items="${controller.mappings}" fx:id="mappingsList">
+                </JFXListView>
+            </VBox>
+        </VBox>
     </center>
+    <bottom>
+        <AnchorPane>
+            <padding>
+                <Insets top="10.0"/>
+            </padding>
+            <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                       fx:id="toPerformConversion"
+                       onAction="#handleToPerformConversion" prefHeight="32.0" prefWidth="220.0"
+                       AnchorPane.topAnchor="0.0"
+                       AnchorPane.rightAnchor="0.0"
+                       AnchorPane.bottomAnchor="0.0"
+                       AnchorPane.leftAnchor="0.0"
+                       ripplerFill="WHITE"
+                       style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                       text="%label.convert.perform"
+                       textFill="#c1fff9">
+
+                <graphic>
+                    <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-file-earmark-play"
+                              iconSize="24"/>
+                </graphic>
+                <padding>
+                    <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                </padding>
+            </JFXButton>
+        </AnchorPane>
+    </bottom>
 </BorderPane>

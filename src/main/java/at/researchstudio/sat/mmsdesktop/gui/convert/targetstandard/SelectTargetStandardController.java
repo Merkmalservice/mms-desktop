@@ -1,5 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard;
 
+import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_COMPLETE;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static javafx.beans.binding.Bindings.not;
@@ -9,9 +10,11 @@ import at.researchstudio.sat.merkmalservice.model.Organization;
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
+import at.researchstudio.sat.mmsdesktop.gui.convert.perform.PerformConversionController;
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
+import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListCell;
 import com.jfoenix.controls.JFXListView;
@@ -49,13 +52,15 @@ public class SelectTargetStandardController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ReactiveStateService stateService;
-
     @FXML private JFXComboBox<Project> projectList;
     @FXML private JFXComboBox<Standard> standardList;
     @FXML private Button reloadButton;
     @FXML private VBox mappingsView;
     @FXML private JFXListView<Mapping> mappingsList;
     @FXML private ObservableList<Mapping> mappings;
+
+    @FXML public JFXButton toPerformConversion;
+
     @Autowired ResourceLoader resourceLoader;
     @Autowired TokenRefreshingDataService dataService;
     @Autowired AuthService authService;
@@ -180,11 +185,23 @@ public class SelectTargetStandardController implements Initializable {
                                 state.targetStandardProperty().set(selected);
                             }
                             handleLoadMappingsAction(null);
-                            state.stepTargetStandardStatusProperty()
-                                    .set(ProcessState.STEP_COMPLETE);
+                            state.stepTargetStandardStatusProperty().set(STEP_COMPLETE);
                         });
         this.mappingsView.visibleProperty().bind(state.targetStandardProperty().isNotNull());
         this.mappingsView.managedProperty().bind(state.targetStandardProperty().isNotNull());
+
+        toPerformConversion
+                .disableProperty()
+                .bind(
+                        state.targetStandardProperty()
+                                .isNull()
+                                .or(
+                                        stateService
+                                                .getConvertState()
+                                                .getInputFileState()
+                                                .parsedIfcFileProperty()
+                                                .isNotEqualTo(STEP_COMPLETE)));
+
         this.mappingsList.setCellFactory(
                 param ->
                         new JFXListCell<>() {
@@ -272,6 +289,36 @@ public class SelectTargetStandardController implements Initializable {
                     selectionModel.select(idx);
                 }
             }
+        }
+    }
+
+    @FXML
+    public void handleToPerformConversion(ActionEvent actionEvent) {
+        stateService.getViewState().switchCenterPane(PerformConversionController.class);
+
+        if (stateService
+                .getConvertState()
+                .getPerformConversionState()
+                .stepPerformConversionStatusProperty()
+                .get()
+                .isActive()) {
+            stateService
+                    .getConvertState()
+                    .getPerformConversionState()
+                    .stepPerformConversionStatusProperty()
+                    .set(ProcessState.STEP_OPEN);
+        }
+        if (stateService
+                .getConvertState()
+                .getPerformConversionState()
+                .stepPerformConversionStatusProperty()
+                .get()
+                .isOpen()) {
+            stateService
+                    .getConvertState()
+                    .getPerformConversionState()
+                    .stepPerformConversionStatusProperty()
+                    .set(ProcessState.STEP_ACTIVE);
         }
     }
 
