@@ -199,7 +199,7 @@ public class SelectTargetStandardController implements Initializable {
                                         stateService
                                                 .getConvertState()
                                                 .getInputFileState()
-                                                .parsedIfcFileProperty()
+                                                .stepFileStatusProperty()
                                                 .isNotEqualTo(STEP_COMPLETE)));
 
         this.mappingsList.setCellFactory(

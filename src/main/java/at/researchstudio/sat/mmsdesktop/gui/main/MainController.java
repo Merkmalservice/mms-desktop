@@ -150,7 +150,7 @@ public class MainController implements Initializable {
                                         stateService
                                                 .getConvertState()
                                                 .getInputFileState()
-                                                .parsedIfcFileProperty()
+                                                .stepFileStatusProperty()
                                                 .isNotEqualTo(STEP_COMPLETE)));
 
         stateService
