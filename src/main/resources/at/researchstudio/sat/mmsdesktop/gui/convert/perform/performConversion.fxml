@@ -44,6 +44,9 @@
                 <VBox>
                     <Button text="%label.convert.button.perform" fx:id="performConversionButton"
                             onAction="#handleConvertAction"/>
+                    <Button text="%label.convert.button.save" fx:id="saveConvertedFileButton"
+                            disable="true"
+                            onAction="#handleSaveConvertedFileAction"/>
                 </VBox>
             </top>
             <center>
