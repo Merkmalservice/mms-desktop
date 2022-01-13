@@ -6,6 +6,7 @@ import at.researchstudio.sat.merkmalservice.ifc.IfcFileWriter;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionEngine;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.MappingConversionRuleFactory;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import at.researchstudio.sat.mmsdesktop.gui.convert.inputfile.InputFileState;
@@ -13,10 +14,7 @@ import at.researchstudio.sat.mmsdesktop.model.task.IfcFileVO;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.support.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
-import com.jfoenix.controls.JFXProgressBar;
-import com.jfoenix.controls.JFXSnackbar;
-import com.jfoenix.controls.JFXSnackbarLayout;
-import com.jfoenix.controls.JFXTextArea;
+import com.jfoenix.controls.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -28,6 +26,7 @@ import java.util.Objects;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -49,7 +48,6 @@ import org.springframework.stereotype.Component;
 public class PerformConversionController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
     private FileChooser fileChooser;
     private FileChooser saveLogFileChooser;
     private JFXSnackbar snackbar;
@@ -61,6 +59,7 @@ public class PerformConversionController implements Initializable {
     @FXML private BorderPane pcCenterProgress;
 
     @FXML private BorderPane pcCenterResults;
+    @FXML private JFXListView pcCenterConvertedFileContentList;
     @FXML private JFXTextArea pcCenterResultLog;
     @FXML private HBox pcBottomResults;
 
@@ -282,5 +281,9 @@ public class PerformConversionController implements Initializable {
         pcCenterProgressLog.textProperty().bind(task.messageProperty());
         processState.set(STEP_PROCESSING);
         new Thread(task).start();
+    }
+
+    public ObservableList<IfcLine> getFileContentList() {
+        return stateService.getConvertState().getOutputFileState().getOutputFileContent();
     }
 }

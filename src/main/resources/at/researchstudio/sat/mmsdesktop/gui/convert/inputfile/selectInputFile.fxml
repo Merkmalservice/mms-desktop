@@ -142,18 +142,14 @@
                                 </BorderPane>
                             </Tab>
                             <Tab text="%label.convert.inputFile">
-                                <BorderPane>
-                                    <center>
-                                        <AnchorPane>
-                                            <JFXListView fx:id="fullFileContentList"
-                                                         items="${controller.fileContentList}"
-                                                         AnchorPane.topAnchor="0.0"
-                                                         AnchorPane.rightAnchor="0.0"
-                                                         AnchorPane.bottomAnchor="0.0"
-                                                         AnchorPane.leftAnchor="0.0"/>
-                                        </AnchorPane>
-                                    </center>
-                                </BorderPane>
+                                <AnchorPane>
+                                    <JFXListView fx:id="fullFileContentList"
+                                                 items="${controller.fileContentList}"
+                                                 AnchorPane.topAnchor="0.0"
+                                                 AnchorPane.rightAnchor="0.0"
+                                                 AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0"/>
+                                </AnchorPane>
                             </Tab>
                         </JFXTabPane>
                     </AnchorPane>
