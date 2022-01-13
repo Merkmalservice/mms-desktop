@@ -35,6 +35,9 @@
                         <font>
                             <Font size="16.0"/>
                         </font>
+                        <graphic>
+                            <FontIcon iconLiteral="bi-journals" iconSize="24"/>
+                        </graphic>
                         <padding>
                             <Insets bottom="10.0"/>
                         </padding>
@@ -46,6 +49,9 @@
                         <font>
                             <Font size="16.0"/>
                         </font>
+                        <graphic>
+                            <FontIcon iconLiteral="bi-archive" iconSize="24"/>
+                        </graphic>
                         <padding>
                             <Insets bottom="10.0"/>
                         </padding>
@@ -59,6 +65,9 @@
                     <font>
                         <Font size="16.0"/>
                     </font>
+                    <graphic>
+                        <FontIcon iconLiteral="bi-arrow-left-right" iconSize="24"/>
+                    </graphic>
                     <padding>
                         <Insets top="10" bottom="10.0"/>
                     </padding>

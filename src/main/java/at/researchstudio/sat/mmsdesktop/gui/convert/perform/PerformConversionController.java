@@ -34,6 +34,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
@@ -63,7 +64,7 @@ public class PerformConversionController implements Initializable {
     @FXML private JFXTextArea pcCenterResultLog;
     @FXML private HBox pcBottomResults;
 
-    @FXML private AnchorPane pcCenterCheck;
+    @FXML private GridPane pcCenterCheck;
     @FXML private AnchorPane pcBottomCheck;
 
     @FXML private Label pcCenterProgressProgressInfo;

@@ -34,13 +34,54 @@
     </top>
     <center>
         <AnchorPane>
-            <AnchorPane fx:id="pcCenterCheck" visible="false" managed="false">
-                <Label text="TODO: TARGETSTANDARD AND FILE INFO BEFORE CONVERT"
-                       AnchorPane.topAnchor="0.0"
-                       AnchorPane.rightAnchor="0.0"
-                       AnchorPane.leftAnchor="0.0"
-                       AnchorPane.bottomAnchor="0.0"/>
-            </AnchorPane>
+            <GridPane
+                    visible="false" managed="false"
+                    fx:id="pcCenterCheck"
+                    AnchorPane.topAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0"
+                    AnchorPane.bottomAnchor="0.0"
+                    hgap="10" vgap="10">
+                <Label GridPane.columnIndex="0" GridPane.rowIndex="0"
+                       text="%label.convert.inputFile"
+                >
+                    <graphic>
+                        <FontIcon iconLiteral="bi-file-earmark" iconSize="24"/>
+                    </graphic>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label GridPane.columnIndex="1" GridPane.rowIndex="0"
+                       text="TODO: PICKED INPUTFILE LABEL" GridPane.hgrow="ALWAYS"
+                />
+                <Label GridPane.columnIndex="0" GridPane.rowIndex="1"
+                       text="%label.projectpicker.project"
+                >
+                    <graphic>
+                        <FontIcon iconLiteral="bi-journal" iconSize="24"/>
+                    </graphic>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label GridPane.columnIndex="1" GridPane.rowIndex="1"
+                       text="TODO: PICKED PROJECTLABEL" GridPane.hgrow="ALWAYS"
+                />
+                <Label GridPane.columnIndex="0" GridPane.rowIndex="2"
+                       text="%label.projectpicker.featureset"
+                >
+                    <graphic>
+                        <FontIcon iconLiteral="bi-archive" iconSize="24"/>
+                    </graphic>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label GridPane.columnIndex="1" GridPane.rowIndex="2"
+                       text="TODO: PICKED TARGETSTANDARDLABEL" GridPane.hgrow="ALWAYS"
+                />
+            </GridPane>
             <BorderPane fx:id="pcCenterProgress" visible="false" managed="false"
                         AnchorPane.topAnchor="0.0"
                         AnchorPane.rightAnchor="0.0"
