@@ -9,9 +9,15 @@ import java.util.Map;
 
 public class IfcFileVO implements Serializable {
     private final ParsedIfcFile parsedIfcFile;
+    private final String logOutput;
 
     public IfcFileVO(ParsedIfcFile parsedIfcFile) {
+        this(parsedIfcFile, null);
+    }
+
+    public IfcFileVO(ParsedIfcFile parsedIfcFile, String logOutput) {
         this.parsedIfcFile = parsedIfcFile;
+        this.logOutput = logOutput;
     }
 
     public ParsedIfcFile getParsedIfcFile() {
@@ -28,5 +34,9 @@ public class IfcFileVO implements Serializable {
 
     public List<Feature> getExtractedFeatures() {
         return parsedIfcFile.getFeatures();
+    }
+
+    public String getLogOutput() {
+        return logOutput;
     }
 }

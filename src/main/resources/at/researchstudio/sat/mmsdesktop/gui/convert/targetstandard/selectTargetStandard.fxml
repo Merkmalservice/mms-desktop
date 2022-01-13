@@ -82,11 +82,11 @@
                        AnchorPane.leftAnchor="0.0"
                        ripplerFill="WHITE"
                        style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
-                       text="%label.convert.perform"
+                       text="%label.next"
                        textFill="#c1fff9">
 
                 <graphic>
-                    <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-file-earmark-play"
+                    <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-arrow-right"
                               iconSize="24"/>
                 </graphic>
                 <padding>

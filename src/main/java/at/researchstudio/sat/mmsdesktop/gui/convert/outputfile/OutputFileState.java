@@ -13,11 +13,15 @@ public class OutputFileState {
     private final ObjectProperty<ParsedIfcFile> convertedIfcFile;
 
     public OutputFileState() {
-        this.convertedIfcFile = new SimpleObjectProperty();
+        this.convertedIfcFile = new SimpleObjectProperty<ParsedIfcFile>();
     }
 
     public ObjectProperty<ParsedIfcFile> convertedIfcFileProperty() {
         return convertedIfcFile;
+    }
+
+    public void resetConvertedFile() {
+        this.convertedIfcFile.set(null);
     }
 
     public void setFileStepResult(Task<IfcFileVO> task) {

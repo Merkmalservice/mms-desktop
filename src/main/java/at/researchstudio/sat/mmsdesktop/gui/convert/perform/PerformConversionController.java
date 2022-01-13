@@ -32,8 +32,8 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
@@ -51,20 +51,23 @@ public class PerformConversionController implements Initializable {
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private FileChooser fileChooser;
+    private FileChooser saveLogFileChooser;
     private JFXSnackbar snackbar;
-    private ReactiveStateService stateService;
-    private InputFileState inputFileState;
+    private final ReactiveStateService stateService;
+    private final InputFileState inputFileState;
     @FXML BorderPane pcParentPane;
     @FXML private JFXProgressBar pcCenterProgressProgressBar;
     @FXML private JFXTextArea pcCenterProgressLog;
     @FXML private BorderPane pcCenterProgress;
 
     @FXML private BorderPane pcCenterResults;
+    @FXML private JFXTextArea pcCenterResultLog;
     @FXML private HBox pcBottomResults;
 
-    @FXML private Label pcCenterProgressProgressInfo;
+    @FXML private AnchorPane pcCenterCheck;
+    @FXML private AnchorPane pcBottomCheck;
 
-    @FXML private Button performConversionButton;
+    @FXML private Label pcCenterProgressProgressInfo;
 
     private final ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
 
@@ -80,19 +83,34 @@ public class PerformConversionController implements Initializable {
         fileChooser
                 .getExtensionFilters()
                 .addAll(new FileChooser.ExtensionFilter("IFC File", "*.ifc"));
+
+        saveLogFileChooser = new FileChooser();
+        saveLogFileChooser.setInitialFileName("extraction-log.txt");
+        saveLogFileChooser
+                .getExtensionFilters()
+                .addAll(new FileChooser.ExtensionFilter("Text Files", "*.txt"));
+
         SimpleObjectProperty<ProcessState> processState =
                 stateService
                         .getConvertState()
                         .getPerformConversionState()
                         .stepPerformConversionStatusProperty();
+        pcBottomCheck.visibleProperty().bind(processState.isEqualTo(STEP_ACTIVE));
+        pcBottomCheck.managedProperty().bind(processState.isEqualTo(STEP_ACTIVE));
+        pcCenterCheck.visibleProperty().bind(processState.isEqualTo(STEP_ACTIVE));
+        pcCenterCheck.managedProperty().bind(processState.isEqualTo(STEP_ACTIVE));
+
         pcCenterProgress.visibleProperty().bind(processState.isEqualTo(STEP_PROCESSING));
         pcCenterProgress.managedProperty().bind(processState.isEqualTo(STEP_PROCESSING));
+
         pcCenterResults.visibleProperty().bind(processState.isEqualTo(STEP_COMPLETE));
         pcCenterResults.managedProperty().bind(processState.isEqualTo(STEP_COMPLETE));
         pcBottomResults.visibleProperty().bind(processState.isEqualTo(STEP_COMPLETE));
         pcBottomResults.managedProperty().bind(processState.isEqualTo(STEP_COMPLETE));
 
-        performConversionButton.disableProperty().bind(processState.isEqualTo(STEP_COMPLETE));
+        pcCenterResultLog
+                .textProperty()
+                .bind(stateService.getConvertState().convertLogOutputProperty());
 
         snackbar = new JFXSnackbar(pcParentPane);
     }
@@ -133,12 +151,12 @@ public class PerformConversionController implements Initializable {
 
     @FXML
     public void handleSaveLogAction(ActionEvent actionEvent) {
-        File file = fileChooser.showSaveDialog(pcParentPane.getScene().getWindow());
+        File file = saveLogFileChooser.showSaveDialog(pcParentPane.getScene().getWindow());
         if (Objects.nonNull(file)) {
             try {
                 Files.writeString(
                         file.toPath(),
-                        "TODO: IMPL LOG FILE HANDLING", // TODO: IMPL LOG FILE HANDLING
+                        stateService.getConvertState().convertLogOutputProperty().get(),
                         StandardCharsets.UTF_8);
                 final String message =
                         MessageUtils.getKeyWithParameters(
@@ -165,13 +183,17 @@ public class PerformConversionController implements Initializable {
     public void handleResetAction(ActionEvent actionEvent) {
         // TODO: RESET EVERYTHING ACCORDINGLY
         logger.debug("RESET CONVERTED FILE");
+
         //        handleClearListAction(actionEvent);
         //        stateService.getExtractState().resetExtractResults();
         //        stateService.getExtractState().showInitialView();
         //
-        //        centerProgressProgressBar.progressProperty().unbind();
-        //        centerProgressProgressInfo.textProperty().unbind();
-        //        centerProgressLog.textProperty().unbind();
+
+        stateService.getConvertState().resetConvertResults();
+
+        pcCenterProgressProgressBar.progressProperty().unbind();
+        pcCenterProgressProgressInfo.textProperty().unbind();
+        pcCenterProgressLog.textProperty().unbind();
     }
 
     @FXML
@@ -183,30 +205,45 @@ public class PerformConversionController implements Initializable {
                         .stepPerformConversionStatusProperty();
         Task<IfcFileVO> task =
                 new Task<>() {
+                    String lastTitle = "";
+                    final StringBuilder logOutput = new StringBuilder();
+
                     @Override
                     protected IfcFileVO call() throws Exception {
                         TaskProgressListener taskProgressListener =
                                 new TaskProgressListener() {
                                     @Override
                                     public void notifyProgress(
-                                            String task, String message, float level) {
+                                            String title, String message, float level) {
                                         updateProgress(level, 1);
-                                        updateTitle(
-                                                task + ": " + message); // TODO: DISTINGUISH BETWEEN
-                                        // TITLE AND MESSAGE
+
+                                        if (!lastTitle.equals(title)) {
+                                            logOutput
+                                                    .append(System.lineSeparator())
+                                                    .append(System.lineSeparator());
+                                            updateTitle(title);
+                                            logOutput.append(title).append(System.lineSeparator());
+                                            lastTitle = title;
+                                        }
+                                        logOutput.append(message).append(System.lineSeparator());
+                                        updateMessage(logOutput.toString());
                                     }
 
                                     @Override
-                                    public void notifyFinished(String task) {
+                                    public void notifyFinished(String title) {
                                         updateProgress(1, 1);
-                                        updateTitle(
-                                                "FINISHED"); // TODO: DISTINGUISH BETWEEN TITLE AND
-                                        // MESSAGE
+                                        updateTitle(title + ": FINISHED");
+                                        logOutput
+                                                .append(title)
+                                                .append(": FINISHED")
+                                                .append(System.lineSeparator());
+                                        updateMessage(logOutput.toString());
                                     }
 
                                     @Override
                                     public void notifyFailed(String s) {
-                                        // TODO: NOTIFY MESSAGE IF FAILED
+                                        logOutput.append("FAILED").append(System.lineSeparator());
+                                        updateMessage(logOutput.toString());
                                     }
                                 };
                         // TODO: ERROR HANDLING FOR BETTER USABILITY
@@ -223,19 +260,20 @@ public class PerformConversionController implements Initializable {
                         return new IfcFileVO(
                                 engine.convert(
                                         inputFileState.parsedIfcFileProperty().get(),
-                                        taskProgressListener));
+                                        taskProgressListener),
+                                logOutput.toString());
                     }
                 };
         task.setOnSucceeded(
                 e -> {
-                    stateService.getConvertState().getOutputFileState().setFileStepResult(task);
+                    stateService.getConvertState().setConvertResults(task);
                     // TODO: PROCESS-STATE SHOULD BE IN A DIFFERENT PLACE
                     processState.set(STEP_COMPLETE);
                 });
         task.setOnFailed(
                 e -> {
                     // TODO: MAYBE SHOW DIALOG INSTEAD
-                    stateService.getConvertState().getOutputFileState().setFileStepResult(task);
+                    stateService.getConvertState().setConvertResults(task);
                     // TODO: PROCESS-STATE SHOULD BE IN A DIFFERENT PLACE
                     processState.set(STEP_FAILED);
                 });
