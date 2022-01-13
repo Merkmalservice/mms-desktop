@@ -1,6 +1,6 @@
 package at.researchstudio.sat.mmsdesktop.gui;
 
-import at.researchstudio.sat.mmsdesktop.gui.component.about.AboutController;
+import at.researchstudio.sat.mmsdesktop.gui.about.AboutController;
 import at.researchstudio.sat.mmsdesktop.gui.convert.inputfile.SelectInputFileController;
 import at.researchstudio.sat.mmsdesktop.gui.convert.perform.PerformConversionController;
 import at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard.SelectTargetStandardController;

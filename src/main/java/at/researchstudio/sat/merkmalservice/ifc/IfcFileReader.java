@@ -313,7 +313,8 @@ public class IfcFileReader {
         ProjectUnits projectUnitsObject = new ProjectUnits(projectUnitsMap, projectUnitsById);
 
         ParsedIfcFile parsedIfcFile =
-                new ParsedIfcFile(lines, extractedProperties, projectUnitsObject, extractLog);
+                new ParsedIfcFile(
+                        lines, extractedProperties, projectUnitsObject, ifcFile, extractLog);
         if (updateProgress) {
             taskProgressListener.notifyProgress(null, extractLog.toString(), 0);
         }

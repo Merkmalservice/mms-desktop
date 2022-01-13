@@ -287,4 +287,26 @@ public class PerformConversionController implements Initializable {
     public ObservableList<IfcLine> getFileContentList() {
         return stateService.getConvertState().getOutputFileState().getOutputFileContent();
     }
+
+    public String getProjectName() {
+        return "TODO: PROJECT NAME";
+    }
+
+    public String getTargetStandardName() {
+        return "TODO: TARGET STANDARD NAME";
+    }
+
+    public int getMappingRuleCount() {
+        return stateService.getConvertState().getTargetStandardState().mappingsProperty().size();
+    }
+
+    public String getInputFileName() {
+        return stateService
+                .getConvertState()
+                .getInputFileState()
+                .parsedIfcFileProperty()
+                .get()
+                .getIfcFileWrapper()
+                .getName();
+    }
 }

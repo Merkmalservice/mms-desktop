@@ -1,4 +1,4 @@
-package at.researchstudio.sat.mmsdesktop.gui.component.about;
+package at.researchstudio.sat.mmsdesktop.gui.about;
 
 import com.sandec.mdfx.MarkdownView;
 import java.net.URL;

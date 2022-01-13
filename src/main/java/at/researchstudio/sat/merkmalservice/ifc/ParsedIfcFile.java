@@ -42,6 +42,7 @@ import org.springframework.lang.NonNull;
 public class ParsedIfcFile {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final IfcFileWrapper ifcFileWrapper;
     private final List<IfcLine> lines;
     private final Map<Integer, IfcLine> dataLines;
     private final Map<Class<? extends IfcLine>, List<IfcLine>> dataLinesByClass;
@@ -521,7 +522,9 @@ public class ParsedIfcFile {
             List<IfcLine> lines,
             @NonNull Set<IfcProperty> extractedProperties,
             ProjectUnits projectUnits,
+            IfcFileWrapper ifcFileWrapper,
             StringBuilder extractLog) {
+        this.ifcFileWrapper = ifcFileWrapper;
         this.lines = lines;
         this.extractedProperties = extractedProperties;
         this.projectUnits = projectUnits;
@@ -713,6 +716,7 @@ public class ParsedIfcFile {
     }
 
     public ParsedIfcFile(ParsedIfcFile toCopy) {
+        this.ifcFileWrapper = toCopy.ifcFileWrapper;
         this.dataLines = new HashMap<>(toCopy.dataLines);
         this.dataLinesByClass = new HashMap<>(toCopy.dataLinesByClass);
         this.extractedProperties = new HashSet<>(toCopy.extractedProperties);
@@ -727,6 +731,10 @@ public class ParsedIfcFile {
         this.stepPropertyValueFactory =
                 new StepPropertyValueFactory(this, new QudtUnitConverter(this.projectUnits));
         this.markLineIdUsed(toCopy.nextFreeLineId());
+    }
+
+    public IfcFileWrapper getIfcFileWrapper() {
+        return ifcFileWrapper;
     }
 
     public List<IfcLine> getLines() {

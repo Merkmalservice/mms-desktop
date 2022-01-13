@@ -4,7 +4,7 @@ import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP
 
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.gui.ViewState;
-import at.researchstudio.sat.mmsdesktop.gui.component.about.AboutController;
+import at.researchstudio.sat.mmsdesktop.gui.about.AboutController;
 import at.researchstudio.sat.mmsdesktop.gui.component.feature.FeatureBox;
 import at.researchstudio.sat.mmsdesktop.gui.component.ifc.IfcLineView;
 import at.researchstudio.sat.mmsdesktop.gui.convert.inputfile.SelectInputFileController;

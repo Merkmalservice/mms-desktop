@@ -53,7 +53,7 @@
                     </font>
                 </Label>
                 <Label GridPane.columnIndex="1" GridPane.rowIndex="0"
-                       text="TODO: PICKED INPUTFILE LABEL" GridPane.hgrow="ALWAYS"
+                       text="${controller.inputFileName}" GridPane.hgrow="ALWAYS"
                 />
                 <Label GridPane.columnIndex="0" GridPane.rowIndex="1"
                        text="%label.projectpicker.project"
@@ -66,7 +66,7 @@
                     </font>
                 </Label>
                 <Label GridPane.columnIndex="1" GridPane.rowIndex="1"
-                       text="TODO: PICKED PROJECTLABEL" GridPane.hgrow="ALWAYS"
+                       text="${controller.projectName}" GridPane.hgrow="ALWAYS"
                 />
                 <Label GridPane.columnIndex="0" GridPane.rowIndex="2"
                        text="%label.projectpicker.featureset"
@@ -79,7 +79,20 @@
                     </font>
                 </Label>
                 <Label GridPane.columnIndex="1" GridPane.rowIndex="2"
-                       text="TODO: PICKED TARGETSTANDARDLABEL" GridPane.hgrow="ALWAYS"
+                       text="${controller.targetStandardName}" GridPane.hgrow="ALWAYS"
+                />
+                <Label GridPane.columnIndex="0" GridPane.rowIndex="3"
+                       text="%label.projectpicker.mappings"
+                >
+                    <graphic>
+                        <FontIcon iconLiteral="bi-arrow-left-right" iconSize="24"/>
+                    </graphic>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label GridPane.columnIndex="1" GridPane.rowIndex="3"
+                       text="${controller.mappingRuleCount}" GridPane.hgrow="ALWAYS"
                 />
             </GridPane>
             <BorderPane fx:id="pcCenterProgress" visible="false" managed="false"

@@ -9,7 +9,7 @@
 <?import javafx.scene.control.ScrollPane?>
 <BorderPane fx:id="parentPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="at.researchstudio.sat.mmsdesktop.gui.component.about.AboutController">
+            fx:controller="at.researchstudio.sat.mmsdesktop.gui.about.AboutController">
     <BorderPane.margin>
         <Insets bottom="10.0" left="25.0" right="10.0" top="10.0"/>
     </BorderPane.margin>

@@ -33,7 +33,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.layout.VBox;
@@ -54,7 +53,7 @@ public class SelectTargetStandardController implements Initializable {
     private final ReactiveStateService stateService;
     @FXML private JFXComboBox<Project> projectList;
     @FXML private JFXComboBox<Standard> standardList;
-    @FXML private Button reloadButton;
+    @FXML private JFXButton reloadButton;
     @FXML private VBox mappingsView;
     @FXML private JFXListView<Mapping> mappingsList;
     @FXML private ObservableList<Mapping> mappings;
