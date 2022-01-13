@@ -252,7 +252,7 @@ public class PerformConversionController implements Initializable {
                                                 stateService
                                                         .getConvertState()
                                                         .getTargetStandardState()
-                                                        .mappingsProperty())
+                                                        .selectedMappingsProperty())
                                         .getRules();
                         ConversionEngine engine = new ConversionEngine(rules);
 
@@ -297,7 +297,11 @@ public class PerformConversionController implements Initializable {
     }
 
     public int getMappingRuleCount() {
-        return stateService.getConvertState().getTargetStandardState().mappingsProperty().size();
+        return stateService
+                .getConvertState()
+                .getTargetStandardState()
+                .selectedMappingsProperty()
+                .size();
     }
 
     public String getInputFileName() {

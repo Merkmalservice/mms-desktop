@@ -11,13 +11,12 @@ import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
 import at.researchstudio.sat.mmsdesktop.gui.convert.perform.PerformConversionController;
+import at.researchstudio.sat.mmsdesktop.gui.project.ProjectListCell;
+import at.researchstudio.sat.mmsdesktop.gui.standard.StandardListCell;
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
-import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXComboBox;
-import com.jfoenix.controls.JFXListCell;
-import com.jfoenix.controls.JFXListView;
+import com.jfoenix.controls.*;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.List;
@@ -26,16 +25,14 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import javafx.scene.control.SingleSelectionModel;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
+import javafx.util.Duration;
 import javafx.util.StringConverter;
 import net.rgielen.fxweaver.core.FxmlView;
 import org.apache.commons.lang3.StringUtils;
@@ -51,12 +48,14 @@ public class SelectTargetStandardController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ReactiveStateService stateService;
+    @FXML private BorderPane stsParentPane;
+
     @FXML private JFXComboBox<Project> projectList;
     @FXML private JFXComboBox<Standard> standardList;
     @FXML private JFXButton reloadButton;
-    @FXML private VBox mappingsView;
+    @FXML private BorderPane mappingsView;
+    @FXML private JFXSpinner loadingView;
     @FXML private JFXListView<Mapping> mappingsList;
-    @FXML private ObservableList<Mapping> mappings;
 
     @FXML public JFXButton toPerformConversion;
 
@@ -64,54 +63,28 @@ public class SelectTargetStandardController implements Initializable {
     @Autowired TokenRefreshingDataService dataService;
     @Autowired AuthService authService;
     private final ResourceBundle resourceBundle = ResourceBundle.getBundle("messages");
-    private final TargetStandardState state;
+    private final TargetStandardState targetStandardState;
+    private JFXSnackbar snackbar;
 
     @Autowired
     public SelectTargetStandardController(ReactiveStateService stateService) {
         this.stateService = stateService;
-        this.state = stateService.getConvertState().getTargetStandardState();
-        this.mappings = FXCollections.observableArrayList();
+        this.targetStandardState = stateService.getConvertState().getTargetStandardState();
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resourceBundle) {
+        snackbar = new JFXSnackbar(stsParentPane);
+
+        this.projectList.disableProperty().bind(targetStandardState.loadingMappingsProperty());
         this.projectList
                 .getSelectionModel()
                 .selectedItemProperty()
                 .addListener(
-                        (observable, deSelected, selected) -> {
-                            if (selected != null) {
-                                if (state.projectProperty().get() == null
-                                        || !state.projectProperty().get().equals(selected)) {
-                                    state.projectProperty().set(selected);
-                                    state.targetStandardProperty().set(null);
-                                    standardList.getSelectionModel().clearSelection();
-                                }
-                                if (!state.standardsProperty().equals(selected.getStandards())) {
-                                    state.standardsProperty().setAll(selected.getStandards());
-                                }
-                                state.stepTargetStandardStatusProperty()
-                                        .set(ProcessState.STEP_ACTIVE);
-                            }
-                        });
-        this.projectList.setCellFactory(
-                param ->
-                        new JFXListCell<>() {
-                            @Override
-                            protected void updateItem(Project item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty || item == null) {
-                                    setText(null);
-                                    setGraphic(
-                                            new Label(
-                                                    resourceBundle.getString(
-                                                            "label.projectpicker.chooseProject")));
-                                    return;
-                                }
-                                setGraphic(new Label(item.getName()));
-                                setText(null);
-                            }
-                        });
+                        (observable, deSelected, selected) ->
+                                targetStandardState.setSelectedProject(
+                                        selected, standardList.getSelectionModel()));
+        this.projectList.setCellFactory(param -> new ProjectListCell<Project>());
         this.projectList.setConverter(
                 new StringConverter<>() {
                     @Override
@@ -130,30 +103,9 @@ public class SelectTargetStandardController implements Initializable {
                                 .orElse(null);
                     }
                 });
-        this.standardList.setCellFactory(
-                param ->
-                        new JFXListCell<>() {
-                            @Override
-                            protected void updateItem(Standard item, boolean empty) {
-                                super.updateItem(item, empty);
-                                if (empty || item == null) {
-                                    setGraphic(
-                                            new Label(
-                                                    resourceBundle.getString(
-                                                            "label.projectpicker.chooseFeatureSet")));
-                                    setText(null);
-                                    return;
-                                }
-                                setText(null);
-                                setGraphic(
-                                        new Label(
-                                                Optional.ofNullable(item.getOrganization())
-                                                        .map(Organization::getName)
-                                                        .orElse(
-                                                                resourceBundle.getString(
-                                                                        "label.projects.projectStandard"))));
-                            }
-                        });
+
+        this.standardList.disableProperty().bind(targetStandardState.loadingMappingsProperty());
+        this.standardList.setCellFactory(param -> new StandardListCell<Standard>());
         this.standardList.setConverter(
                 new StringConverter<>() {
                     @Override
@@ -174,26 +126,45 @@ public class SelectTargetStandardController implements Initializable {
                                 .orElse(null);
                     }
                 });
+
         this.standardList
                 .getSelectionModel()
                 .selectedItemProperty()
                 .addListener(
                         (observable, deSelected, selected) -> {
-                            if (state.targetStandardProperty().get() == null
-                                    || state.targetStandardProperty().get() != selected) {
-                                state.targetStandardProperty().set(selected);
+                            if (targetStandardState.selectedTargetStandardProperty().get() == null
+                                    || targetStandardState.selectedTargetStandardProperty().get()
+                                            != selected) {
+                                targetStandardState.selectedTargetStandardProperty().set(selected);
                             }
                             handleLoadMappingsAction(null);
-                            state.stepTargetStandardStatusProperty().set(STEP_COMPLETE);
+                            targetStandardState
+                                    .stepTargetStandardStatusProperty()
+                                    .set(STEP_COMPLETE);
                         });
-        this.mappingsView.visibleProperty().bind(state.targetStandardProperty().isNotNull());
-        this.mappingsView.managedProperty().bind(state.targetStandardProperty().isNotNull());
+        this.mappingsView
+                .visibleProperty()
+                .bind(targetStandardState.selectedTargetStandardProperty().isNotNull());
+        this.mappingsView
+                .managedProperty()
+                .bind(targetStandardState.selectedTargetStandardProperty().isNotNull());
+
+        this.mappingsList
+                .visibleProperty()
+                .bind(targetStandardState.loadingMappingsProperty().not());
+        this.mappingsList
+                .managedProperty()
+                .bind(targetStandardState.loadingMappingsProperty().not());
+        this.loadingView.visibleProperty().bind(targetStandardState.loadingMappingsProperty());
+        this.loadingView.managedProperty().bind(targetStandardState.loadingMappingsProperty());
 
         toPerformConversion
                 .disableProperty()
                 .bind(
-                        state.targetStandardProperty()
+                        targetStandardState
+                                .selectedTargetStandardProperty()
                                 .isNull()
+                                .or(targetStandardState.loadingMappingsProperty())
                                 .or(
                                         stateService
                                                 .getConvertState()
@@ -216,17 +187,11 @@ public class SelectTargetStandardController implements Initializable {
                                 setText(null);
                             }
                         });
-        this.mappings.addListener(
-                (ListChangeListener<Mapping>)
-                        c -> {
-                            while (c.next()) {}
-                            this.state.mappingsProperty().setAll(this.mappings);
-                        });
         this.reloadButton
                 .disableProperty()
                 .bind(not(stateService.getLoginState().loggedInProperty()));
         if (stateService.getLoginState().isLoggedIn()
-                && state.targetStandardProperty().isNull().get()) {
+                && targetStandardState.selectedTargetStandardProperty().isNull().get()) {
             handleLoadProjectsAction(null);
         }
         restoreProjectStandardSelection();
@@ -256,36 +221,20 @@ public class SelectTargetStandardController implements Initializable {
 
     @FXML
     public void handleLoadProjectsAction(ActionEvent actionEvent) {
-        Platform.runLater(
-                () -> {
-                    state.projectsProperty().setAll(dataService.getProjectsWithFeatureSets());
-                    restoreProjectStandardSelection();
-                });
+        // TODO: THIS SHOULD PROBABLY BE A TASK
+        targetStandardState.setAvailableProjects(dataService.getProjectsWithFeatureSets());
+        restoreProjectStandardSelection();
     }
 
     public void restoreProjectStandardSelection() {
-        Platform.runLater(
-                () -> {
-                    selectPreviouslySelected(
-                            this.state.projectProperty(),
-                            this.state.projectsProperty(),
-                            this.projectList.getSelectionModel());
-                    selectPreviouslySelected(
-                            this.state.targetStandardProperty(),
-                            this.state.standardsProperty(),
-                            this.standardList.getSelectionModel());
-                });
-    }
-
-    private <T> void selectPreviouslySelected(
-            SimpleObjectProperty<T> selected,
-            ObservableList<T> items,
-            SingleSelectionModel<T> selectionModel) {
-        if (selected.isNotNull().get()) {
-            if (selectionModel.isEmpty()) {
-                int idx = items.indexOf(selected.get());
+        if (this.targetStandardState.selectedProjectProperty().isNotNull().get()) {
+            if (this.projectList.getSelectionModel().isEmpty()) {
+                int idx =
+                        this.targetStandardState
+                                .availableProjectsProperty()
+                                .indexOf(this.targetStandardState.selectedProjectProperty().get());
                 if (idx != -1) {
-                    selectionModel.select(idx);
+                    this.projectList.getSelectionModel().select(idx);
                 }
             }
         }
@@ -323,41 +272,49 @@ public class SelectTargetStandardController implements Initializable {
 
     @FXML
     public void handleLoadMappingsAction(ActionEvent actionEvent) {
-        Platform.runLater(
-                () -> {
-                    if (!(this.state
-                                    .projectProperty()
-                                    .isNotNull()
-                                    .and(this.state.targetStandardProperty().isNotNull()))
-                            .get()) {
-                        return;
-                    }
-                    String standardId = state.targetStandardProperty().get().getId();
-                    List<String> mappingIds =
-                            state.projectProperty().get().getMappings().stream()
-                                    .filter(
-                                            m ->
-                                                    m.getFeatureSets().stream()
-                                                            .anyMatch(
-                                                                    s ->
-                                                                            standardId.equals(
-                                                                                    s.getId())))
-                                    .map(Mapping::getId)
-                                    .collect(Collectors.toList());
-                    List<Mapping> loadedMappings = dataService.getMappings(mappingIds);
-                    this.mappings.setAll(loadedMappings);
-                });
+        // TODO: THIS SHOULD PROBABLY BE A TASK
+        if (targetStandardState.isProjectAndStandardSelected()) {
+            Task<List<Mapping>> task =
+                    new Task<List<Mapping>>() {
+                        @Override
+                        protected List<Mapping> call() throws Exception {
+                            return dataService.getMappings(
+                                    targetStandardState.getSelectedMappingIds());
+                        }
+                    };
+            task.setOnSucceeded(
+                    e -> {
+                        targetStandardState.setSelectedMappings(task.getValue());
+                    });
+            task.setOnFailed(
+                    e -> {
+                        Platform.runLater(
+                                () ->
+                                        snackbar.fireEvent(
+                                                new JFXSnackbar.SnackbarEvent(
+                                                        new JFXSnackbarLayout(
+                                                                resourceBundle.getString(
+                                                                        "label.convert.mappings.fetchfailed")),
+                                                        Duration.seconds(5),
+                                                        null)));
+                        targetStandardState.clear();
+                    });
+            targetStandardState.setLoadingMappings(true);
+            new Thread(task).start();
+        } else {
+            targetStandardState.clearSelectedMappings();
+        }
     }
 
-    public ObservableList<Project> getProjects() {
-        return state.projectsProperty();
+    public ObservableList<Project> getAvailableProjects() {
+        return targetStandardState.availableProjectsProperty();
     }
 
-    public ObservableList<Standard> getStandards() {
-        return state.standardsProperty();
+    public ObservableList<Standard> getAvailableStandards() {
+        return targetStandardState.availableStandardsProperty();
     }
 
-    public ObservableList<Mapping> getMappings() {
-        return mappings;
+    public ObservableList<Mapping> getSelectedMappings() {
+        return targetStandardState.selectedMappingsProperty();
     }
 }

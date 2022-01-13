@@ -144,7 +144,7 @@ public class MainController implements Initializable {
                         stateService
                                 .getConvertState()
                                 .getTargetStandardState()
-                                .targetStandardProperty()
+                                .selectedTargetStandardProperty()
                                 .isNull()
                                 .or(
                                         stateService

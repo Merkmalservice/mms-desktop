@@ -54,8 +54,6 @@ public class ReactiveStateService implements ApplicationListener<UserLoggedOutEv
 
     @Override
     public void onApplicationEvent(UserLoggedOutEvent applicationEvent) {
-        this.convertState.getTargetStandardState().projectProperty().set(null);
-        this.convertState.getTargetStandardState().targetStandardProperty().set(null);
-        this.convertState.getTargetStandardState().mappingsProperty().clear();
+        this.convertState.getTargetStandardState().clear();
     }
 }
