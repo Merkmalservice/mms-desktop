@@ -26,7 +26,7 @@ public class TargetStandardState {
     private final ObservableList<Project> availableProjects;
     private final ObservableList<Standard> availableStandards;
 
-    private SimpleBooleanProperty loadingMappings;
+    private final SimpleBooleanProperty loadingMappings;
 
     public TargetStandardState() {
         this.selectedTargetStandard = new SimpleObjectProperty<>();
