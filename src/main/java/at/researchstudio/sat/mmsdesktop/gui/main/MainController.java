@@ -1,6 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.gui.main;
 
 import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_COMPLETE;
+import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_PROCESSING;
 
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.gui.ViewState;
@@ -123,6 +124,14 @@ public class MainController implements Initializable {
         convertButtonSelectInputFile
                 .stateProperty()
                 .bind(stateService.getConvertState().getInputFileState().stepFileStatusProperty());
+        convertButtonSelectInputFile
+                .disableProperty()
+                .bind(
+                        stateService
+                                .getConvertState()
+                                .getPerformConversionState()
+                                .stepPerformConversionStatusProperty()
+                                .isEqualTo(STEP_PROCESSING));
         convertButtonSelectTargetStandard
                 .stateProperty()
                 .bind(
@@ -130,6 +139,14 @@ public class MainController implements Initializable {
                                 .getConvertState()
                                 .getTargetStandardState()
                                 .stepTargetStandardStatusProperty());
+        convertButtonSelectTargetStandard
+                .disableProperty()
+                .bind(
+                        stateService
+                                .getConvertState()
+                                .getPerformConversionState()
+                                .stepPerformConversionStatusProperty()
+                                .isEqualTo(STEP_PROCESSING));
         convertButtonPerformConversion
                 .stateProperty()
                 .bind(

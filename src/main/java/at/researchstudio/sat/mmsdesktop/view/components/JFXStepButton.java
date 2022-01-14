@@ -58,7 +58,7 @@ public class JFXStepButton extends JFXButton {
                 fontIcon.setIconCode(BootstrapIcons.THREE_DOTS);
                 fontIcon.setIconColor(ViewConstants.MENU_COLOR_ACTIVE);
                 JFXStepButton.this.setTextFill(ViewConstants.MENU_COLOR_ACTIVE);
-                JFXStepButton.this.setDisabled(true);
+                JFXStepButton.this.setDisabled(false);
                 break;
             case STEP_OPEN:
             default:

@@ -10,6 +10,7 @@ import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import at.researchstudio.sat.mmsdesktop.gui.convert.inputfile.InputFileState;
+import at.researchstudio.sat.mmsdesktop.gui.convert.inputfile.SelectInputFileController;
 import at.researchstudio.sat.mmsdesktop.model.task.IfcFileVO;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.support.MessageUtils;
@@ -182,14 +183,9 @@ public class PerformConversionController implements Initializable {
 
     @FXML
     public void handleResetAction(ActionEvent actionEvent) {
-        // TODO: RESET EVERYTHING ACCORDINGLY
-        logger.debug("RESET CONVERTED FILE");
-
-        //        handleClearListAction(actionEvent);
-        //        stateService.getExtractState().showInitialView();
-        //
-
         stateService.getConvertState().resetConvertResults();
+        stateService.getConvertState().getInputFileState().resetSelectedConvertFile();
+        stateService.getViewState().switchCenterPane(SelectInputFileController.class);
 
         pcCenterProgressProgressBar.progressProperty().unbind();
         pcCenterProgressProgressInfo.textProperty().unbind();
