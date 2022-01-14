@@ -91,13 +91,10 @@ public class TargetStandardState {
                 this.selectedProject.set(selectedProject);
                 selectedTargetStandard.set(null);
                 standardListSelectionModel.clearSelection();
-                stepTargetStandardStatus.set(ProcessState.STEP_ACTIVE);
-            }
-            // FIXME THIS CANT RESULT IN BEING FALSE SINCE ITS ALWAYS TWO DIFF OBJECT REFERENCES
-            if (!availableStandards.equals(selectedProject.getStandards())) {
                 availableStandards.setAll(selectedProject.getStandards());
             }
         }
+        stepTargetStandardStatus.set(ProcessState.STEP_ACTIVE);
     }
 
     public void setSelectedTargetStandard(Standard selectedTargetStandard) {
