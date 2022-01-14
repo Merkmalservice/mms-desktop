@@ -1,6 +1,7 @@
 package at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard;
 
 import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_ACTIVE;
+import static at.researchstudio.sat.mmsdesktop.view.components.ProcessState.STEP_COMPLETE;
 
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
@@ -86,19 +87,27 @@ public class TargetStandardState {
     public void setSelectedProject(
             Project selectedProject, SingleSelectionModel<Standard> standardListSelectionModel) {
         if (selectedProject != null) {
-            if (this.selectedProject
-                    .isNull()
-                    .or(this.selectedProject.isNotEqualTo(selectedProject))
-                    .get()) {
+            if (this.selectedProject.isNotEqualTo(selectedProject).get()) {
                 this.selectedProject.set(selectedProject);
                 selectedTargetStandard.set(null);
                 standardListSelectionModel.clearSelection();
+                stepTargetStandardStatus.set(ProcessState.STEP_ACTIVE);
             }
             // FIXME THIS CANT RESULT IN BEING FALSE SINCE ITS ALWAYS TWO DIFF OBJECT REFERENCES
             if (!availableStandards.equals(selectedProject.getStandards())) {
                 availableStandards.setAll(selectedProject.getStandards());
             }
-            stepTargetStandardStatusProperty().set(ProcessState.STEP_ACTIVE);
+        }
+    }
+
+    public void setSelectedTargetStandard(Standard selectedTargetStandard) {
+        if (selectedTargetStandard != null) {
+            if (this.selectedTargetStandard.isNotEqualTo(selectedTargetStandard).get()) {
+                this.selectedTargetStandard.set(selectedTargetStandard);
+            }
+            stepTargetStandardStatus.set(STEP_COMPLETE);
+        } else {
+            stepTargetStandardStatus.set(STEP_ACTIVE);
         }
     }
 

@@ -25,8 +25,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -51,6 +49,7 @@ import org.springframework.stereotype.Component;
 public class PerformConversionController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private FileChooser fileChooser;
     private FileChooser saveLogFileChooser;
     private JFXSnackbar snackbar;
@@ -327,9 +326,12 @@ public class PerformConversionController implements Initializable {
         }
     }
 
-    public IntegerBinding getMappingRuleCount() {
-        return Bindings.size(
-                stateService.getConvertState().getTargetStandardState().selectedMappingsProperty());
+    public int getMappingRuleCount() {
+        return stateService
+                .getConvertState()
+                .getTargetStandardState()
+                .selectedMappingsProperty()
+                .size();
     }
 
     public String getInputFileName() {

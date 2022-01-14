@@ -135,15 +135,8 @@ public class SelectTargetStandardController implements Initializable {
                 .selectedItemProperty()
                 .addListener(
                         (observable, deSelected, selected) -> {
-                            if (targetStandardState.selectedTargetStandardProperty().get() == null
-                                    || targetStandardState.selectedTargetStandardProperty().get()
-                                            != selected) {
-                                targetStandardState.selectedTargetStandardProperty().set(selected);
-                            }
+                            targetStandardState.setSelectedTargetStandard(selected);
                             handleLoadMappingsAction(null);
-                            targetStandardState
-                                    .stepTargetStandardStatusProperty()
-                                    .set(STEP_COMPLETE);
                         });
         this.mappingsView
                 .visibleProperty()
@@ -225,7 +218,7 @@ public class SelectTargetStandardController implements Initializable {
                 .bind(not(stateService.getLoginState().loggedInProperty()));
         if (stateService.getLoginState().isLoggedIn()
                 && targetStandardState.selectedTargetStandardProperty().isNull().get()) {
-            handleLoadProjectsAction(null);
+            targetStandardState.setAvailableProjects(dataService.getProjectsWithFeatureSets());
         }
         restoreProjectStandardSelection();
     }
@@ -268,6 +261,18 @@ public class SelectTargetStandardController implements Initializable {
                                 .indexOf(this.targetStandardState.selectedProjectProperty().get());
                 if (idx != -1) {
                     this.projectList.getSelectionModel().select(idx);
+                }
+            }
+            if (this.standardList.getSelectionModel().isEmpty()) {
+                int idx =
+                        this.targetStandardState
+                                .availableStandardsProperty()
+                                .indexOf(
+                                        this.targetStandardState
+                                                .selectedTargetStandardProperty()
+                                                .get());
+                if (idx != -1) {
+                    this.standardList.getSelectionModel().select(idx);
                 }
             }
         }
