@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
@@ -32,6 +33,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 import net.rgielen.fxweaver.core.FxmlView;
@@ -54,7 +56,8 @@ public class SelectTargetStandardController implements Initializable {
     @FXML private JFXComboBox<Standard> standardList;
     @FXML private JFXButton reloadButton;
     @FXML private BorderPane mappingsView;
-    @FXML private JFXSpinner loadingView;
+    @FXML private VBox loadingView;
+    @FXML private VBox noMappingsView;
     @FXML private JFXListView<Mapping> mappingsList;
 
     @FXML public JFXButton toPerformConversion;
@@ -151,10 +154,40 @@ public class SelectTargetStandardController implements Initializable {
 
         this.mappingsList
                 .visibleProperty()
-                .bind(targetStandardState.loadingMappingsProperty().not());
+                .bind(
+                        targetStandardState
+                                .loadingMappingsProperty()
+                                .not()
+                                .and(
+                                        Bindings.isNotEmpty(
+                                                targetStandardState.selectedMappingsProperty())));
         this.mappingsList
                 .managedProperty()
-                .bind(targetStandardState.loadingMappingsProperty().not());
+                .bind(
+                        targetStandardState
+                                .loadingMappingsProperty()
+                                .not()
+                                .and(
+                                        Bindings.isNotEmpty(
+                                                targetStandardState.selectedMappingsProperty())));
+        this.noMappingsView
+                .visibleProperty()
+                .bind(
+                        targetStandardState
+                                .loadingMappingsProperty()
+                                .not()
+                                .and(
+                                        Bindings.isEmpty(
+                                                targetStandardState.selectedMappingsProperty())));
+        this.noMappingsView
+                .managedProperty()
+                .bind(
+                        targetStandardState
+                                .loadingMappingsProperty()
+                                .not()
+                                .and(
+                                        Bindings.isEmpty(
+                                                targetStandardState.selectedMappingsProperty())));
         this.loadingView.visibleProperty().bind(targetStandardState.loadingMappingsProperty());
         this.loadingView.managedProperty().bind(targetStandardState.loadingMappingsProperty());
 

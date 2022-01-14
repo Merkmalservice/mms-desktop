@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.IntegerBinding;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -185,7 +187,6 @@ public class PerformConversionController implements Initializable {
         logger.debug("RESET CONVERTED FILE");
 
         //        handleClearListAction(actionEvent);
-        //        stateService.getExtractState().resetExtractResults();
         //        stateService.getExtractState().showInitialView();
         //
 
@@ -289,19 +290,46 @@ public class PerformConversionController implements Initializable {
     }
 
     public String getProjectName() {
-        return "TODO: PROJECT NAME";
-    }
-
-    public String getTargetStandardName() {
-        return "TODO: TARGET STANDARD NAME";
-    }
-
-    public int getMappingRuleCount() {
+        // TODO: Correct PROJECTNAME property
         return stateService
                 .getConvertState()
                 .getTargetStandardState()
-                .selectedMappingsProperty()
-                .size();
+                .selectedProjectProperty()
+                .get()
+                .getName();
+    }
+
+    public String getTargetStandardName() {
+        // TODO: Correct STANDARDNAME property
+        if (stateService
+                        .getConvertState()
+                        .getTargetStandardState()
+                        .selectedTargetStandardProperty()
+                        .get()
+                        .getOrganization()
+                != null) {
+            return stateService
+                            .getConvertState()
+                            .getTargetStandardState()
+                            .selectedProjectProperty()
+                            .get()
+                            .getName()
+                    + "::"
+                    + stateService
+                            .getConvertState()
+                            .getTargetStandardState()
+                            .selectedTargetStandardProperty()
+                            .get()
+                            .getOrganization()
+                            .getName();
+        } else {
+            return "TODO: PROJECT STANDARD";
+        }
+    }
+
+    public IntegerBinding getMappingRuleCount() {
+        return Bindings.size(
+                stateService.getConvertState().getTargetStandardState().selectedMappingsProperty());
     }
 
     public String getInputFileName() {
