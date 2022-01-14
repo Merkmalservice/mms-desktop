@@ -2,10 +2,9 @@ package at.researchstudio.sat.merkmalservice.ifc.model;
 
 import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.*;
 
+import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasurePrefix;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitMeasurePrefix;
 import org.apache.commons.lang3.StringUtils;
 
 public class IfcSIUnitLine extends IfcLine {
@@ -48,7 +47,13 @@ public class IfcSIUnitLine extends IfcLine {
                 .append("(*,")
                 .append(toStepConstant(type))
                 .append(",")
-                .append(toOptionalStepConstant(prefix == null || prefix.equals(IfcUnitMeasurePrefix.NONE.toString()) ? null : prefix))
+                .append(
+                        toOptionalStepConstant(
+                                prefix == null
+                                                || prefix.equals(
+                                                        IfcUnitMeasurePrefix.NONE.toString())
+                                        ? null
+                                        : prefix))
                 .append(",")
                 .append(toStepConstant(measure))
                 .append(");")

@@ -36,7 +36,8 @@ public class IfcUtils {
     public static String extractQudtUnitFromProperty(IfcProperty property) {
         try {
             Set<Unit> units = QudtIfcMapper.mapIfcUnitToQudtUnit(property.getUnit());
-            if (units.isEmpty()) throw new UnsupportedOperationException(
+            if (units.isEmpty())
+                throw new UnsupportedOperationException(
                         "cannot map to qudt unit: " + property.getUnit());
             if (units.size() > 1) {
                 logger.info(
