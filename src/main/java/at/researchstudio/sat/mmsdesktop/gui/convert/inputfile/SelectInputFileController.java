@@ -315,6 +315,7 @@ public class SelectInputFileController implements Initializable {
     @FXML
     public void handleResetFileAction(ActionEvent actionEvent) {
         stateService.getConvertState().getInputFileState().resetSelectedConvertFile();
+        stateService.getConvertState().resetConvertResults();
     }
 
     public ObservableList<IfcLine> getFileContentList() {
