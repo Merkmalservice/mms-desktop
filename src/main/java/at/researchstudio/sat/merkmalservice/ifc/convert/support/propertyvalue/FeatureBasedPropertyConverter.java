@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.toStepValue;
+
 public class FeatureBasedPropertyConverter implements PropertyConverter {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

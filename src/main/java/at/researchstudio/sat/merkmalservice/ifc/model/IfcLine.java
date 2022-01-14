@@ -84,7 +84,7 @@ public class IfcLine {
 
     @Override
     public String toString() {
-        return line;
+        return getModifiedLine();
     }
 
     public boolean removeReferenceTo(IfcLine item) {

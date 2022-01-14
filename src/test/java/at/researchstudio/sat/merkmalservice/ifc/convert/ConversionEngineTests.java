@@ -24,6 +24,7 @@ import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.featuretype.BooleanFeatureType;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.featuretype.NumericFeatureType;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.featuretype.StringFeatureType;
+import at.researchstudio.sat.merkmalservice.model.qudt.Qudt;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
 import java.io.File;
@@ -895,6 +896,30 @@ public class ConversionEngineTests {
         testInOut("add_property_IFCIDENTIFIER_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
 
+    @Test
+    public void test_convert_Lengthunit_to_Pset() throws IOException {
+        MappingConversionRuleFactory factory =
+                new MappingConversionRuleFactory(
+                        List.of(
+                                Mapping.builder()
+                                        /**/ .matches()
+                                        /****/ .feature()
+                                        /******/ .name("Versatz oben")
+                                        /******/ .end()
+                                        /****/ .valuePresent()
+                                        /****/ .end()
+                                        /**/ .convertActionGroup()
+                                        /*--*/ .propertySetName("TargetSet")
+                                        /*--*/ .convertAction()
+                                        /*----*/ .inputFeature(Inst.featureVersatzOben)
+                                        /*----*/ .outputFeature(Inst.featureVersatz_Oben)
+                                        /*----*/ .end()
+                                        /*--*/ .end()
+                                        /**/ .build()));
+        ConversionEngine engine = new ConversionEngine(factory.getRules());
+        testInOut("convert_property_IFCLENGTHMEASURE", engine);
+    }
+
     @NotNull
     private ParsedIfcFile loadTestFile1() throws IOException {
         File testFile = new File(testResources, "IFC test.ifc");
@@ -1000,6 +1025,24 @@ public class ConversionEngineTests {
                         /**/ .quantityKind(QudtQuantityKind.LENGTH)
                         /**/ .end()
                         .build();
+        public static Feature featureVersatzOben =
+                Feature.builder()
+                        .name("Versatz oben")
+                        .description("versatz oben")
+                        .numericType()
+                        /**/ .unit(QudtUnit.METRE)
+                        /**/ .quantityKind(QudtQuantityKind.LENGTH)
+                        /**/ .end()
+                        .build();
+        public static Feature featureVersatz_Oben =
+                Feature.builder()
+                        .name("Versatz_Oben")
+                        .description("versatz oben")
+                        .numericType()
+                        /**/ .unit(Qudt.Units.CentiM.getIri().toString())
+                        /**/ .quantityKind(QudtQuantityKind.LENGTH)
+                        /**/ .end()
+                        .build();
         public static Feature featureEnumLabel =
                 Feature.builder()
                         .name("ifcLabelFeatureFromEnum")
@@ -1091,7 +1134,7 @@ public class ConversionEngineTests {
         static Project project1 =
                 new Project("project1Id", "Project One", "a project", List.of(), List.of());
         static Standard standard1 =
-                new Standard("standard1Id", "standard one", false, organization1);
+                new Standard("standard1Id", "STD1", "standard one", false, organization1);
     }
 
     private Mapping delete(

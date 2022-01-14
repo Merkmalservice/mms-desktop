@@ -170,7 +170,7 @@ public class ParsedIfcFile {
                         valueAndTypeAndIfcUnit.getStepValueAndType().getValue(),
                         valueAndTypeAndIfcUnit.getIfcUnit() == null
                                 ? null
-                                : Integer.parseInt(valueAndTypeAndIfcUnit.getIfcUnit().getId()));
+                                : valueAndTypeAndIfcUnit.getIfcUnit().getId());
         registerNewIfcLine(prop, false);
         removeFromLookupTables(pSet);
         pSet.addPropertyId(prop.getId());
@@ -213,12 +213,9 @@ public class ParsedIfcFile {
             boolean deleteInputProperty) {
         List<? extends IfcLine> props =
                 getProperties(
-                        element, IfcLinePredicates.isPropertyWithName(inputFeature.getName()));
-        if (props.size() != 1) {
-            throw new IfcPropertyCardinalityException(
-                    String.format(
-                            "Expected to find one property named %s as the input feature of a convert action, but found %d",
-                            inputFeature.getName(), props.size()));
+                        element, IfcLinePredicates.isPropertyWithName(inputFeature.getName()).or(IfcLinePredicates.isQuantityWithName(inputFeature.getName())));
+        if (props.size() > 1 || props.isEmpty()) {
+            throwCardinalityException(inputFeature, props);
         }
         IfcLine prop = props.get(0);
         StepValueAndTypeAndIfcUnit stepValueAndTypeAndIfcUnit = null;
@@ -232,7 +229,20 @@ public class ParsedIfcFile {
                             .build();
             stepValueAndTypeAndIfcUnit =
                     new StepValueAndTypeAndIfcUnit(
-                            new StepValueAndType(propValue, propType), ifcProperty.getUnit());
+                            StepValueAndType.fromStingValue(propValue, propType),
+                            ifcProperty.getUnit());
+        } else if (prop instanceof IfcQuantityLine) {
+            String propType = prop.getType();
+            Double propValue = ((IfcQuantityLine) prop).getValue();
+            IfcProperty ifcProperty =
+                            new IfcPropertyBuilder(
+                                            (IfcQuantityLine) prop,
+                                            projectUnits.getUnitsByUnitType())
+                                            .build();
+            stepValueAndTypeAndIfcUnit =
+                            new StepValueAndTypeAndIfcUnit(
+                                            new StepValueAndType(propValue, propType),
+                                            ifcProperty.getUnit());
         } else {
             // TODO: obtain value and type from enums, lists, tables, etc.
             throw new IfcPropertyTypeUnsupportedException(
@@ -248,6 +258,14 @@ public class ParsedIfcFile {
             removeProperty(element, IfcLinePredicates.isPropertyWithName(inputFeature.getName()));
         }
         addProperty(targetPSet, outputFeature, convertedValue);
+    }
+
+    private void throwCardinalityException(at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature inputFeature,
+                    List<? extends IfcLine> props) {
+        throw new IfcPropertyCardinalityException(
+                String.format(
+                        "Expected to find one property named' %s' as the input feature of a convert action, but found %d",
+                        inputFeature.getName(), props.size()));
     }
 
     private <T extends IfcLine> void splitSharedPropertySetsWithPropertyMatching(
@@ -333,6 +351,7 @@ public class ParsedIfcFile {
                             ifcDerivedUnit.getType().toString(),
                             ifcDerivedUnit.getUserDefinedLabel());
             registerNewIfcLine(ifcDerivedUnitLine);
+            ifcUnit.setId(ifcDerivedUnitLine.getId());
             return ifcDerivedUnitLine.getId();
         } else if (ifcUnit instanceof IfcSIUnit) {
             IfcSIUnit ifcSiUnit = (IfcSIUnit) ifcUnit;
@@ -343,6 +362,7 @@ public class ParsedIfcFile {
                             ifcSiUnit.getMeasure().toString(),
                             ifcSiUnit.getPrefix().toString());
             registerNewIfcLine(ifcSiUnitLine);
+            ifcUnit.setId(ifcSiUnitLine.getId());
             return ifcSiUnitLine.getId();
         } else {
             throw new UnsupportedOperationException("TODO: implement add IfcUnit to ifc model");

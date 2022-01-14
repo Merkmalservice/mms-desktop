@@ -187,7 +187,7 @@ public class IfcFileReader {
             IfcSIUnitLine unitLine = (IfcSIUnitLine) line;
             IfcUnit unit =
                     new IfcSIUnit(
-                            unitLine.getStringId(),
+                            unitLine.getId(),
                             unitLine.getType(),
                             unitLine.getMeasure(),
                             unitLine.getPrefix(),
@@ -205,7 +205,7 @@ public class IfcFileReader {
             IfcDerivedUnitLine unitLine = (IfcDerivedUnitLine) line;
             IfcDerivedUnit derivedUnit =
                     new IfcDerivedUnit(
-                            unitLine.getStringId(),
+                            unitLine.getId(),
                             unitLine.getType(),
                             unitLine.getName(),
                             defaultProjectUnitIds.contains(unitLine.getId()));
@@ -611,7 +611,10 @@ public class IfcFileReader {
                     fullLog.append(logString).append(System.getProperty("line.separator"));
                     extractedFeatures.addAll(
                             entry.getValue().stream()
-                                    .map(IfcUtils::parseNumericFeature)
+                                    .map(
+                                            f ->
+                                                    IfcUtils.parseNumericFeature(
+                                                            f, QudtQuantityKind.LENGTH))
                                     .collect(Collectors.toList()));
                     break;
                 case VALUELIST:

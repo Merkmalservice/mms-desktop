@@ -42,7 +42,7 @@ public class IfcDerivedUnitElementLine extends IfcLine {
                 .append("= ")
                 .append(IDENTIFIER)
                 .append("(")
-                .append(toStepValue(unitId))
+                .append(toStepId(unitId))
                 .append(",")
                 .append(toStepValue(exponent))
                 .append(");")

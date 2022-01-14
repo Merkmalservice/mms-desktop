@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 
 import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
+import at.researchstudio.sat.merkmalservice.model.ifc.express.EnumerationConstant;
 import at.researchstudio.sat.merkmalservice.model.qudt.Unit;
 import at.researchstudio.sat.merkmalservice.model.qudt.exception.NotFoundException;
 import at.researchstudio.sat.merkmalservice.qudtifc.QudtIfcMapper;
@@ -123,9 +124,15 @@ public class IfcUtils {
                 ifcProperty, quantityKind, IfcUtils.extractQudtUnitFromProperty(ifcProperty));
     }
 
-    public static NumericFeature parseNumericFeature(IfcProperty ifcProperty) {
-        return parseNumericFeature(
-                ifcProperty, IfcUtils.extractQudtQuantityKindFromProperty(ifcProperty));
+    public static NumericFeature parseNumericFeatureQuantityKindFromFeatureName(
+            IfcProperty ifcProperty, String defaultQuantityKind) {
+        String qk = defaultQuantityKind;
+        try {
+            qk = IfcUtils.extractQudtQuantityKindFromProperty(ifcProperty);
+        } catch (IllegalArgumentException e) {
+
+        }
+        return parseNumericFeature(ifcProperty, qk);
     }
 
     public static String stacktraceToString(Throwable throwable) {
@@ -145,6 +152,13 @@ public class IfcUtils {
         }
         if (o instanceof Boolean) {
             return ((Boolean) o) ? ".T." : ".F.";
+        }
+        if (o instanceof Double){
+            if (((Double) o).doubleValue() == 0){
+                return "0.";
+            } else {
+                return o.toString();
+            }
         }
         if (o instanceof Collection) {
             return ((Collection<?>) o)
@@ -179,5 +193,31 @@ public class IfcUtils {
 
     public static String toOptionalStepConstant(String s) {
         return s == null ? "?" : "." + s.toUpperCase() + ".";
+    }
+
+    public static Object fromStepValue(String stepValue) {
+        if (stepValue == null) {
+            return null;
+        }
+        if (stepValue.matches("\\.[^.]\\.")) {
+            if (stepValue.equals(".F.")) {
+                return Boolean.FALSE;
+            } else if (stepValue.equals(".T.")) {
+                return Boolean.TRUE;
+            }
+            return new EnumerationConstant(stepValue.replaceAll("\\.([^.]\\.)", "$1"));
+        }
+        if (stepValue.matches("'(.*)'")) {
+            return convertUtf8ToIFCString(stepValue.replaceAll("'(.*)'", "$1"));
+        }
+        try {
+            return Double.parseDouble(stepValue);
+        } catch (NotFoundException e) {
+        }
+        try {
+            return Integer.parseInt(stepValue);
+        } catch (NotFoundException e) {
+        }
+        throw new IllegalArgumentException(String.format("Cannot parse STEP value %s ", stepValue));
     }
 }

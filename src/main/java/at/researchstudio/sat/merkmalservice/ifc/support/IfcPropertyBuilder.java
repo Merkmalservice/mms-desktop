@@ -120,16 +120,11 @@ public class IfcPropertyBuilder {
     }
 
     private static IfcUnit getIfcUnitWithId(int id, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
-        return getIfcUnitWithId("#" + id, projectUnits);
-    }
-
-    private static IfcUnit getIfcUnitWithId(
-            String id, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
         if (Objects.nonNull(projectUnits)) {
 
             for (Map.Entry<IfcUnitType, List<IfcUnit>> entryList : projectUnits.entrySet()) {
                 for (IfcUnit unit : entryList.getValue()) {
-                    if (id.equals(unit.getId())) {
+                    if (unit.getId() != null && unit.getId() == id) {
                         return unit;
                     }
                 }
