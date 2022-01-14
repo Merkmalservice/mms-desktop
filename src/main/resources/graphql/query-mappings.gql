@@ -27,6 +27,23 @@ query mapping($mappingId :ID!) {
             ... on ConvertActionGroup {
                 __typename
                 id
+                addToPropertySet {
+                    ... on MEBooleanValue {
+                        booleanValue
+                    }
+                    ... on MEFloatValue {
+                        floatValue
+                    }
+                    ... on MEIDValue {
+                        idValue
+                    }
+                    ... on MEIntegerValue {
+                        integerValue
+                    }
+                    ... on MEStringValue {
+                        stringValue
+                    }
+                }
                 actions {
                     ... on ConvertAction {
                         __typename

@@ -1,5 +1,7 @@
 package at.researchstudio.sat.merkmalservice.ifc.model;
 
+import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.*;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -32,6 +34,29 @@ public class IfcDerivedUnitLine extends IfcLine {
         } else {
             throw new IllegalArgumentException("IfcDerivedUnitLine invalid: " + line);
         }
+    }
+
+    public IfcDerivedUnitLine(Integer id, List<Integer> unitElementIds, String type, String name) {
+        super(makeLine(id, unitElementIds, type, name));
+        this.unitElementIds = unitElementIds;
+        this.type = type;
+        this.name = name;
+    }
+
+    private static String makeLine(
+            Integer id, List<Integer> unitElementIds, String type, String name) {
+        return new StringBuilder()
+                .append(toStepId(id))
+                .append("= ")
+                .append(IDENTIFIER)
+                .append("(")
+                .append(toOptionalStepIds(unitElementIds))
+                .append(",")
+                .append(toStepConstant(type))
+                .append(",")
+                .append(toOptionalStepConstant(name))
+                .append(");")
+                .toString();
     }
 
     public List<Integer> getUnitElementIds() {

@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.joining;
 
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,5 +49,13 @@ public class ProjectUnits {
                             unitType, units.stream().map(Object::toString).collect(joining(","))));
         }
         return units.get(0);
+    }
+
+    public Map<IfcUnitType, List<IfcUnit>> getUnitsByUnitType() {
+        return Collections.unmodifiableMap(unitsByUnitType);
+    }
+
+    public Map<Integer, IfcUnit> getUnitsById() {
+        return Collections.unmodifiableMap(unitsById);
     }
 }

@@ -17,6 +17,7 @@ import at.researchstudio.sat.merkmalservice.model.mapping.action.ActionGroup;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.add.AddAction;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.add.AddActionGroup;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ConvertAction;
+import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ConvertActionGroup;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.delete.DeleteAction;
 import at.researchstudio.sat.merkmalservice.model.mapping.condition.Condition;
 import at.researchstudio.sat.merkmalservice.model.mapping.condition.ConditionGroup;
@@ -96,27 +97,40 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
         }
         if (action instanceof AddAction) {
             AddActionGroup addActionGroup = (AddActionGroup) actionGroup;
-            Optional<String> propertySetName =
-                    Optional.ofNullable(addActionGroup.getAddToPropertySet())
-                            .flatMap(MappingExecutionValue::getStringValue);
-            if (propertySetName.isPresent()) {
-                return Modification.addProperty(
-                        ((AddAction) action).getFeature(),
-                        ((AddAction) action).getValue(),
-                        propertySetName.get(),
-                        line);
-            } else {
-                throw new UnsupportedOperationException(
-                        "TODO: Cannot handle action group without property set name yet");
-            }
+            String propertySetName = getPropertySetName(addActionGroup.getAddToPropertySet());
+            return Modification.addProperty(
+                    ((AddAction) action).getFeature(),
+                    ((AddAction) action).getValue(),
+                    propertySetName,
+                    line);
         }
         if (action instanceof ConvertAction) {
-            throw new UnsupportedOperationException(
-                    "TODO: implement Modifications for ConvertAction!");
+            ConvertActionGroup convertActionGroup = (ConvertActionGroup) actionGroup;
+            ConvertAction convertAction = (ConvertAction) action;
+            String propertySetName = getPropertySetName(convertActionGroup.getAddToPropertySet());
+            return Modification.convertProperty(
+                    convertAction.getInputFeature(),
+                    convertAction.getOutputFeature(),
+                    propertySetName,
+                    line);
         }
         throw new IllegalStateException(
                 "TODO: Cannot generate modification for action of type "
                         + action.getClass().getName());
+    }
+
+    // TODO: handle property set IDs: load all property sets of target standard before generating
+    // the rule executions
+    @NotNull
+    private String getPropertySetName(MappingExecutionValue propertySetNameOrId) {
+        Optional<String> propertySetName =
+                Optional.ofNullable(propertySetNameOrId)
+                        .flatMap(MappingExecutionValue::getStringValue);
+        if (propertySetName.isPresent()) {
+            return propertySetName.get();
+        }
+        throw new UnsupportedOperationException(
+                "TODO: Cannot handle action group using property set id or without any property set information yet");
     }
 
     private Predicate<IfcLineAndModel> buildRulePredicate(Condition condition) {

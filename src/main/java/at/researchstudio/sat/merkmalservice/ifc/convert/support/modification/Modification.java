@@ -51,4 +51,10 @@ public abstract class Modification {
             Feature feature, MappingExecutionValue value, String propertySetName, T toElement) {
         return new AddPropertyModification<>(toElement, feature, value, propertySetName);
     }
+
+    public static <T extends IfcLine> ParsedIfcFileModification convertProperty(
+            Feature inputFeature, Feature outputFeature, String propertySetName, T element) {
+        return new ConvertPropertyModification<T>(
+                element, inputFeature, outputFeature, propertySetName);
+    }
 }

@@ -55,7 +55,6 @@ public class IfcPropertyBuilder {
                             Objects.requireNonNullElse(value, Collections.emptyList())
                                     .forEach(unit -> logger.warn("\t{}", unit));
                         });
-                logger.warn("###");
             }
         } else if (this.type.isMeasureType()) {
             this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
@@ -69,7 +68,6 @@ public class IfcPropertyBuilder {
                             Objects.requireNonNullElse(value, Collections.emptyList())
                                     .forEach(unit -> logger.warn("\t{}", unit));
                         });
-                logger.warn("###");
             }
         }
     }
@@ -100,7 +98,6 @@ public class IfcPropertyBuilder {
                             Objects.requireNonNullElse(value, Collections.emptyList())
                                     .forEach(unit -> logger.warn("\t{}", unit));
                         });
-                logger.warn("###");
             }
         } else if (this.type.isMeasureType()) {
             this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
@@ -114,7 +111,6 @@ public class IfcPropertyBuilder {
                             Objects.requireNonNullElse(value, Collections.emptyList())
                                     .forEach(unit -> logger.warn("\t{}", unit));
                         });
-                logger.warn("###");
             }
         }
     }

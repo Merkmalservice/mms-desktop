@@ -5,6 +5,9 @@ import static java.util.stream.Collectors.joining;
 
 import at.researchstudio.sat.merkmalservice.model.NumericFeature;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
+import at.researchstudio.sat.merkmalservice.model.qudt.Unit;
+import at.researchstudio.sat.merkmalservice.model.qudt.exception.NotFoundException;
+import at.researchstudio.sat.merkmalservice.qudtifc.QudtIfcMapper;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
 import java.io.IOException;
@@ -14,6 +17,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -31,8 +35,20 @@ public class IfcUtils {
 
     public static String extractQudtUnitFromProperty(IfcProperty property) {
         try {
-            return QudtUnit.mapIfcUnitToQudtUnit(property.getUnit());
-        } catch (IllegalArgumentException | NullPointerException e) {
+            Set<Unit> units = QudtIfcMapper.mapIfcUnitToQudtUnit(property.getUnit());
+            if (units.isEmpty()) throw new UnsupportedOperationException(
+                        "cannot map to qudt unit: " + property.getUnit());
+            if (units.size() > 1) {
+                logger.info(
+                        "multiple qudt unit options for ifc unit {} : {}",
+                        property.getUnit(),
+                        units.stream().map(Object::toString).collect(joining(", ")));
+            }
+            return units.stream().findFirst().get().getIri().toString();
+        } catch (IllegalArgumentException
+                | NullPointerException
+                | UnsupportedOperationException
+                | NotFoundException e) {
             logger.warn(e.getMessage());
             logger.warn(
                     "Could not find QudtUnit for ifcProperty: "
@@ -153,5 +169,14 @@ public class IfcUtils {
     public static String toStepToken(String s) {
         Objects.requireNonNull(s);
         return s;
+    }
+
+    public static String toStepConstant(String s) {
+        Objects.requireNonNull(s);
+        return "." + s.toUpperCase() + ".";
+    }
+
+    public static String toOptionalStepConstant(String s) {
+        return s == null ? "?" : "." + s.toUpperCase() + ".";
     }
 }

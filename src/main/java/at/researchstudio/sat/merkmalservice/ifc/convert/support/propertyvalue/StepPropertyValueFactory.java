@@ -24,24 +24,6 @@ public class StepPropertyValueFactory {
         this.converter = converter;
     }
 
-    public static class StepValueAndType {
-        private final Object value;
-        private final String type;
-
-        public StepValueAndType(Object value, String type) {
-            this.value = value;
-            this.type = type;
-        }
-
-        public Object getValue() {
-            return value;
-        }
-
-        public String getType() {
-            return type;
-        }
-    }
-
     public StepValueAndType toStepPropertyValue(Feature feature, MappingExecutionValue value) {
         String featureType = feature.getType().getType();
         FeatureType.Types type = FeatureType.Types.valueOf(featureType);

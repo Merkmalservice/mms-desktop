@@ -5,15 +5,25 @@ import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castT
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.*;
 
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.PropertyConverter;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.StepPropertyValueFactory;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.StepValueAndType;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.StepValueAndTypeAndIfcUnit;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.unit.QudtUnitConverter;
 import at.researchstudio.sat.merkmalservice.ifc.model.*;
 import at.researchstudio.sat.merkmalservice.ifc.model.element.IfcBuiltElementLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.type.IfcTypeObjectLine;
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcPropertyBuilder;
 import at.researchstudio.sat.merkmalservice.ifc.support.ProjectUnits;
 import at.researchstudio.sat.merkmalservice.model.Feature;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcDerivedUnit;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcSIUnit;
+import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
+import at.researchstudio.sat.merkmalservice.support.exception.IfcPropertyCardinalityException;
+import at.researchstudio.sat.merkmalservice.support.exception.IfcPropertyTypeUnsupportedException;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
@@ -95,6 +105,12 @@ public class ParsedIfcFile {
             at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
             MappingExecutionValue value,
             String propertySetName) {
+        IfcPropertySetLine pSet = getOrSplitOrCreatePropertySet(element, propertySetName);
+        addProperty(pSet, feature, value);
+    }
+
+    private <T extends IfcLine> IfcPropertySetLine getOrSplitOrCreatePropertySet(
+            T element, String propertySetName) {
         splitSharedPropertySetsMatching(element, pset -> propertySetName.equals(pset.getName()));
         List<IfcPropertySetLine> propSets =
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
@@ -110,15 +126,21 @@ public class ParsedIfcFile {
         } else {
             pSet = propSets.get(0);
         }
-        addProperty(pSet, feature, value);
+        return pSet;
     }
 
     private void addProperty(
             IfcPropertySetLine pSet,
             at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
             MappingExecutionValue value) {
-        StepPropertyValueFactory.StepValueAndType vat =
-                stepPropertyValueFactory.toStepPropertyValue(feature, value);
+        StepValueAndType vat = stepPropertyValueFactory.toStepPropertyValue(feature, value);
+        addProperty(pSet, feature, vat);
+    }
+
+    private void addProperty(
+            IfcPropertySetLine pSet,
+            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
+            StepValueAndType vat) {
         IfcSinglePropertyValueLine prop =
                 new IfcSinglePropertyValueLine(
                         nextFreeLineId(),
@@ -127,6 +149,27 @@ public class ParsedIfcFile {
                         vat.getType(),
                         vat.getValue(),
                         getUnitId(feature));
+        registerNewIfcLine(prop, false);
+        removeFromLookupTables(pSet);
+        pSet.addPropertyId(prop.getId());
+        addToLookupTables(pSet);
+        addToLookupTables(prop);
+    }
+
+    private void addProperty(
+            IfcPropertySetLine pSet,
+            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
+            StepValueAndTypeAndIfcUnit valueAndTypeAndIfcUnit) {
+        IfcSinglePropertyValueLine prop =
+                new IfcSinglePropertyValueLine(
+                        nextFreeLineId(),
+                        feature.getName(),
+                        feature.getDescription(),
+                        valueAndTypeAndIfcUnit.getStepValueAndType().getType(),
+                        valueAndTypeAndIfcUnit.getStepValueAndType().getValue(),
+                        valueAndTypeAndIfcUnit.getIfcUnit() == null
+                                ? null
+                                : Integer.parseInt(valueAndTypeAndIfcUnit.getIfcUnit().getId()));
         registerNewIfcLine(prop, false);
         removeFromLookupTables(pSet);
         pSet.addPropertyId(prop.getId());
@@ -158,6 +201,52 @@ public class ParsedIfcFile {
                 pSetAndProp ->
                         removeSinglePropertyFromPropertySet(
                                 pSetAndProp.getLeft(), pSetAndProp.getRight()));
+    }
+
+    public <T extends IfcLine> void convertProperty(
+            T element,
+            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature inputFeature,
+            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature outputFeature,
+            String propertySetName,
+            PropertyConverter converter,
+            boolean deleteInputProperty) {
+        List<? extends IfcLine> props =
+                getProperties(
+                        element, IfcLinePredicates.isPropertyWithName(inputFeature.getName()));
+        if (props.size() != 1) {
+            throw new IfcPropertyCardinalityException(
+                    String.format(
+                            "Expected to find one property named %s as the input feature of a convert action, but found %d",
+                            inputFeature.getName(), props.size()));
+        }
+        IfcLine prop = props.get(0);
+        StepValueAndTypeAndIfcUnit stepValueAndTypeAndIfcUnit = null;
+        if (prop instanceof IfcSinglePropertyValueLine) {
+            String propType = prop.getType();
+            String propValue = ((IfcSinglePropertyValueLine) prop).getValue();
+            IfcProperty ifcProperty =
+                    new IfcPropertyBuilder(
+                                    (IfcSinglePropertyValueLine) prop,
+                                    projectUnits.getUnitsByUnitType())
+                            .build();
+            stepValueAndTypeAndIfcUnit =
+                    new StepValueAndTypeAndIfcUnit(
+                            new StepValueAndType(propValue, propType), ifcProperty.getUnit());
+        } else {
+            // TODO: obtain value and type from enums, lists, tables, etc.
+            throw new IfcPropertyTypeUnsupportedException(
+                    String.format(
+                            "Cannot handle property of type %s in convert action",
+                            prop.getClass().getSimpleName()));
+        }
+        IfcPropertySetLine targetPSet = getOrSplitOrCreatePropertySet(element, propertySetName);
+
+        StepValueAndTypeAndIfcUnit convertedValue =
+                converter.convert(stepValueAndTypeAndIfcUnit, this);
+        if (deleteInputProperty) {
+            removeProperty(element, IfcLinePredicates.isPropertyWithName(inputFeature.getName()));
+        }
+        addProperty(targetPSet, outputFeature, convertedValue);
     }
 
     private <T extends IfcLine> void splitSharedPropertySetsWithPropertyMatching(
@@ -223,11 +312,47 @@ public class ParsedIfcFile {
         registerNewIfcLine(newRelDefByProps);
     }
 
-    private void registerNewIfcLine(IfcLine newLine) {
-        registerNewIfcLine(newLine, true);
+    public Integer addIfcUnit(IfcUnit ifcUnit) {
+        if (ifcUnit instanceof IfcDerivedUnit) {
+            IfcDerivedUnit ifcDerivedUnit = (IfcDerivedUnit) ifcUnit;
+            List<Integer> derivedUnitElementIds = new ArrayList<>();
+            for (Map.Entry<IfcSIUnit, Integer> derivedUnitElement :
+                    ifcDerivedUnit.getDerivedUnitElements().entrySet()) {
+                Integer unitId = addIfcUnit(derivedUnitElement.getKey());
+                IfcDerivedUnitElementLine ifcDerivedUnitElementLine =
+                        new IfcDerivedUnitElementLine(-1, unitId, derivedUnitElement.getValue());
+                registerNewIfcLine(ifcDerivedUnitElementLine);
+                Integer derivedUnitElementId = ifcDerivedUnitElementLine.getId();
+                derivedUnitElementIds.add(derivedUnitElementId);
+            }
+            IfcDerivedUnitLine ifcDerivedUnitLine =
+                    new IfcDerivedUnitLine(
+                            -1,
+                            derivedUnitElementIds,
+                            ifcDerivedUnit.getType().toString(),
+                            ifcDerivedUnit.getUserDefinedLabel());
+            registerNewIfcLine(ifcDerivedUnitLine);
+            return ifcDerivedUnitLine.getId();
+        } else if (ifcUnit instanceof IfcSIUnit) {
+            IfcSIUnit ifcSiUnit = (IfcSIUnit) ifcUnit;
+            IfcSIUnitLine ifcSiUnitLine =
+                    new IfcSIUnitLine(
+                            -1,
+                            ifcSiUnit.getType().toString(),
+                            ifcSiUnit.getMeasure().toString(),
+                            ifcSiUnit.getPrefix().toString());
+            registerNewIfcLine(ifcSiUnitLine);
+            return ifcSiUnitLine.getId();
+        } else {
+            throw new UnsupportedOperationException("TODO: implement add IfcUnit to ifc model");
+        }
     }
 
-    private void registerNewIfcLine(IfcLine newLine, boolean changeIdToNextFreeId) {
+    private Integer registerNewIfcLine(IfcLine newLine) {
+        return registerNewIfcLine(newLine, true);
+    }
+
+    private Integer registerNewIfcLine(IfcLine newLine, boolean changeIdToNextFreeId) {
         if (changeIdToNextFreeId) {
             newLine.changeIdTo(nextFreeLineId());
         }
@@ -243,6 +368,7 @@ public class ParsedIfcFile {
         }
         lines.add(lineNo + 1, newLine);
         addToLookupTables(newLine);
+        return newLine.getId();
     }
 
     private void removeFromLookupTables(IfcLine newLine) {
@@ -280,7 +406,7 @@ public class ParsedIfcFile {
         for (Integer objectId : newLine.getReferences()) {
             List<Integer> existingRefs =
                     this.reverseLookupReferencingLines.putIfAbsent(
-                            objectId, List.of(newLine.getId()));
+                            objectId, new ArrayList<>(List.of(newLine.getId())));
             if (existingRefs != null) {
                 List<Integer> refs = new ArrayList<>(existingRefs);
                 refs.add(newLine.getId());
