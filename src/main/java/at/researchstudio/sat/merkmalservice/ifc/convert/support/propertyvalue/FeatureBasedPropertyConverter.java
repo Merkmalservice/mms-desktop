@@ -13,6 +13,7 @@ import at.researchstudio.sat.merkmalservice.qudtifc.QudtIfcMapper;
 import at.researchstudio.sat.merkmalservice.support.exception.UnsupportedTypeConversionException;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import java.lang.invoke.MethodHandles;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -74,15 +75,18 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
                                     outputFeature.getName()));
                 }
                 value = ((Number) vat.getStepValueAndType().getValue()).doubleValue();
-                Set<Unit> toConvertUnits = QudtIfcMapper.mapIfcUnitToQudtUnit(vat.getIfcUnit());
+
+                Set<Unit> toConvertUnits = new HashSet<>();
+                if (vat.getIfcUnit() != null) {
+                    QudtIfcMapper.mapIfcUnitToQudtUnit(vat.getIfcUnit());
+                } else {
+                    //fallback to inputfeature unit
+                    toConvertUnits.add(Qudt.unit(((NumericFeatureType) inputFeature.getType()).getUnit().getId()));
+                }
+                toConvertUnits = toConvertUnits.stream().filter(unit -> ! unit.equals(Qudt.Units.UNITLESS)).collect(Collectors.toSet());
                 if (toConvertUnits.isEmpty()) {
-                    throw new UnsupportedTypeConversionException(
-                            String.format(
-                                    "Cannot convert value %s from input feature %s to output feature %s: cannot convert ifc unit %s to qudt unit",
-                                    vat.toString(),
-                                    inputFeature.getName(),
-                                    outputFeature.getName(),
-                                    vat.getIfcUnit()));
+                    logger.info(
+                                    "No qudt unit found to interpret input data of inputFeature '{}' to outputFeature '{}', interpreting as unitless input", inputFeature.getName(), outputFeature.getName());
                 }
                 if (toConvertUnits.size() > 1) {
                     logger.info(
@@ -92,12 +96,20 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
                                     .map(Object::toString)
                                     .collect(Collectors.joining(", ")));
                 }
-                QuantityValue toConvert =
-                        Qudt.quantityValue(value, toConvertUnits.stream().findFirst().get());
-                QuantityValue converted =
-                        Qudt.convert(
-                                toConvert,
-                                ((NumericFeatureType) outputFeature.getType()).getUnit().getId());
+
+                QuantityValue converted = null;
+                if (toConvertUnits.isEmpty()) {
+                    //just use outputfeature unit, no conversion
+                    Unit convertedUnit = Qudt.unit(((NumericFeatureType) outputFeature.getType()).getUnit().getId());
+                    converted = Qudt.quantityValue(value, convertedUnit);
+                } else {
+                    QuantityValue toConvert =
+                                    Qudt.quantityValue(value, toConvertUnits.stream().findFirst().get());
+                    converted =
+                                    Qudt.convert(
+                                                    toConvert,
+                                                    ((NumericFeatureType) outputFeature.getType()).getUnit().getId());
+                }
                 IfcUnit convertedIfcUnit = QudtIfcMapper.mapQudtUnitToIfcUnit(converted.getUnit());
                 parsedIfcFile.addIfcUnit(convertedIfcUnit);
                 return new StepValueAndTypeAndIfcUnit(

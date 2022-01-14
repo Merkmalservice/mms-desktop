@@ -131,7 +131,7 @@ public class IfcFileReader {
                     IfcLineParser<?> parser = ifcLineParsers.get(identifier);
                     if (parser == null) {
                         if (identifier.contains("IFCQUANTITY")) {
-                            sb.append("Couldnt parse Line: ")
+                            sb.append("Could not parse Line: ")
                                     .append(line)
                                     .append(" adding it as IfcQuantityLine")
                                     .append(System.lineSeparator());
@@ -192,7 +192,7 @@ public class IfcFileReader {
                             unitLine.getMeasure(),
                             unitLine.getPrefix(),
                             defaultProjectUnitIds.contains(unitLine.getId()));
-            projectUnits.add(unit); // TODO CONTINUE HERE!
+            projectUnits.add(unit);
             projectUnitsById.put(line.getId(), unit);
         }
         List<IfcUnit> projectSIUnits =
@@ -217,15 +217,17 @@ public class IfcFileReader {
                             .collect(Collectors.toList());
             for (IfcLine l : relevantDerivedUnitElements) {
                 IfcDerivedUnitElementLine derivedUnitElementLine = (IfcDerivedUnitElementLine) l;
-                for (IfcUnit unit : projectSIUnits) {
-                    if (unit.getId().equals(derivedUnitElementLine.getUnitIdString())) {
-                        derivedUnit.addDerivedUnitElement(
-                                (IfcSIUnit) unit, derivedUnitElementLine.getExponent());
-                    }
+                IfcUnit unit = projectUnitsById.get(derivedUnitElementLine.getUnitId());
+                if (unit == null) {
+                    throw new IllegalStateException("No unit found with id " + derivedUnitElementLine.getUnitId());
                 }
+                if (!  (unit instanceof IfcSIUnit)) {
+                    throw new IllegalStateException("Unit " +  + derivedUnitElementLine.getUnitId() + " is not an IfcUnit ");
+                }
+                derivedUnit.addDerivedUnitElement((IfcSIUnit) unit, derivedUnitElementLine.getExponent());
             }
             projectUnits.add(derivedUnit);
-            projectUnitsById.put(unitLine.getId(), derivedUnit);
+            projectUnitsById.put(derivedUnit.getId(), derivedUnit);
         }
         if (updateProgress) {
             taskProgressListener.notifyProgress(
