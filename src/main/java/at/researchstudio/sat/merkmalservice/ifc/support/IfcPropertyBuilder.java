@@ -54,7 +54,9 @@ public class IfcPropertyBuilder {
             this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
             if (Objects.isNull(this.unit)) {
                 logger.warn(
-                        "Could not find Unit for name<{}>, IfcPropertyType<{}> in project units", this.name, type);
+                        "Could not find Unit for name<{}>, IfcPropertyType<{}> in project units",
+                        this.name,
+                        type);
                 logProjectUnits(projectUnits);
             }
         }
@@ -64,7 +66,7 @@ public class IfcPropertyBuilder {
         logger.debug("project units:");
         projectUnits.forEach(
                 (key, value) -> {
-                    logger.debug("\t{}",key.toString());
+                    logger.debug("\t{}", key.toString());
                     Objects.requireNonNullElse(value, Collections.emptyList())
                             .forEach(unit -> logger.debug("\t\t{}", unit));
                 });
@@ -95,7 +97,9 @@ public class IfcPropertyBuilder {
             this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
             if (Objects.isNull(this.unit)) {
                 logger.warn(
-                        "Could not find Unit for name<{}>, IfcPropertyType<{}> in project units", this.name, type);
+                        "Could not find Unit for name<{}>, IfcPropertyType<{}> in project units",
+                        this.name,
+                        type);
                 logger.warn("within ProjectUnits");
                 logProjectUnits(projectUnits);
             }

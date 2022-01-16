@@ -153,8 +153,8 @@ public class IfcUtils {
         if (o instanceof Boolean) {
             return ((Boolean) o) ? ".T." : ".F.";
         }
-        if (o instanceof Double){
-            if (((Double) o).doubleValue() == 0){
+        if (o instanceof Double) {
+            if (((Double) o).doubleValue() == 0) {
                 return "0.";
             } else {
                 return o.toString();

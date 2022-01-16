@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils.toStepValue;
-
 public class FeatureBasedPropertyConverter implements PropertyConverter {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -78,15 +76,24 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
 
                 Set<Unit> toConvertUnits = new HashSet<>();
                 if (vat.getIfcUnit() != null) {
-                    QudtIfcMapper.mapIfcUnitToQudtUnit(vat.getIfcUnit());
+                    toConvertUnits = QudtIfcMapper.mapIfcUnitToQudtUnit(vat.getIfcUnit());
                 } else {
-                    //fallback to inputfeature unit
-                    toConvertUnits.add(Qudt.unit(((NumericFeatureType) inputFeature.getType()).getUnit().getId()));
+                    // fallback to inputfeature unit
+                    toConvertUnits.add(
+                            Qudt.unit(
+                                    ((NumericFeatureType) inputFeature.getType())
+                                            .getUnit()
+                                            .getId()));
                 }
-                toConvertUnits = toConvertUnits.stream().filter(unit -> ! unit.equals(Qudt.Units.UNITLESS)).collect(Collectors.toSet());
+                toConvertUnits =
+                        toConvertUnits.stream()
+                                .filter(unit -> !unit.equals(Qudt.Units.UNITLESS))
+                                .collect(Collectors.toSet());
                 if (toConvertUnits.isEmpty()) {
                     logger.info(
-                                    "No qudt unit found to interpret input data of inputFeature '{}' to outputFeature '{}', interpreting as unitless input", inputFeature.getName(), outputFeature.getName());
+                            "No qudt unit found to interpret input data of inputFeature '{}' to outputFeature '{}', interpreting as unitless input",
+                            inputFeature.getName(),
+                            outputFeature.getName());
                 }
                 if (toConvertUnits.size() > 1) {
                     logger.info(
@@ -99,16 +106,22 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
 
                 QuantityValue converted = null;
                 if (toConvertUnits.isEmpty()) {
-                    //just use outputfeature unit, no conversion
-                    Unit convertedUnit = Qudt.unit(((NumericFeatureType) outputFeature.getType()).getUnit().getId());
+                    // just use outputfeature unit, no conversion
+                    Unit convertedUnit =
+                            Qudt.unit(
+                                    ((NumericFeatureType) outputFeature.getType())
+                                            .getUnit()
+                                            .getId());
                     converted = Qudt.quantityValue(value, convertedUnit);
                 } else {
                     QuantityValue toConvert =
-                                    Qudt.quantityValue(value, toConvertUnits.stream().findFirst().get());
+                            Qudt.quantityValue(value, toConvertUnits.stream().findFirst().get());
                     converted =
-                                    Qudt.convert(
-                                                    toConvert,
-                                                    ((NumericFeatureType) outputFeature.getType()).getUnit().getId());
+                            Qudt.convert(
+                                    toConvert,
+                                    ((NumericFeatureType) outputFeature.getType())
+                                            .getUnit()
+                                            .getId());
                 }
                 IfcUnit convertedIfcUnit = QudtIfcMapper.mapQudtUnitToIfcUnit(converted.getUnit());
                 parsedIfcFile.addIfcUnit(convertedIfcUnit);

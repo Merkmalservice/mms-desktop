@@ -219,12 +219,15 @@ public class IfcFileReader {
                 IfcDerivedUnitElementLine derivedUnitElementLine = (IfcDerivedUnitElementLine) l;
                 IfcUnit unit = projectUnitsById.get(derivedUnitElementLine.getUnitId());
                 if (unit == null) {
-                    throw new IllegalStateException("No unit found with id " + derivedUnitElementLine.getUnitId());
+                    throw new IllegalStateException(
+                            "No unit found with id " + derivedUnitElementLine.getUnitId());
                 }
-                if (!  (unit instanceof IfcSIUnit)) {
-                    throw new IllegalStateException("Unit " +  + derivedUnitElementLine.getUnitId() + " is not an IfcUnit ");
+                if (!(unit instanceof IfcSIUnit)) {
+                    throw new IllegalStateException(
+                            "Unit " + +derivedUnitElementLine.getUnitId() + " is not an IfcUnit ");
                 }
-                derivedUnit.addDerivedUnitElement((IfcSIUnit) unit, derivedUnitElementLine.getExponent());
+                derivedUnit.addDerivedUnitElement(
+                        (IfcSIUnit) unit, derivedUnitElementLine.getExponent());
             }
             projectUnits.add(derivedUnit);
             projectUnitsById.put(derivedUnit.getId(), derivedUnit);
