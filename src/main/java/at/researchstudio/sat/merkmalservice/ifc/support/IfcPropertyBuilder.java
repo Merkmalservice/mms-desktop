@@ -44,32 +44,30 @@ public class IfcPropertyBuilder {
             this.unit = getIfcUnitWithId(line.getUnitId(), projectUnits);
             if (Objects.isNull(this.unit)) {
                 logger.warn(
-                        "Could not find Unit for IfcUnit with Id<{}>, name<{}>, IfcPropertyType<{}>",
+                        "Could not find Unit for IfcUnit with Id<{}>, name<{}>, IfcPropertyType<{}> in project units",
                         line.getUnitId(),
                         this.name,
                         this.type);
-                logger.warn("within ProjectUnits:");
-                projectUnits.forEach(
-                        (key, value) -> {
-                            logger.warn(key.toString());
-                            Objects.requireNonNullElse(value, Collections.emptyList())
-                                    .forEach(unit -> logger.warn("\t{}", unit));
-                        });
+                logProjectUnits(projectUnits);
             }
         } else if (this.type.isMeasureType()) {
             this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
             if (Objects.isNull(this.unit)) {
                 logger.warn(
-                        "Could not find Unit for name<{}>, IfcPropertyType<{}>", this.name, type);
-                logger.warn("within ProjectUnits:");
-                projectUnits.forEach(
-                        (key, value) -> {
-                            logger.warn(key.toString());
-                            Objects.requireNonNullElse(value, Collections.emptyList())
-                                    .forEach(unit -> logger.warn("\t{}", unit));
-                        });
+                        "Could not find Unit for name<{}>, IfcPropertyType<{}> in project units", this.name, type);
+                logProjectUnits(projectUnits);
             }
         }
+    }
+
+    private void logProjectUnits(Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+        logger.debug("project units:");
+        projectUnits.forEach(
+                (key, value) -> {
+                    logger.debug("\t{}",key.toString());
+                    Objects.requireNonNullElse(value, Collections.emptyList())
+                            .forEach(unit -> logger.debug("\t\t{}", unit));
+                });
     }
 
     public IfcPropertyBuilder(
@@ -87,30 +85,19 @@ public class IfcPropertyBuilder {
             this.unit = getIfcUnitWithId(line.getUnitId(), projectUnits);
             if (Objects.isNull(this.unit)) {
                 logger.warn(
-                        "Could not find Unit for IfcUnit with Id<{}>, name<{}>, IfcPropertyType<{}>",
+                        "Could not find Unit for IfcUnit with Id<{}>, name<{}>, IfcPropertyType<{}> in project units",
                         line.getUnitId(),
                         this.name,
                         this.type);
-                logger.warn("within ProjectUnits:");
-                projectUnits.forEach(
-                        (key, value) -> {
-                            logger.warn(key.toString());
-                            Objects.requireNonNullElse(value, Collections.emptyList())
-                                    .forEach(unit -> logger.warn("\t{}", unit));
-                        });
+                logProjectUnits(projectUnits);
             }
         } else if (this.type.isMeasureType()) {
             this.unit = getIfcUnitFromProjectUnits(this.type, projectUnits);
             if (Objects.isNull(this.unit)) {
                 logger.warn(
-                        "Could not find Unit for name<{}>, IfcPropertyType<{}>", this.name, type);
-                logger.warn("within ProjectUnits:");
-                projectUnits.forEach(
-                        (key, value) -> {
-                            logger.warn(key.toString());
-                            Objects.requireNonNullElse(value, Collections.emptyList())
-                                    .forEach(unit -> logger.warn("\t{}", unit));
-                        });
+                        "Could not find Unit for name<{}>, IfcPropertyType<{}> in project units", this.name, type);
+                logger.warn("within ProjectUnits");
+                logProjectUnits(projectUnits);
             }
         }
     }
