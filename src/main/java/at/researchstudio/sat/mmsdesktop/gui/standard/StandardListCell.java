@@ -16,7 +16,7 @@ public class StandardListCell<P> extends JFXListCell<Standard> {
                     new Label(
                             Optional.ofNullable(item.getOrganization())
                                     .map(Organization::getName)
-                                    .orElse("PROJECT STANDARD")));
+                                    .orElse(item.getName())));
             // TODO: THIS IS NOT THE CORRECT WAY OF HANDLING THE PROJECTSTANDARDNAME it should be
             // projectname::orgname (if its a standard from an organization) or standardname (if it
             // is a projectstandard)

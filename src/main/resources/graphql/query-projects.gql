@@ -4,6 +4,7 @@ query PROJECTS_WITH_STANDARDS {
         name
         standards {
             id
+            name
             organization {
                 id
                 name

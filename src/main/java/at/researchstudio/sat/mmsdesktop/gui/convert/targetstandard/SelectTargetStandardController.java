@@ -118,7 +118,7 @@ public class SelectTargetStandardController implements Initializable {
                         }
                         return Optional.ofNullable(standard.getOrganization())
                                 .map(Organization::getName)
-                                .orElse(resourceBundle.getString("label.projects.projectStandard"));
+                                .orElse(standard.getName());
                     }
 
                     @Override
