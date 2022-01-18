@@ -39,7 +39,7 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
     private BiFunction<StepValueAndTypeAndIfcUnit, ParsedIfcFile, StepValueAndTypeAndIfcUnit>
             generateConversionFunction(Feature inputFeature, Feature outputFeature) {
         // identical in/out types
-        if (inputFeature.getType().equals(outputFeature.getType())) {
+        if (inputFeature.getType().getType().equals(outputFeature.getType().getType())) {
             return (vat, parsedIfcFile) ->
                     new StepValueAndTypeAndIfcUnit(
                             new StepValueAndType(
