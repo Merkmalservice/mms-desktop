@@ -192,7 +192,7 @@ public class IfcUtils {
     }
 
     public static String toOptionalStepConstant(String s) {
-        return s == null ? "?" : "." + s.toUpperCase() + ".";
+        return s == null ? "$" : "." + s.toUpperCase() + ".";
     }
 
     public static Object fromStepValue(String stepValue) {

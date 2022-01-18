@@ -43,8 +43,21 @@ public class ConversionEngine {
                 int lineCount = result.getLines().size();
 
                 for (ConversionRule rule : currentRules) {
-                    List<IfcLine> appliedToLines =
-                            result.getLines().stream()
+                    Set<Class<? extends IfcLine>> typeRestrictions = rule.getIfcTypeRestrictions();
+                    Set<Class<? extends IfcLine>> applicableToClasses = result.getDataLinesByClass().keySet();
+                    if (!typeRestrictions.isEmpty()) {
+                        applicableToClasses = applicableToClasses
+                                        .stream()
+                                        .filter(t -> typeRestrictions
+                                                        .stream()
+                                                        .anyMatch(r -> r.
+                                                                        isAssignableFrom(t)))
+                                        .collect(Collectors.toSet());
+                    }
+
+                    List<IfcLine> appliedToLines = applicableToClasses
+                                    .stream()
+                                    .flatMap(ifcClass -> result.getDataLinesByClass(ifcClass).stream())
                                     .filter(l -> rule.appliesTo(l, result))
                                     .collect(Collectors.toList());
 

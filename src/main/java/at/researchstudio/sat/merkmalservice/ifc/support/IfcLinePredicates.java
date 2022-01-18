@@ -309,6 +309,10 @@ public abstract class IfcLinePredicates {
                                 .orElse(false);
     }
 
+    public static Predicate<IfcLine> isIfcLineType(Class<? extends IfcLine> type) {
+        return line -> type.isAssignableFrom(line.getClass());
+    }
+
     private static boolean isRealValue(IfcSinglePropertyValueLine p) {
         return IfcPropertyType.fromString(p.getType()).isMeasureType()
                 || IfcPropertyType.isOneOf(

@@ -76,8 +76,12 @@ public class StepPropertyValueFactory {
     private StepValueAndType getEnumerationValue(Feature feature, MappingExecutionValue value) {
         Object v = value.getValue();
         if (value.getStringValue().isPresent()) {
-            return new StepValueAndType(
-                    value.getStringValue().get(), IfcPropertyType.LABEL.getStepTypeName());
+            String strValue = value.getStringValue().get();
+            String type = IfcPropertyType.LABEL.getStepTypeName();
+            if (strValue.length() > 255) {
+                type = IfcPropertyType.TEXT.getStepTypeName();
+            }
+            return new StepValueAndType(value.getStringValue().get(), type);
         }
         if (value.getFloatValue().isPresent()) {
             return new StepValueAndType(
@@ -86,6 +90,10 @@ public class StepPropertyValueFactory {
         if (value.getBooleanValue().isPresent()) {
             return new StepValueAndType(
                     value.getBooleanValue().get(), IfcPropertyType.BOOL.getStepTypeName());
+        }
+        if (value.getIntegerValue().isPresent()) {
+            return new StepValueAndType(
+                    value.getIntegerValue().get(), IfcPropertyType.INTEGER.getStepTypeName());
         }
         if (value.getIdValue().isPresent()) {
             return new StepValueAndType(

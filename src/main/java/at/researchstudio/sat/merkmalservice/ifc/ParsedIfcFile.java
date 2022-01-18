@@ -214,7 +214,8 @@ public class ParsedIfcFile {
                         IfcLinePredicates.isPropertyWithName(inputFeature.getName())
                                 .or(IfcLinePredicates.isQuantityWithName(inputFeature.getName())));
         if (props.size() > 1 || props.isEmpty()) {
-            throwCardinalityException(inputFeature, props);
+            logger.info("Expected to find one property named {} as the input feature of a convert action, but found {}", inputFeature.getName(), props.size());
+            return;
         }
         IfcLine prop = props.get(0);
         StepValueAndTypeAndIfcUnit stepValueAndTypeAndIfcUnit = null;
@@ -263,14 +264,7 @@ public class ParsedIfcFile {
         addProperty(targetPSet, outputFeature, convertedValue);
     }
 
-    private void throwCardinalityException(
-            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature inputFeature,
-            List<? extends IfcLine> props) {
-        throw new IfcPropertyCardinalityException(
-                String.format(
-                        "Expected to find one property named' %s' as the input feature of a convert action, but found %d",
-                        inputFeature.getName(), props.size()));
-    }
+
 
     private <T extends IfcLine> void splitSharedPropertySetsWithPropertyMatching(
             T element, Predicate<IfcLine> predicate) {

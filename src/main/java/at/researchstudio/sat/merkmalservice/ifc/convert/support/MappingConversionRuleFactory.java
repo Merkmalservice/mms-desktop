@@ -7,6 +7,7 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRuleFactory;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ParsedIfcFileModification;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.modification.Modification;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.rule.IfcElementConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
@@ -53,7 +54,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                 mapping.getCondition() == null
                         ? line -> true
                         : buildRulePredicate(mapping.getCondition());
-        return new ConversionRule() {
+        ConversionRule rule = new ConversionRule() {
             private final String name = mapping.getName();
 
             @Override
@@ -94,6 +95,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                 return Modification.multiple(modifications);
             }
         };
+        return new IfcElementConversionRule(rule);
     }
 
     private ParsedIfcFileModification makeModification(

@@ -38,15 +38,7 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
 
     private BiFunction<StepValueAndTypeAndIfcUnit, ParsedIfcFile, StepValueAndTypeAndIfcUnit>
             generateConversionFunction(Feature inputFeature, Feature outputFeature) {
-        // identical in/out types
-        if (inputFeature.getType().getType().equals(outputFeature.getType().getType())) {
-            return (vat, parsedIfcFile) ->
-                    new StepValueAndTypeAndIfcUnit(
-                            new StepValueAndType(
-                                    vat.getStepValueAndType().getValue(),
-                                    vat.getStepValueAndType().getType()),
-                            vat.getIfcUnit());
-        }
+
         // output type string: just do a toString
         if (outputFeature.getType() instanceof StringFeatureType) {
             return (vat, parsedIfcFile) -> {
@@ -128,9 +120,18 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
                 return new StepValueAndTypeAndIfcUnit(
                         new StepValueAndType(
                                 converted.getValue(),
-                                QudtIfcMapper.getIfcUnitType(converted.getUnit()).toString()),
+                                QudtIfcMapper.getIfcMeasure(converted.getUnit()).toString()),
                         convertedIfcUnit);
             };
+        }
+        // identical in/out types
+        if (inputFeature.getType().equals(outputFeature.getType())) {
+            return (vat, parsedIfcFile) ->
+                    new StepValueAndTypeAndIfcUnit(
+                            new StepValueAndType(
+                                    vat.getStepValueAndType().getValue(),
+                                    vat.getStepValueAndType().getType()),
+                            vat.getIfcUnit());
         }
         throw new UnsupportedTypeConversionException(
                 String.format(
