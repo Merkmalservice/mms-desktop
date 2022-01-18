@@ -41,29 +41,55 @@ public class ConversionEngine {
                 List<ParsedIfcFileModification> modifications = new ArrayList<>();
                 int i = 0;
                 int lineCount = result.getLines().size();
-                int reportSize = lineCount / 200;
-                for (IfcLine line : result.getLines()) {
-                    currentRules.stream()
-                            .filter(rule -> rule.appliesTo(line, result))
-                            .map(rule -> rule.applyTo(line, result))
-                            .forEach(modifications::add);
-                    if (taskProgressListener != null && i % reportSize == 0) {
+
+                for (ConversionRule rule : currentRules) {
+                    List<IfcLine> appliedToLines =
+                            result.getLines().stream()
+                                    .filter(l -> rule.appliesTo(l, result))
+                                    .collect(Collectors.toList());
+
+                    if (taskProgressListener != null) {
                         taskProgressListener.notifyProgress(
                                 String.format(
-                                        "Checking applicability of modifications at level %d of %d",
-                                        level, levels),
-                                String.format("Checked %d of %d", i, lineCount),
-                                (float) i / (float) lineCount);
+                                        "Checking Rule: %s, rule appliesTo %d of %d Lines",
+                                        rule.toString(),
+                                        appliedToLines.size(),
+                                        result.getLines().size()),
+                                "",
+                                (float) i++ / (float) currentRules.size());
                     }
-                    i++;
+
+                    if (!appliedToLines.isEmpty()) {
+                        final int ruleNumber = i;
+                        appliedToLines.stream()
+                                .map(
+                                        line -> {
+                                            if (taskProgressListener != null) {
+                                                taskProgressListener.notifyProgress(
+                                                        String.format(
+                                                                "Checking Rule: %s, rule appliesTo %d of %d Lines",
+                                                                rule.toString(),
+                                                                appliedToLines.size(),
+                                                                lineCount),
+                                                        String.format(
+                                                                "applying Rule to line: %s",
+                                                                line.toString()),
+                                                        (float) ruleNumber
+                                                                / (float) currentRules.size());
+                                            }
+                                            return rule.applyTo(line, result);
+                                        })
+                                .forEach(modifications::add);
+                    }
                 }
 
                 i = 0;
                 int modCount = modifications.size();
-                reportSize = 10;
+                int reportSize = 10;
                 for (ParsedIfcFileModification modification : modifications) {
                     try {
                         modification.accept(result);
+
                         if (taskProgressListener != null && i % reportSize == 0) {
                             taskProgressListener.notifyProgress(
                                     String.format(

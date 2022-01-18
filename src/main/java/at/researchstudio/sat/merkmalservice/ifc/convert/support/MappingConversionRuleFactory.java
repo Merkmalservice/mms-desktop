@@ -54,6 +54,8 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                         ? line -> true
                         : buildRulePredicate(mapping.getCondition());
         return new ConversionRule() {
+            private final String name = mapping.getName();
+
             @Override
             public int getOrder() {
                 return 0;
@@ -62,6 +64,11 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
             @Override
             public boolean appliesTo(IfcLine line, ParsedIfcFile ifcModel) {
                 return ruleCondition.test(new IfcLineAndModel(line, ifcModel));
+            }
+
+            @Override
+            public String toString() {
+                return name;
             }
 
             @Override
