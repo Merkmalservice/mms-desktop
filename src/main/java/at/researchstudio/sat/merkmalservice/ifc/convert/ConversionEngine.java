@@ -97,6 +97,7 @@ public class ConversionEngine {
                                                         (float) ruleNumber
                                                                 / (float) currentRules.size());
                                             }
+                                            result.addChange(rule, line.getId());
                                             return rule.applyTo(line, result);
                                         })
                                 .forEach(modifications::add);
