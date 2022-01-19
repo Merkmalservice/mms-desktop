@@ -4,13 +4,14 @@ import static java.util.stream.Collectors.joining;
 
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ProjectUnits {
+public class ProjectUnits implements Serializable {
     private final Map<IfcUnitType, List<IfcUnit>> unitsByUnitType;
     private final Map<Integer, IfcUnit> unitsById;
 

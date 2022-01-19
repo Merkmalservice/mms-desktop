@@ -5,6 +5,8 @@ import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.task.IfcFileVO;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
@@ -14,13 +16,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class OutputFileState {
+    private final ObjectProperty<IfcLine> selectedChangedIfcLine;
     private final ObjectProperty<ParsedIfcFile> convertedIfcFile;
 
     private final ObservableList<IfcLine> outputFileContent;
+    private final ObservableList<IfcLine> allChangedLines;
 
     public OutputFileState() {
         this.convertedIfcFile = new SimpleObjectProperty<ParsedIfcFile>();
         this.outputFileContent = FXCollections.observableArrayList();
+        this.allChangedLines = FXCollections.observableArrayList();
+        this.selectedChangedIfcLine = new SimpleObjectProperty<>();
     }
 
     public ObjectProperty<ParsedIfcFile> convertedIfcFileProperty() {
@@ -33,6 +39,7 @@ public class OutputFileState {
 
     public void resetConvertedFile() {
         this.outputFileContent.clear();
+        this.allChangedLines.clear();
         this.convertedIfcFile.set(null);
     }
 
@@ -46,6 +53,12 @@ public class OutputFileState {
             // TODO: SET SUCCESS VARS
             this.convertedIfcFile.setValue(task.getValue().getParsedIfcFile());
             this.outputFileContent.setAll(task.getValue().getLines());
+
+            this.allChangedLines.setAll(
+                    task.getValue().getParsedIfcFile().getChanges().values().stream()
+                            .flatMap(Set::stream)
+                            .map(id -> task.getValue().getParsedIfcFile().getDataLines().get(id))
+                            .collect(Collectors.toSet()));
             //            this.extractedFeatures.addAll(
             //                task.getValue().getExtractedFeatures().stream()
             //                    .sorted(Comparator.comparing(Feature::getName))
@@ -64,6 +77,7 @@ public class OutputFileState {
             // String errorMessage = task.getException().getMessage();
             this.convertedIfcFile.setValue(null);
             this.outputFileContent.setAll(Collections.emptyList());
+            this.allChangedLines.setAll(Collections.emptyList());
             //            this.extractedFeatures.addAll(Collections.emptyList());
             //            this.extractedIfcLineClasses.addAll(Collections.emptyList());
             //            this.stepFileStatusProperty().setValue(STEP_FAILED);
@@ -71,5 +85,25 @@ public class OutputFileState {
             // this.extractLogOutput.setValue(Utils.stacktraceToString(task.getException()));
             //            this.extractJsonOutput.setValue("[]");
         }
+    }
+
+    public ObservableList<IfcLine> getAllChangedLines() {
+        return allChangedLines;
+    }
+
+    public void setSelectedChangedIfcLine(IfcLine selectedIfcLine) {
+        this.selectedChangedIfcLine.setValue(selectedIfcLine);
+    }
+
+    public void closeSelectedChangedIfcLine() {
+        setSelectedChangedIfcLine(null);
+    }
+
+    public IfcLine getSelectedChangedIfcLine() {
+        return selectedChangedIfcLine.get();
+    }
+
+    public ObjectProperty<IfcLine> selectedChangedIfcLineProperty() {
+        return selectedChangedIfcLine;
     }
 }

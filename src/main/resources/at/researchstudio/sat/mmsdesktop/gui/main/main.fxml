@@ -157,6 +157,59 @@
                         </ScrollPane>
                     </center>
                 </BorderPane>
+                <BorderPane fx:id="selectedChangedIfcLineView" managed="false" AnchorPane.topAnchor="0.0"
+                            AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                            AnchorPane.leftAnchor="0.0">
+                    <top>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <padding>
+                                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                            </padding>
+                            <JFXButton alignment="CENTER" focusTraversable="false"
+                                       graphicTextGap="15.0"
+                                       onAction="#handleCloseSelectedChangedLineAction"
+                                       style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                                       ripplerFill="WHITE"
+                                       textFill="#c1fff9">
+                                <tooltip>
+                                    <Tooltip text="%label.close"/>
+                                </tooltip>
+                                <graphic>
+                                    <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-x"
+                                              iconSize="24"/>
+                                </graphic>
+                                <padding>
+                                    <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                                </padding>
+                            </JFXButton>
+                            <Label style="-fx-font-weight: bold;" HBox.hgrow="ALWAYS"
+                                   alignment="CENTER"
+                                   text="%label.changesview">
+                                <font>
+                                    <Font size="18.0"/>
+                                </font>
+                            </Label>
+                        </HBox>
+                    </top>
+                    <center>
+                        <ScrollPane style="-fx-background-color:transparent;" hbarPolicy="NEVER">
+                            <GridPane>
+                                <IfcLineView fx:id="ifcSourceLineView" maxWidth="500" minWidth="300"
+                                             spacing="10" GridPane.hgrow="ALWAYS" GridPane.columnIndex="0">
+                                    <padding>
+                                        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                                    </padding>
+                                </IfcLineView>
+                                <IfcLineView fx:id="ifcTargetLineView" maxWidth="500" minWidth="300"
+                                             spacing="10" GridPane.hgrow="ALWAYS" GridPane.columnIndex="1">
+                                    <padding>
+                                        <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                                    </padding>
+                                </IfcLineView>
+                            </GridPane>
+                        </ScrollPane>
+                    </center>
+                </BorderPane>
                 <BorderPane fx:id="selectedIfcLineView" visible="false"
                             managed="false" AnchorPane.topAnchor="0.0"
                             AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"

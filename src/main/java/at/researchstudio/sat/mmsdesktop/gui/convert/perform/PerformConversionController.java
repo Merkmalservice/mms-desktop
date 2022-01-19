@@ -62,7 +62,8 @@ public class PerformConversionController implements Initializable {
     @FXML private BorderPane pcCenterProgress;
 
     @FXML private BorderPane pcCenterResults;
-    @FXML private JFXListView pcCenterConvertedFileContentList;
+    @FXML private JFXListView<IfcLine> pcCenterConvertedFileContentList;
+    @FXML private JFXListView<IfcLine> pcCenterChangesLinesList;
     @FXML private JFXTextArea pcCenterResultLog;
     @FXML private HBox pcBottomResults;
 
@@ -113,6 +114,17 @@ public class PerformConversionController implements Initializable {
         pcCenterResultLog
                 .textProperty()
                 .bind(stateService.getConvertState().convertLogOutputProperty());
+
+        pcCenterChangesLinesList
+                .getSelectionModel()
+                .selectedItemProperty()
+                .addListener(
+                        (observable, deSelectedIfcLine, selectedIfcLine) -> {
+                            stateService
+                                    .getConvertState()
+                                    .getOutputFileState()
+                                    .setSelectedChangedIfcLine(selectedIfcLine);
+                        });
 
         snackbar = new JFXSnackbar(pcParentPane);
     }
@@ -213,7 +225,7 @@ public class PerformConversionController implements Initializable {
                                             String title, String message, float level) {
                                         updateProgress(level, 1);
 
-                                        if (!lastTitle.equals(title)) {
+                                        if (Objects.nonNull(title) && !lastTitle.equals(title)) {
                                             logOutput
                                                     .append(System.lineSeparator())
                                                     .append(System.lineSeparator());
@@ -282,6 +294,10 @@ public class PerformConversionController implements Initializable {
 
     public ObservableList<IfcLine> getFileContentList() {
         return stateService.getConvertState().getOutputFileState().getOutputFileContent();
+    }
+
+    public ObservableList<IfcLine> getAllChangedLinesList() {
+        return stateService.getConvertState().getOutputFileState().getAllChangedLines();
     }
 
     public String getProjectName() {

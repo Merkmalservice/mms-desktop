@@ -60,10 +60,13 @@ public class MainController implements Initializable {
     @FXML private MenuItem menuBarLogin;
     @FXML private MenuItem menuBarLogout;
     @FXML private BorderPane mainPane;
-    @FXML private JFXButton projectsButton;
 
     @FXML private BorderPane selectedIfcLineView;
     @FXML private IfcLineView ifcLineView;
+
+    @FXML private BorderPane selectedChangedIfcLineView;
+    @FXML private IfcLineView ifcSourceLineView;
+    @FXML private IfcLineView ifcTargetLineView;
 
     @FXML private BorderPane selectedFeaturePreview;
     @FXML private FeatureBox featureView;
@@ -184,6 +187,28 @@ public class MainController implements Initializable {
                                             .getInputFileState()
                                             .parsedIfcFileProperty());
                             ifcLineView.setIfcLine(selectedIfcLine);
+                        }));
+
+        stateService
+                .getConvertState()
+                .getOutputFileState()
+                .selectedChangedIfcLineProperty()
+                .addListener(
+                        ((observableValue, oldValue, selectedIfcLine) -> {
+                            selectedChangedIfcLineView.setVisible(Objects.nonNull(selectedIfcLine));
+                            selectedChangedIfcLineView.setManaged(Objects.nonNull(selectedIfcLine));
+                            ifcSourceLineView.setParsedIfcFile(
+                                    stateService
+                                            .getConvertState()
+                                            .getInputFileState()
+                                            .parsedIfcFileProperty());
+                            ifcSourceLineView.setIfcLine(selectedIfcLine);
+                            ifcTargetLineView.setParsedIfcFile(
+                                    stateService
+                                            .getConvertState()
+                                            .getOutputFileState()
+                                            .convertedIfcFileProperty());
+                            ifcTargetLineView.setIfcLine(selectedIfcLine);
                         }));
 
         stateService
@@ -433,6 +458,11 @@ public class MainController implements Initializable {
     @FXML
     public void handleCloseLineAction(ActionEvent actionEvent) {
         stateService.getConvertState().getInputFileState().closeSelectedIfcLine();
+    }
+
+    @FXML
+    public void handleCloseSelectedChangedLineAction(ActionEvent actionEvent) {
+        stateService.getConvertState().getOutputFileState().closeSelectedChangedIfcLine();
     }
 
     @FXML

@@ -16,6 +16,7 @@ import at.researchstudio.sat.merkmalservice.model.ifc.IfcDerivedUnit;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcSIUnit;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
+import at.researchstudio.sat.merkmalservice.support.exception.StepParsingException;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
@@ -24,11 +25,13 @@ import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
+import java.io.File;
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,6 +46,7 @@ public class IfcFileReader {
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final Map<String, IfcLineParser<?>> ifcLineParsers;
     public static final int PROGRESS_UPDATES = 200;
+    private static final Pattern IFCLINETYPE_PATTERN = Pattern.compile("^#\\d+= ([A-Z0-9]+)\\(");
 
     static {
         synchronized (IfcFileReader.class) {
@@ -101,55 +105,101 @@ public class IfcFileReader {
         return readIfcFile(ifcFile, null);
     }
 
-    public static ParsedIfcFile readIfcFile(
+    public static List<IfcLine> readLinesFromIfcFile(
             IfcFileWrapper ifcFile, TaskProgressListener taskProgressListener) throws IOException {
         long totalLineCount = countLines(ifcFile.getFile().getAbsolutePath());
-        List<IfcLine> lines = new ArrayList<>();
-        Set<IfcUnit> projectUnits = new HashSet<>();
         int updateIncrement = (int) (totalLineCount / PROGRESS_UPDATES);
-        boolean updateProgress = Objects.nonNull(taskProgressListener);
-        Pattern lineTypePattern = Pattern.compile("^#\\d+= ([A-Z0-9]+)\\(");
+
+        List<IfcLine> lines = new ArrayList<>();
+
         try (LineIterator it =
                 FileUtils.lineIterator(ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
             StringBuilder sb = new StringBuilder();
-            int lineCount = 0;
+            int processedLineCount = 0;
             while (it.hasNext()) {
-                String line = it.nextLine();
-                lineCount++;
-                float progress = (float) lineCount / (float) totalLineCount * 100;
-                if (updateProgress && (lineCount % updateIncrement == 0 || sb.length() > 0)) {
-                    taskProgressListener.notifyProgress(null, sb.toString(), progress);
-                    sb = new StringBuilder();
-                }
-                Matcher identifierMatcher = lineTypePattern.matcher(line);
-                boolean isIfcLine = identifierMatcher.lookingAt();
-                if (!isIfcLine) {
-                    handleUnparseableLine(
-                            taskProgressListener, lines, updateProgress, progress, line);
+                lines.add(
+                        IfcFileReader.parseLine(
+                                it.nextLine(),
+                                taskProgressListener,
+                                processedLineCount++,
+                                totalLineCount,
+                                updateIncrement,
+                                sb));
+            }
+        }
+        return lines;
+    }
+
+    private static IfcLine parseLine(
+            String lineString,
+            TaskProgressListener taskProgressListener,
+            int processedLineCount,
+            long totalLineCount,
+            int updateIncrement,
+            StringBuilder sb) {
+        float progress = (float) processedLineCount / (float) totalLineCount * 100;
+        if (Objects.nonNull(taskProgressListener)
+                && (processedLineCount % updateIncrement == 0 || sb.length() > 0)) {
+            taskProgressListener.notifyProgress(null, sb.toString(), progress);
+            sb = new StringBuilder();
+        }
+        Matcher identifierMatcher = IFCLINETYPE_PATTERN.matcher(lineString);
+        boolean isIfcLine = identifierMatcher.lookingAt();
+        if (!isIfcLine) {
+            return handleUnparseableLine(taskProgressListener, progress, lineString);
+        } else {
+            String identifier = identifierMatcher.group(1);
+            IfcLineParser<?> parser = ifcLineParsers.get(identifier);
+            if (parser == null) {
+                if (identifier.contains("IFCQUANTITY")) {
+                    sb.append("Could not parse Line: ")
+                            .append(lineString)
+                            .append(" adding it as IfcQuantityLine")
+                            .append(System.lineSeparator());
+                    return new IfcQuantityLine(lineString);
                 } else {
-                    String identifier = identifierMatcher.group(1);
-                    IfcLineParser<?> parser = ifcLineParsers.get(identifier);
-                    if (parser == null) {
-                        if (identifier.contains("IFCQUANTITY")) {
-                            sb.append("Could not parse Line: ")
-                                    .append(line)
-                                    .append(" adding it as IfcQuantityLine")
-                                    .append(System.lineSeparator());
-                            lines.add(new IfcQuantityLine(line));
-                        } else {
-                            lines.add(new IfcLine(line));
-                        }
-                    } else {
-                        try {
-                            lines.add(parser.parse(line));
-                        } catch (IllegalArgumentException e) {
-                            handleUnparseableLine(
-                                    taskProgressListener, lines, updateProgress, progress, line);
-                        }
-                    }
+                    return new IfcLine(lineString);
+                }
+            } else {
+                try {
+                    return parser.parse(lineString);
+                } catch (IllegalArgumentException e) {
+                    return handleUnparseableLine(taskProgressListener, progress, lineString);
                 }
             }
         }
+    }
+
+    public static ParsedIfcFile cloneIfcFile(
+            ParsedIfcFile parsedIfcFile, TaskProgressListener taskProgressListener) {
+        int totalLineCount = parsedIfcFile.getLines().size();
+        int updateIncrement = (int) (totalLineCount / PROGRESS_UPDATES);
+        AtomicInteger processedLineCount = new AtomicInteger();
+        List<IfcLine> lines =
+                parsedIfcFile.getLines().stream()
+                        .map(
+                                line ->
+                                        IfcFileReader.parseLine(
+                                                line.getModifiedLine(),
+                                                taskProgressListener,
+                                                processedLineCount.getAndIncrement(),
+                                                totalLineCount,
+                                                updateIncrement,
+                                                new StringBuilder()))
+                        .collect(Collectors.toList());
+
+        return processIfcLines(
+                lines,
+                new IfcFileWrapper(new File(parsedIfcFile.getIfcFileWrapper().getFile().getPath())),
+                taskProgressListener);
+    }
+
+    public static ParsedIfcFile processIfcLines(
+            List<IfcLine> lines,
+            IfcFileWrapper ifcFile,
+            TaskProgressListener taskProgressListener) {
+        boolean updateProgress = Objects.nonNull(taskProgressListener);
+        Set<IfcUnit> projectUnits = new HashSet<>();
         Map<Integer, IfcUnit> projectUnitsById = new HashMap<>();
         Map<Class<? extends IfcLine>, List<IfcLine>> ifcLinesGrouped =
                 lines.parallelStream().collect(Collectors.groupingBy(IfcLine::getClass));
@@ -164,7 +214,7 @@ public class IfcFileReader {
             projectUnitLineId = projectLine.getUnitAssignmentId();
         }
         if (projectUnitLineId == 0) {
-            throw new IOException("File: " + ifcFile.getPath() + " is not a valid ifc step file");
+            throw new StepParsingException("Parsed Lines do not contain a projectUnitLine");
         }
         // collect project default units
         List<Integer> defaultProjectUnitIds = Collections.emptyList();
@@ -326,17 +376,21 @@ public class IfcFileReader {
         return parsedIfcFile;
     }
 
-    private static void handleUnparseableLine(
-            TaskProgressListener taskProgressListener,
-            List<IfcLine> lines,
-            boolean updateProgress,
-            float progress,
-            String line) {
-        if (updateProgress) {
+    public static ParsedIfcFile readIfcFile(
+            IfcFileWrapper ifcFile, TaskProgressListener taskProgressListener) throws IOException {
+
+        List<IfcLine> lines = readLinesFromIfcFile(ifcFile, taskProgressListener);
+
+        return processIfcLines(lines, ifcFile, taskProgressListener);
+    }
+
+    private static IfcLine handleUnparseableLine(
+            TaskProgressListener taskProgressListener, float progress, String line) {
+        if (Objects.nonNull(taskProgressListener)) {
             taskProgressListener.notifyProgress(
                     null, "Couldnt parse Line: " + line + " adding it as IfcLine", progress);
         }
-        lines.add(new IfcLine(line));
+        return new IfcLine(line);
     }
 
     private static void extractFromIfcQuantityLine(

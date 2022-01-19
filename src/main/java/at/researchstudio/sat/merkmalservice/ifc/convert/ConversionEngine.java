@@ -2,6 +2,7 @@ package at.researchstudio.sat.merkmalservice.ifc.convert;
 
 import static java.util.stream.Collectors.groupingBy;
 
+import at.researchstudio.sat.merkmalservice.ifc.IfcFileReader;
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
@@ -29,7 +30,9 @@ public class ConversionEngine {
     public ParsedIfcFile convert(
             ParsedIfcFile parsedIfcFile, TaskProgressListener taskProgressListener) {
         Objects.requireNonNull(parsedIfcFile);
-        ParsedIfcFile result = new ParsedIfcFile(parsedIfcFile);
+        final ParsedIfcFile result =
+                IfcFileReader.cloneIfcFile(parsedIfcFile, taskProgressListener);
+
         int levels = ruleSet.keySet().size();
         List<Integer> orderEntries =
                 ruleSet.keySet().stream().sorted().collect(Collectors.toList());
@@ -44,22 +47,26 @@ public class ConversionEngine {
 
                 for (ConversionRule rule : currentRules) {
                     Set<Class<? extends IfcLine>> typeRestrictions = rule.getIfcTypeRestrictions();
-                    Set<Class<? extends IfcLine>> applicableToClasses = result.getDataLinesByClass().keySet();
+                    Set<Class<? extends IfcLine>> applicableToClasses =
+                            result.getDataLinesByClass().keySet();
                     if (!typeRestrictions.isEmpty()) {
-                        applicableToClasses = applicableToClasses
-                                        .stream()
-                                        .filter(t -> typeRestrictions
-                                                        .stream()
-                                                        .anyMatch(r -> r.
-                                                                        isAssignableFrom(t)))
+                        applicableToClasses =
+                                applicableToClasses.stream()
+                                        .filter(
+                                                t ->
+                                                        typeRestrictions.stream()
+                                                                .anyMatch(
+                                                                        r -> r.isAssignableFrom(t)))
                                         .collect(Collectors.toSet());
                     }
 
-                    List<IfcLine> appliedToLines = applicableToClasses
-                                    .stream()
-                                    .flatMap(ifcClass -> result.getDataLinesByClass(ifcClass).stream())
+                    Set<IfcLine> appliedToLines =
+                            applicableToClasses.stream()
+                                    .flatMap(
+                                            ifcClass ->
+                                                    result.getDataLinesByClass(ifcClass).stream())
                                     .filter(l -> rule.appliesTo(l, result))
-                                    .collect(Collectors.toList());
+                                    .collect(Collectors.toSet());
 
                     if (taskProgressListener != null) {
                         taskProgressListener.notifyProgress(

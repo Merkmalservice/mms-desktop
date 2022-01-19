@@ -5,6 +5,7 @@ import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castT
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.*;
 
+import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.PropertyConverter;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.StepPropertyValueFactory;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.StepValueAndType;
@@ -19,7 +20,6 @@ import at.researchstudio.sat.merkmalservice.ifc.support.ProjectUnits;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.ifc.*;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
-import at.researchstudio.sat.merkmalservice.support.exception.IfcPropertyCardinalityException;
 import at.researchstudio.sat.merkmalservice.support.exception.IfcPropertyTypeUnsupportedException;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -52,6 +53,234 @@ public class ParsedIfcFile {
     private final StepPropertyValueFactory stepPropertyValueFactory;
     private final ProjectUnits projectUnits;
     private final AtomicInteger nextFreeLineId = new AtomicInteger(1);
+
+    private final Map<ConversionRule, Set<Integer>> changes;
+
+    public ParsedIfcFile(
+            List<IfcLine> lines,
+            @NonNull Set<IfcProperty> extractedProperties,
+            ProjectUnits projectUnits,
+            IfcFileWrapper ifcFileWrapper,
+            StringBuilder extractLog) {
+        this.ifcFileWrapper = ifcFileWrapper;
+        this.lines = lines;
+        this.extractedProperties = extractedProperties;
+        this.projectUnits = projectUnits;
+        this.extractedPropertyMap =
+                extractedProperties.stream().collect(groupingBy(IfcProperty::getType));
+        if (Objects.nonNull(lines) && lines.size() > 0) {
+            this.dataLines =
+                    lines.parallelStream()
+                            .filter(Objects::nonNull)
+                            .filter(IfcLine::hasId)
+                            .collect(toMap(IfcLine::getId, line -> line));
+            this.dataLinesByClass =
+                    lines.parallelStream()
+                            .filter(Objects::nonNull)
+                            .filter(IfcLine::hasId)
+                            .flatMap(this::getTypeInstancePairStream)
+                            .collect(groupingBy(t -> t.type, mapping(t -> t.instance, toList())));
+            this.features =
+                    IfcFileReader.extractFeaturesFromProperties(
+                            this.extractedPropertyMap, extractLog);
+            HashMap<String, Set<String>> featureSetFeatureNameMap = new HashMap<>();
+            this.dataLinesByClass
+                    .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
+                    .stream()
+                    .map(l -> (IfcPropertySetLine) l)
+                    .forEach(
+                            line -> {
+                                String convertedName = Utils.convertIFCStringToUtf8(line.getName());
+                                Set<String> features;
+                                if (featureSetFeatureNameMap.containsKey(convertedName)) {
+                                    features = featureSetFeatureNameMap.get(convertedName);
+                                } else {
+                                    features = new HashSet<>();
+                                    featureSetFeatureNameMap.put(convertedName, features);
+                                }
+                                features.addAll(
+                                        getPropertySetChildLines(line).parallelStream()
+                                                .filter(Objects::nonNull)
+                                                .map(
+                                                        childLine ->
+                                                                Utils.convertIFCStringToUtf8(
+                                                                        ((IfcNamedPropertyLineInterface)
+                                                                                        childLine)
+                                                                                .getName()))
+                                                .collect(toList()));
+                            });
+            this.dataLinesByClass
+                    .getOrDefault(IfcElementQuantityLine.class, Collections.emptyList())
+                    .stream()
+                    .map(l -> (IfcElementQuantityLine) l)
+                    .forEach(
+                            line -> {
+                                String convertedName = Utils.convertIFCStringToUtf8(line.getName());
+                                Set<String> features;
+                                if (featureSetFeatureNameMap.containsKey(convertedName)) {
+                                    features = featureSetFeatureNameMap.get(convertedName);
+                                } else {
+                                    features = new HashSet<>();
+                                    featureSetFeatureNameMap.put(convertedName, features);
+                                }
+                                features.addAll(
+                                        getElementQuantityChildLines(line).parallelStream()
+                                                .filter(
+                                                        l ->
+                                                                l
+                                                                        instanceof
+                                                                        IfcNamedPropertyLineInterface)
+                                                .map(
+                                                        childLine ->
+                                                                Utils.convertIFCStringToUtf8(
+                                                                        ((IfcNamedPropertyLineInterface)
+                                                                                        childLine)
+                                                                                .getName()))
+                                                .collect(toList()));
+                            });
+            featureSets =
+                    new HashSet<>(); // TODO: FEATURESETS DONT CONTAIN FEATURES YET IMPL: LATER
+            featureSets.addAll(
+                    this.dataLinesByClass
+                            .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
+                            .parallelStream()
+                            .map(l -> (IfcPropertySetLine) l)
+                            .map(
+                                    l ->
+                                            StringUtils.isEmpty(l.getDescription())
+                                                    ? new FeatureSet(l.getName())
+                                                    : new FeatureSet(
+                                                            l.getName(), l.getDescription()))
+                            .peek(
+                                    featureSet ->
+                                            featureSet.setFeatures(
+                                                    featureSetFeatureNameMap
+                                                            .getOrDefault(
+                                                                    featureSet.getName(),
+                                                                    Collections.emptySet())
+                                                            .stream()
+                                                            .map(
+                                                                    featureName -> {
+                                                                        for (Feature f :
+                                                                                this.features) {
+                                                                            if (featureName.equals(
+                                                                                    f.getName())) {
+                                                                                return f;
+                                                                            }
+                                                                        }
+                                                                        return null;
+                                                                    })
+                                                            .filter(Objects::nonNull)
+                                                            .collect(toList())))
+                            .collect(Collectors.toSet()));
+            featureSets.addAll(
+                    this.dataLinesByClass
+                            .getOrDefault(IfcElementQuantityLine.class, Collections.emptyList())
+                            .parallelStream()
+                            .map(l -> (IfcElementQuantityLine) l)
+                            .map(
+                                    l ->
+                                            StringUtils.isEmpty(l.getDescription())
+                                                    ? new FeatureSet(l.getName())
+                                                    : new FeatureSet(
+                                                            l.getName(), l.getDescription()))
+                            .peek(
+                                    featureSet ->
+                                            featureSet.setFeatures(
+                                                    featureSetFeatureNameMap
+                                                            .getOrDefault(
+                                                                    featureSet.getName(),
+                                                                    Collections.emptySet())
+                                                            .stream()
+                                                            .map(
+                                                                    featureName -> {
+                                                                        for (Feature f :
+                                                                                this.features) {
+                                                                            if (featureName.equals(
+                                                                                    f.getName())) {
+                                                                                return f;
+                                                                            }
+                                                                        }
+                                                                        return null;
+                                                                    })
+                                                            .filter(Objects::nonNull)
+                                                            .collect(toList())))
+                            .collect(Collectors.toSet()));
+            this.reverseLookupRelDefinesByProperties =
+                    this.dataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
+                            .map(line -> (IfcRelDefinesByPropertiesLine) line)
+                            .flatMap(
+                                    line ->
+                                            line.getRelatedObjectIds().stream()
+                                                    .map(o -> Map.entry(o, line.getId())))
+                            .collect(
+                                    groupingBy(
+                                            e -> e.getKey(), mapping(e -> e.getValue(), toList())));
+            this.reverseLookupReferencingLines =
+                    this.dataLines.values().parallelStream()
+                            .flatMap(
+                                    line ->
+                                            line.getReferences().stream()
+                                                    .map(ref -> Map.entry(ref, line.getId())))
+                            .collect(
+                                    groupingBy(
+                                            e -> e.getKey(), mapping(e -> e.getValue(), toList())));
+            if (!dataLines.isEmpty()) {
+                this.markLineIdUsed(dataLines.keySet().stream().max(Integer::compareTo).get());
+            }
+            stepPropertyValueFactory =
+                    new StepPropertyValueFactory(this, new QudtUnitConverter(projectUnits));
+            changes = new HashMap<>();
+        } else {
+            this.dataLines = Collections.emptyMap();
+            this.dataLinesByClass = Collections.emptyMap();
+            this.featureSets = Collections.emptySet();
+            this.features = Collections.emptyList();
+            this.reverseLookupRelDefinesByProperties = Collections.emptyMap();
+            this.reverseLookupReferencingLines = Collections.emptyMap();
+            stepPropertyValueFactory =
+                    new StepPropertyValueFactory(this, new QudtUnitConverter(projectUnits));
+            this.changes = Collections.emptyMap();
+        }
+    }
+
+    public ParsedIfcFile(ParsedIfcFile toCopy) {
+        // TODO: CLONE IF NECESSARY
+        this.ifcFileWrapper = toCopy.ifcFileWrapper;
+        this.dataLines =
+                (Map<Integer, IfcLine>) SerializationUtils.clone(new HashMap<>(toCopy.dataLines));
+        this.dataLinesByClass =
+                (Map<Class<? extends IfcLine>, List<IfcLine>>)
+                        SerializationUtils.clone(new HashMap<>(toCopy.dataLinesByClass));
+        this.extractedProperties =
+                (Set<IfcProperty>)
+                        SerializationUtils.clone(new HashSet<>(toCopy.extractedProperties));
+        this.features = (List<Feature>) SerializationUtils.clone(new ArrayList<>(toCopy.features));
+        this.extractedPropertyMap =
+                (Map<IfcPropertyType, List<IfcProperty>>)
+                        SerializationUtils.clone(new HashMap<>(toCopy.extractedPropertyMap));
+        this.featureSets =
+                (Set<FeatureSet>) SerializationUtils.clone(new HashSet<>(toCopy.featureSets));
+        this.lines = (List<IfcLine>) SerializationUtils.clone(new ArrayList<>(toCopy.lines));
+        this.reverseLookupRelDefinesByProperties =
+                (Map<Integer, List<Integer>>)
+                        SerializationUtils.clone(
+                                new HashMap<>(toCopy.reverseLookupRelDefinesByProperties));
+        this.reverseLookupReferencingLines =
+                (Map<Integer, List<Integer>>)
+                        SerializationUtils.clone(
+                                new HashMap<>(toCopy.reverseLookupReferencingLines));
+        this.projectUnits =
+                (ProjectUnits) SerializationUtils.clone(new ProjectUnits(toCopy.projectUnits));
+        this.stepPropertyValueFactory =
+                (StepPropertyValueFactory)
+                        SerializationUtils.clone(
+                                new StepPropertyValueFactory(
+                                        this, new QudtUnitConverter(this.projectUnits)));
+        this.markLineIdUsed(toCopy.nextFreeLineId());
+
+        this.changes = new HashMap<>();
+    }
 
     private Integer nextFreeLineId() {
         return nextFreeLineId.getAndIncrement();
@@ -214,7 +443,10 @@ public class ParsedIfcFile {
                         IfcLinePredicates.isPropertyWithName(inputFeature.getName())
                                 .or(IfcLinePredicates.isQuantityWithName(inputFeature.getName())));
         if (props.size() > 1 || props.isEmpty()) {
-            logger.info("Expected to find one property named {} as the input feature of a convert action, but found {}", inputFeature.getName(), props.size());
+            logger.info(
+                    "Expected to find one property named {} as the input feature of a convert action, but found {}",
+                    inputFeature.getName(),
+                    props.size());
             return;
         }
         IfcLine prop = props.get(0);
@@ -263,8 +495,6 @@ public class ParsedIfcFile {
         }
         addProperty(targetPSet, outputFeature, convertedValue);
     }
-
-
 
     private <T extends IfcLine> void splitSharedPropertySetsWithPropertyMatching(
             T element, Predicate<IfcLine> predicate) {
@@ -543,192 +773,6 @@ public class ParsedIfcFile {
         }
     }
 
-    public ParsedIfcFile(
-            List<IfcLine> lines,
-            @NonNull Set<IfcProperty> extractedProperties,
-            ProjectUnits projectUnits,
-            IfcFileWrapper ifcFileWrapper,
-            StringBuilder extractLog) {
-        this.ifcFileWrapper = ifcFileWrapper;
-        this.lines = lines;
-        this.extractedProperties = extractedProperties;
-        this.projectUnits = projectUnits;
-        this.extractedPropertyMap =
-                extractedProperties.stream().collect(groupingBy(IfcProperty::getType));
-        if (Objects.nonNull(lines) && lines.size() > 0) {
-            this.dataLines =
-                    lines.parallelStream()
-                            .filter(Objects::nonNull)
-                            .filter(IfcLine::hasId)
-                            .collect(toMap(IfcLine::getId, line -> line));
-            this.dataLinesByClass =
-                    lines.parallelStream()
-                            .filter(Objects::nonNull)
-                            .filter(IfcLine::hasId)
-                            .flatMap(this::getTypeInstancePairStream)
-                            .collect(groupingBy(t -> t.type, mapping(t -> t.instance, toList())));
-            this.features =
-                    IfcFileReader.extractFeaturesFromProperties(
-                            this.extractedPropertyMap, extractLog);
-            HashMap<String, Set<String>> featureSetFeatureNameMap = new HashMap<>();
-            this.dataLinesByClass
-                    .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
-                    .stream()
-                    .map(l -> (IfcPropertySetLine) l)
-                    .forEach(
-                            line -> {
-                                String convertedName = Utils.convertIFCStringToUtf8(line.getName());
-                                Set<String> features;
-                                if (featureSetFeatureNameMap.containsKey(convertedName)) {
-                                    features = featureSetFeatureNameMap.get(convertedName);
-                                } else {
-                                    features = new HashSet<>();
-                                    featureSetFeatureNameMap.put(convertedName, features);
-                                }
-                                features.addAll(
-                                        getPropertySetChildLines(line).parallelStream()
-                                                .filter(Objects::nonNull)
-                                                .map(
-                                                        childLine ->
-                                                                Utils.convertIFCStringToUtf8(
-                                                                        ((IfcNamedPropertyLineInterface)
-                                                                                        childLine)
-                                                                                .getName()))
-                                                .collect(toList()));
-                            });
-            this.dataLinesByClass
-                    .getOrDefault(IfcElementQuantityLine.class, Collections.emptyList())
-                    .stream()
-                    .map(l -> (IfcElementQuantityLine) l)
-                    .forEach(
-                            line -> {
-                                String convertedName = Utils.convertIFCStringToUtf8(line.getName());
-                                Set<String> features;
-                                if (featureSetFeatureNameMap.containsKey(convertedName)) {
-                                    features = featureSetFeatureNameMap.get(convertedName);
-                                } else {
-                                    features = new HashSet<>();
-                                    featureSetFeatureNameMap.put(convertedName, features);
-                                }
-                                features.addAll(
-                                        getElementQuantityChildLines(line).parallelStream()
-                                                .filter(
-                                                        l ->
-                                                                l
-                                                                        instanceof
-                                                                        IfcNamedPropertyLineInterface)
-                                                .map(
-                                                        childLine ->
-                                                                Utils.convertIFCStringToUtf8(
-                                                                        ((IfcNamedPropertyLineInterface)
-                                                                                        childLine)
-                                                                                .getName()))
-                                                .collect(toList()));
-                            });
-            featureSets =
-                    new HashSet<>(); // TODO: FEATURESETS DONT CONTAIN FEATURES YET IMPL: LATER
-            featureSets.addAll(
-                    this.dataLinesByClass
-                            .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
-                            .parallelStream()
-                            .map(l -> (IfcPropertySetLine) l)
-                            .map(
-                                    l ->
-                                            StringUtils.isEmpty(l.getDescription())
-                                                    ? new FeatureSet(l.getName())
-                                                    : new FeatureSet(
-                                                            l.getName(), l.getDescription()))
-                            .peek(
-                                    featureSet ->
-                                            featureSet.setFeatures(
-                                                    featureSetFeatureNameMap
-                                                            .getOrDefault(
-                                                                    featureSet.getName(),
-                                                                    Collections.emptySet())
-                                                            .stream()
-                                                            .map(
-                                                                    featureName -> {
-                                                                        for (Feature f :
-                                                                                this.features) {
-                                                                            if (featureName.equals(
-                                                                                    f.getName())) {
-                                                                                return f;
-                                                                            }
-                                                                        }
-                                                                        return null;
-                                                                    })
-                                                            .filter(Objects::nonNull)
-                                                            .collect(toList())))
-                            .collect(Collectors.toSet()));
-            featureSets.addAll(
-                    this.dataLinesByClass
-                            .getOrDefault(IfcElementQuantityLine.class, Collections.emptyList())
-                            .parallelStream()
-                            .map(l -> (IfcElementQuantityLine) l)
-                            .map(
-                                    l ->
-                                            StringUtils.isEmpty(l.getDescription())
-                                                    ? new FeatureSet(l.getName())
-                                                    : new FeatureSet(
-                                                            l.getName(), l.getDescription()))
-                            .peek(
-                                    featureSet ->
-                                            featureSet.setFeatures(
-                                                    featureSetFeatureNameMap
-                                                            .getOrDefault(
-                                                                    featureSet.getName(),
-                                                                    Collections.emptySet())
-                                                            .stream()
-                                                            .map(
-                                                                    featureName -> {
-                                                                        for (Feature f :
-                                                                                this.features) {
-                                                                            if (featureName.equals(
-                                                                                    f.getName())) {
-                                                                                return f;
-                                                                            }
-                                                                        }
-                                                                        return null;
-                                                                    })
-                                                            .filter(Objects::nonNull)
-                                                            .collect(toList())))
-                            .collect(Collectors.toSet()));
-            this.reverseLookupRelDefinesByProperties =
-                    this.dataLinesByClass.get(IfcRelDefinesByPropertiesLine.class).parallelStream()
-                            .map(line -> (IfcRelDefinesByPropertiesLine) line)
-                            .flatMap(
-                                    line ->
-                                            line.getRelatedObjectIds().stream()
-                                                    .map(o -> Map.entry(o, line.getId())))
-                            .collect(
-                                    groupingBy(
-                                            e -> e.getKey(), mapping(e -> e.getValue(), toList())));
-            this.reverseLookupReferencingLines =
-                    this.dataLines.values().parallelStream()
-                            .flatMap(
-                                    line ->
-                                            line.getReferences().stream()
-                                                    .map(ref -> Map.entry(ref, line.getId())))
-                            .collect(
-                                    groupingBy(
-                                            e -> e.getKey(), mapping(e -> e.getValue(), toList())));
-            if (!dataLines.isEmpty()) {
-                this.markLineIdUsed(dataLines.keySet().stream().max(Integer::compareTo).get());
-            }
-            stepPropertyValueFactory =
-                    new StepPropertyValueFactory(this, new QudtUnitConverter(projectUnits));
-        } else {
-            this.dataLines = Collections.emptyMap();
-            this.dataLinesByClass = Collections.emptyMap();
-            this.featureSets = Collections.emptySet();
-            this.features = Collections.emptyList();
-            this.reverseLookupRelDefinesByProperties = Collections.emptyMap();
-            this.reverseLookupReferencingLines = Collections.emptyMap();
-            stepPropertyValueFactory =
-                    new StepPropertyValueFactory(this, new QudtUnitConverter(projectUnits));
-        }
-    }
-
     private Stream<TypeInstancePair> getTypeInstancePairStream(IfcLine line) {
         Set<Class<? extends IfcLine>> classes = new HashSet<>();
         Class<? extends IfcLine> clazz = line.getClass();
@@ -740,22 +784,14 @@ public class ParsedIfcFile {
         return classes.stream().map(c -> new TypeInstancePair(c, line));
     }
 
-    public ParsedIfcFile(ParsedIfcFile toCopy) {
-        this.ifcFileWrapper = toCopy.ifcFileWrapper;
-        this.dataLines = new HashMap<>(toCopy.dataLines);
-        this.dataLinesByClass = new HashMap<>(toCopy.dataLinesByClass);
-        this.extractedProperties = new HashSet<>(toCopy.extractedProperties);
-        this.features = new ArrayList<>(toCopy.features);
-        this.extractedPropertyMap = new HashMap<>(toCopy.extractedPropertyMap);
-        this.featureSets = new HashSet<>(toCopy.featureSets);
-        this.lines = new ArrayList<>(toCopy.lines);
-        this.reverseLookupRelDefinesByProperties =
-                new HashMap<>(toCopy.reverseLookupRelDefinesByProperties);
-        this.reverseLookupReferencingLines = new HashMap<>(toCopy.reverseLookupReferencingLines);
-        this.projectUnits = new ProjectUnits(toCopy.projectUnits);
-        this.stepPropertyValueFactory =
-                new StepPropertyValueFactory(this, new QudtUnitConverter(this.projectUnits));
-        this.markLineIdUsed(toCopy.nextFreeLineId());
+    public Map<ConversionRule, Set<Integer>> getChanges() {
+        return changes;
+    }
+
+    public void addChange(ConversionRule conversionRule, int linenumber) {
+        Set<Integer> changesByRule = changes.getOrDefault(conversionRule, new HashSet<>());
+        changesByRule.add(linenumber);
+        changes.putIfAbsent(conversionRule, changesByRule);
     }
 
     public IfcFileWrapper getIfcFileWrapper() {

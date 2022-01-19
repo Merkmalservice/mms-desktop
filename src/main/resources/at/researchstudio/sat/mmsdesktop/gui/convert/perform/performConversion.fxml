@@ -140,6 +140,16 @@
                                     AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
                                     AnchorPane.leftAnchor="0.0"
                                     style="-fx-cursor: hand;">
+                            <Tab text="%label.convert.changes">
+                                <AnchorPane>
+                                    <JFXListView fx:id="pcCenterChangesLinesList"
+                                                 items="${controller.allChangedLinesList}"
+                                                 AnchorPane.topAnchor="0.0"
+                                                 AnchorPane.rightAnchor="0.0"
+                                                 AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0"/>
+                                </AnchorPane>
+                            </Tab>
                             <Tab text="%label.convert.inputFile">
                                 <AnchorPane>
                                     <JFXListView fx:id="pcCenterConvertedFileContentList"

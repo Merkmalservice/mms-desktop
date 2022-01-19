@@ -11,11 +11,12 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcUnitType;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtQuantityKind;
 import at.researchstudio.sat.merkmalservice.vocab.qudt.QudtUnit;
+import java.io.Serializable;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 
-public class StepPropertyValueFactory {
+public class StepPropertyValueFactory implements Serializable {
     private final ParsedIfcFile parsedIfcFile;
     private final QudtUnitConverter converter;
 

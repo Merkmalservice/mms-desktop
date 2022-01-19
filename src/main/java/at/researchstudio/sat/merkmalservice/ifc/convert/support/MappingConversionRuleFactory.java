@@ -54,47 +54,48 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                 mapping.getCondition() == null
                         ? line -> true
                         : buildRulePredicate(mapping.getCondition());
-        ConversionRule rule = new ConversionRule() {
-            private final String name = mapping.getName();
+        ConversionRule rule =
+                new ConversionRule() {
+                    private final String name = mapping.getName();
 
-            @Override
-            public int getOrder() {
-                return 0;
-            }
+                    @Override
+                    public int getOrder() {
+                        return 0;
+                    }
 
-            @Override
-            public boolean appliesTo(IfcLine line, ParsedIfcFile ifcModel) {
-                return ruleCondition.test(new IfcLineAndModel(line, ifcModel));
-            }
+                    @Override
+                    public boolean appliesTo(IfcLine line, ParsedIfcFile ifcModel) {
+                        return ruleCondition.test(new IfcLineAndModel(line, ifcModel));
+                    }
 
-            @Override
-            public String toString() {
-                return name;
-            }
+                    @Override
+                    public String toString() {
+                        return name;
+                    }
 
-            @Override
-            public ParsedIfcFileModification applyTo(IfcLine line, ParsedIfcFile ifcModel) {
-                List<ActionGroup<? extends Action>> actionGroups =
-                        Optional.ofNullable(mapping.getActionGroups())
-                                .orElse(Collections.emptyList());
-                Stream<ParsedIfcFileModification> modifications =
-                        actionGroups.stream()
-                                .flatMap(
-                                        group ->
-                                                group.getActions().stream()
-                                                        .map(
-                                                                a ->
-                                                                        ErrorUtils
-                                                                                .logThrowableMessage(
-                                                                                        () ->
-                                                                                                makeModification(
-                                                                                                        group,
-                                                                                                        a,
-                                                                                                        line))))
-                                .filter(Objects::nonNull);
-                return Modification.multiple(modifications);
-            }
-        };
+                    @Override
+                    public ParsedIfcFileModification applyTo(IfcLine line, ParsedIfcFile ifcModel) {
+                        List<ActionGroup<? extends Action>> actionGroups =
+                                Optional.ofNullable(mapping.getActionGroups())
+                                        .orElse(Collections.emptyList());
+                        Stream<ParsedIfcFileModification> modifications =
+                                actionGroups.stream()
+                                        .flatMap(
+                                                group ->
+                                                        group.getActions().stream()
+                                                                .map(
+                                                                        a ->
+                                                                                ErrorUtils
+                                                                                        .logThrowableMessage(
+                                                                                                () ->
+                                                                                                        makeModification(
+                                                                                                                group,
+                                                                                                                a,
+                                                                                                                line))))
+                                        .filter(Objects::nonNull);
+                        return Modification.multiple(modifications);
+                    }
+                };
         return new IfcElementConversionRule(rule);
     }
 

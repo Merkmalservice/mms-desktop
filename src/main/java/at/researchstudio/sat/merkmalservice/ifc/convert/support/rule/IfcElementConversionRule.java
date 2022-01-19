@@ -5,7 +5,6 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.element.IfcBuiltElementLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
-
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -17,11 +16,13 @@ public class IfcElementConversionRule extends DelegatingConversionRule {
         super(delegate);
     }
 
-    @Override public boolean appliesTo(IfcLine line, ParsedIfcFile ifcModel) {
+    @Override
+    public boolean appliesTo(IfcLine line, ParsedIfcFile ifcModel) {
         return predicate.test(line) && getDelegate().appliesTo(line, ifcModel);
     }
 
-    @Override public Set<Class<? extends IfcLine>> getIfcTypeRestrictions() {
+    @Override
+    public Set<Class<? extends IfcLine>> getIfcTypeRestrictions() {
         return Set.of(IfcBuiltElementLine.class);
     }
 }
