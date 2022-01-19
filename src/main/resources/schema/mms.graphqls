@@ -1,0 +1,626 @@
+type User {
+    id: ID!
+    username: String
+    email: String
+    firstName: String
+    lastName:String
+    groups: [Group!]!
+}
+
+type Group {
+    id: ID!
+    name: String!
+    users: [User!]!
+}
+
+interface TopLevelEntity {
+    id: ID!
+    name: String!
+    dateCreated: String!
+    dateModified: String!
+    creator: User!
+    editor: User!
+}
+
+type Organization implements TopLevelEntity {
+    id: ID!
+    name: String!
+    dateCreated: String!
+    dateModified: String!
+    creator: User!
+    editor: User!
+    standards: [Standard!]!
+    scopes: [String!]!
+    groups: [Group!]!
+    users: [User!]!
+}
+
+type Project implements TopLevelEntity {
+    id: ID!
+    name: String!
+    dateCreated: String!
+    dateModified: String!
+    creator: User!
+    editor: User!
+    users: [User!]!
+    standards: [Standard!]!
+    groups: [Group!]!
+    description: String
+    scopes: [String!]!
+    mappings: [Mapping!]!
+}
+
+
+type Standard {
+    id: ID!
+    name: String!
+    features: [Feature!]!
+    featureGroups: [ FeatureGroup ! ] !
+    propertySets: [ PropertySet ! ] !
+    mappings: [ Mapping! ]!
+    parent: TopLevelEntity!
+    organization: Organization
+    project: Project
+    description: String
+    public: Boolean!
+    dateCreated: String!
+    dateModified: String!
+    creator: User!
+    editor: User!
+    scopes: [String!]!
+}
+
+type Unit {
+    id: ID!
+    label: String!
+    description: String
+    quantityKinds: [QuantityKind!]!
+    scopes: [String!]!
+}
+
+type QuantityKind {
+    id: ID!
+    label: String!
+    description: String
+    units: [Unit!]!
+    scopes: [String!]!
+}
+
+type FeatureGroup {
+    id: ID!
+    name: String!
+    description: String
+    dateCreated: String!
+    dateModified: String!
+    creator: User!
+    editor: User!
+    parent: FeatureGroup
+    children: [FeatureGroup!]!
+    features: [Feature!]!
+    scopes: [String!]!
+    standard: Standard !
+}
+
+type PropertySet {
+    id: ID!
+    name: String!
+    description: String
+    dateCreated: String!
+    dateModified: String!
+    creator: User!
+    editor: User!
+    features: [Feature!]!
+    scopes: [String!]!
+    standard: Standard !
+    copyOf: PropertySet
+}
+
+type StringValue {_: Boolean }
+
+type BooleanValue {_: Boolean }
+
+type NumericValue {
+    quantityKind: QuantityKind!
+    unit: Unit!
+}
+
+type ReferenceValue {_: Boolean }
+
+type OptionValue {
+    id: ID!
+    value: MappingExecutionValue!
+    description: String
+}
+
+type EnumerationValue {
+    id: ID!
+    options: [OptionValue!]!
+    allowMultiple: Boolean!
+}
+
+union FeatureType = StringValue | BooleanValue | NumericValue | ReferenceValue | EnumerationValue
+
+type Feature {
+    id: ID!
+    private: Boolean!
+    name: String!
+    description: String
+    standard: Standard!
+    mappings: [Mapping!]!
+    dateCreated: String!
+    dateModified: String!
+    creator: User!
+    editor: User!
+    propertySets: [PropertySet!]!
+    featureGroups: [FeatureGroup!]!
+    type: FeatureType!
+    scopes: [String!]!
+    copyOf: Feature
+}
+
+type Mapping {
+    id: ID!
+    name: String!
+    dateCreated: String!
+    dateModified: String!
+    creator: User!
+    editor: User!
+    featureSets: [Standard!]!
+    project: Project!
+    condition: Condition
+    actionGroups: [ActionGroup!]!
+}
+
+union ActionGroup = DeleteActionGroup | AddActionGroup | ConvertActionGroup #TODO: OTHER ACTION GROUPS
+
+type DeleteActionGroup {
+    id: ID!
+    actions: [DeleteAction!]!
+}
+
+type AddActionGroup {
+    id: ID!
+    actions: [AddAction!]!
+    addToPropertySet: MappingExecutionValue
+}
+
+type ConvertActionGroup {
+    id: ID!
+    actions: [ConvertAction!]!
+    addToPropertySet: MappingExecutionValue
+}
+
+type DeleteAction {
+    id: ID!
+    feature: Feature!
+}
+
+type AddAction {
+    id: ID!
+    feature: Feature!
+    value: MappingExecutionValue!
+}
+
+type ConvertAction {
+    id: ID!
+    inputFeature: Feature!
+    outputFeature: Feature!
+}
+
+union Condition = SingleCondition | ConditionGroup
+
+type SingleCondition {
+    id: ID!
+    feature: Feature!
+    predicate: Predicate!
+    value: MappingExecutionValue
+}
+
+type ConditionGroup {
+    id: ID!
+    connective: Connective!
+    conditions: [Condition!]!
+}
+
+input MappingInput {
+    id: ID
+    name: String!
+    project: ID!
+    featureSets: [ID!]
+    condition: ConditionInput
+    actionGroups: [ActionGroupInput!]!
+}
+
+input ActionGroupInput {
+    #TODO: DeleteActionGroupInput will not be mandatory when multiple actionGroupTypes are possible
+    deleteActionGroup: DeleteActionGroupInput
+    addActionGroup: AddActionGroupInput
+    convertActionGroup: ConvertActionGroupInput
+#    combineActionGroup: ID!
+}
+
+input DeleteActionGroupInput {
+    actions: [DeleteActionInput!]!
+}
+
+input AddActionGroupInput {
+    actions: [AddActionInput!]!
+    value: MappingExecutionInput
+}
+
+input ConvertActionGroupInput {
+    actions: [ConvertActionInput!]!
+    addToPropertySet: MappingExecutionValueInput
+}
+
+input DeleteActionInput {
+    feature: ID!
+}
+
+input AddActionInput {
+    feature: ID!
+    value: MappingExecutionInput!
+}
+
+input ConvertActionInput {
+    inputFeature: ID!
+    outputFeature: ID!
+    #TODO: MORE POSSIBILITIES
+}
+
+input ConditionInput {
+    singleCondition: SingleConditionInput
+    groupCondition: GroupConditionInput
+}
+
+input SingleConditionInput {
+    feature: ID!
+    predicate: Predicate!
+    value: MappingExecutionValueInput
+}
+
+enum Predicate {
+    NOT,
+    EQUALS,
+    CONTAINS,
+    CONTAINS_NOT,
+    MATCHES,
+    PRESENT,
+    NOT_PRESENT,
+    HAS,
+    HAS_NOT,
+    LESS_THAN,
+    LESS_OR_EQUALS,
+    GREATER_THAN,
+    GREATER_OR_EQUALS
+}
+
+input GroupConditionInput {
+    conditions: [ConditionInput!]!
+    connective: Connective!
+}
+
+enum Connective {
+    AND,
+    OR
+}
+
+type FeatureMapping {
+    id: ID!
+    dateCreated: String!
+    dateModified: String!
+    creator: User!
+    editor: User!
+    inputFeature: Feature!
+    outputFeature: Feature!
+    mappingExecutions: [ MappingExecution! ]!
+}#done
+
+type MappingFunction {
+    id:ID!
+    name: String!
+    description: String
+    expects: [ FunctionParameter! ]!
+    returns: [ FunctionOutput! ]!
+}#done
+
+type FunctionParameter {
+    id: ID!
+    valueKind: MappingFunctionValueKind!
+    featureKind: ID
+    required: Boolean
+    name: String
+    description: String
+}#done
+
+type FunctionOutput {
+    id: ID!
+    valueKind: MappingFunctionValueKind!
+    required: Boolean
+    name: String
+    description: String
+}#done
+
+union MappingFunctionValueKind = ResourceValueKind | LiteralValueKind | AnyValueKind
+#done
+
+type ResourceValueKind {
+    rdfType: ID!
+}#done
+
+type LiteralValueKind {
+    dataType: ID!
+}#done
+
+type AnyValueKind {value: String }
+
+input FeatureMappingInput {
+    id: ID
+    inputFeature: ID!
+    outputFeature: ID!
+    mappingExecutions: [ MappingExecutionInput! ]
+}
+
+type MappingExecution {
+    id: ID!
+    function: ID!
+    parameters: [ ExecutionParameter! ]!
+    outputs: [ ExecutionOutput ]!
+}#done
+
+interface ExecutionOutput {
+    functionOutput: ID!
+}#done
+
+type ExecutionOutputValue implements ExecutionOutput {
+    functionOutput: ID!
+    value : MappingExecutionValue!
+}#done
+
+type ExecutionValuePipeAsSource implements ExecutionParameter {
+    id: ID!
+    functionParameter: ID!
+    name: String
+}#done
+
+type ExecutionValuePipeAsSink implements ExecutionOutput {
+    id: ID!
+    functionOutput: ID!
+    name: String
+}#done
+
+interface ExecutionParameter {
+    functionParameter: ID!
+}#done
+
+type ExecutionParameterValue implements ExecutionParameter {
+    functionParameter: ID!
+    value: MappingExecutionValue!
+}#done
+
+type ExecutionParameterMapValue implements ExecutionParameter {
+    id : ID!
+    functionParameter: ID!
+    entries: [ ExecutionParameterMapValueEntry! ]!
+}#done
+
+type ExecutionParameterMapValueEntry {
+    key: MappingExecutionValue !
+    value: MappingExecutionValue !
+}#done
+
+union MappingExecutionValue =
+    MEIDValue | MEStringValue | MEIntegerValue |
+    MEBooleanValue | MEFloatValue
+#done
+
+type MEIDValue {
+    idValue: ID!
+    graphQLType : String #if the IRI references an object within the application, this is the graphql type of the object
+}#done
+
+type MEStringValue {
+    stringValue : String!
+}#done
+
+type MEIntegerValue {
+    integerValue : Int
+}#done
+
+type MEBooleanValue {
+    booleanValue : Boolean
+}#done
+
+type MEFloatValue {
+    floatValue : Float
+}#done
+
+
+
+input MappingExecutionInput {
+    id: ID
+    function: ID!
+    parameters: [ ExecutionParameterValueInput! ]
+    mapParameters: [ ExecutionParameterMapValueInput ! ]
+    pipeParameters: [ ExecutionValuePipeAsSourceInput ! ]
+    outputPipes: [ ExecutionValuePipeAsSinkInput ! ]
+}
+
+#only one can be set! (exception: idValue+GraphQLType)
+input MappingExecutionValueInput {
+    stringValue : String
+    integerValue : Int
+    booleanValue : Boolean
+    floatValue : Float
+    idValue : ID
+    graphQLType: String
+}
+
+input ExecutionParameterValueInput {
+    functionParameter : ID!
+    value: MappingExecutionValueInput
+}
+
+input ExecutionParameterMapValueInput {
+    id: ID
+    functionParameter : ID!
+    entries : [ ExecutionParameterMapValueEntryInput! ]
+}
+
+input ExecutionParameterMapValueEntryInput {
+    key: MappingExecutionValueInput !
+    value: MappingExecutionValueInput !
+}
+
+input ExecutionValuePipeAsSourceInput {
+    # when creating a new object, set the ID to `local:${localPipeId}` (replace ${localPipeId} with an ID unique for the featureMapping
+    # the prefix `local:` will be replaced by the id of the featureMapping, yielding `${featureMappingId}#{localPipeId}`
+    id: ID
+    functionParameter: ID!
+    name: String
+}
+
+input ExecutionValuePipeAsSinkInput {
+    # when creating a new object, set the ID to `local:${localPipeId}` (replace ${localPipeId} with an ID unique for the featureMapping
+    # the prefix `local:` will be replaced by the id of the featureMapping, yielding `${featureMappingId}#{localPipeId}`
+    id: ID
+    functionOutput: ID!
+    name: String
+}
+
+
+input StandardInput {
+    id: ID
+    name: String!
+    description: String
+    parent: ID!
+    public: Boolean
+}
+
+input StandardSearchFilter {
+    public: Boolean
+}
+
+input ProjectInput {
+    id: ID
+    name: String!
+    description: String
+}
+
+input OrganizationInput {
+    name: String!
+}
+
+input FeatureGroupInput {
+    id: ID
+    name: String!
+    parent: ID
+    standard: ID!
+    description: String
+}
+
+input PropertySetInput {
+    id: ID
+    name: String!
+    standard: ID!
+    description: String
+}
+
+enum FeatureKindType {
+    STRING,
+    REFERENCE,
+    NUMERIC,
+    ENUMERATION,
+    BOOLEAN
+}
+
+input OptionValueInput {
+    id: ID
+    value: MappingExecutionValueInput!
+    description: String
+}
+
+input FeatureTypeInput {
+    id: ID
+    type: FeatureKindType!
+    options: [OptionValueInput!]
+    allowMultiple: Boolean
+    quantityKind: ID
+    unit: ID
+}
+
+input FeatureInput {
+    id: ID
+    name: String!
+    private: Boolean
+    description: String
+    standard: ID!
+    propertySets: [ID!]
+    featureGroups: [ID!]
+    type: FeatureTypeInput!
+}
+
+type Query {
+    user(id: ID!): User
+    users: [User!]!
+    searchUsers(search: String!, exact: Boolean!): [User!]!
+    organizations: [Organization!]!
+    organization(id: ID!): Organization
+    standards(filter: StandardSearchFilter): [Standard!]!
+    standard(id: ID!): Standard
+    feature(id: ID!): Feature
+    featureGroups: [FeatureGroup!]!
+    featureGroup(id: ID!): FeatureGroup
+    propertySets: [PropertySet!]!
+    propertySet(id: ID!): PropertySet
+    unit(id: ID!): Unit
+    units: [Unit!]!
+    quantityKind(id: ID!): QuantityKind
+    quantityKinds: [QuantityKind!]!
+    projects: [Project!]!
+    project(id: ID!): Project
+    mapping(id: ID!): Mapping
+    mappingFunctions: [MappingFunction!]!
+    mappingExecutions: [MappingExecution!]!
+}
+
+type Mutation {
+    putOrganization(id: ID, organization: OrganizationInput!): Organization!
+    putUsersInOrganizationGroups(userIds: [ID!]!, organizationId: ID!, groupIds: [ID!]! ): Boolean
+    putUsersInOrganizationGroupsExclusively(userIds: [ID!]!, organizationId: ID!, groupIds: [ID!]! ): Boolean
+    removeUsersFromOrganizationGroups(userIds: [ID!]!, organizationId: ID!, groupIds: [ID!]! ): Boolean
+    removeUsersFromOrganization(userIds: [ID!]!, organizationId: ID!): Boolean
+    deleteOrganization(id: ID!): ID!
+    deleteOrganizations(ids: [ID!]!): Boolean
+    putProject(id: ID, project: ProjectInput!): Project!
+    putUsersInProjectGroups(userIds: [ID!]!, projectId: ID!, groupIds: [ID!]! ): Boolean
+    putUsersInProjectGroupsExclusively(userIds: [ID!]!, projectId: ID!, groupIds: [ID!]! ): Boolean
+    removeUsersFromProjectGroups(userIds: [ID!]!, projectId: ID!, groupIds: [ID!]! ): Boolean
+    removeUsersFromProject(userIds: [ID!]!, projectId: ID!): Boolean
+    deleteProject(id: ID!): ID!
+    deleteProjects(ids: [ID!]!): Boolean
+    putStandard(id: ID, standard: StandardInput!): Standard!
+    deleteStandard(id: ID!): ID!
+    deleteStandards(ids: [ID!]!): Boolean
+    putFeatureGroups(featureGroups: [FeatureGroupInput!]!): [ID!]!
+    deleteFeatureGroup(id: ID!): ID!
+    deleteFeatureGroups(ids: [ID!]!) : Boolean
+    putPropertySets(propertySets: [PropertySetInput!]!): [ID!]!
+    putFeaturesInPropertySet(featureIds: [ID!]!, propertySetId: ID!): Boolean
+    deletePropertySet(id: ID!): ID!
+    deletePropertySets(ids: [ID!]!) : Boolean
+    putFeature(id: ID, feature: FeatureInput!): Feature!
+    putNewFeatures(features: [  FeatureInput! ]!): [ID!]!
+    deleteFeature(id: ID!): ID!
+    deleteFeatures(ids: [ID!]!): Boolean
+    removeFeaturesFromPropertySet(featureIds: [ID!]!, propertySetId: ID!): Boolean
+    copyStandardsToOrganization(standardIds: [ID!]!, toOrganizationId: ID!): ID!
+    copyFeaturesToStandard(featureIds: [ID!]!, toStandardId: ID!): ID!
+    copyFeatureGroupsToStandard(featureGroupIds: [ID!]!, toStandardId: ID!): ID!
+    copyFeaturesToProject(featureIds: [ID!]!, toProjectId: ID!): Boolean
+    copyStandardsToProject(standardIds: [ID!]!, toProjectId: ID!): Boolean
+    copyPropertySetsToStandard(propertySetIds: [ID!]!, toStandardId: ID!): ID!
+    putFeatureMappings(featureMappings: [ FeatureMappingInput! ]! ): [ID!]!
+    putMapping(id: ID, mapping: MappingInput!): Mapping!
+    deleteMappings(mappingIds: [ID!]!): Boolean
+}

@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import com.jfoenix.controls.JFXProgressBar?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import com.jfoenix.controls.JFXTextArea?>
+<?import com.jfoenix.controls.JFXButton?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import com.jfoenix.controls.JFXTabPane?>
+<?import javafx.scene.control.Tab?>
+<?import com.jfoenix.controls.JFXListView?>
+<BorderPane prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/16"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="at.researchstudio.sat.mmsdesktop.gui.convert.perform.PerformConversionController"
+            fx:id="pcParentPane">
+    <BorderPane.margin>
+        <Insets bottom="10.0" left="25.0" right="10.0" top="10.0"/>
+    </BorderPane.margin>
+    <top>
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="10.0"/>
+            </padding>
+            <Label style="-fx-font-weight: bold;"
+                   text="%label.convert.perform">
+                <font>
+                    <Font size="18.0"/>
+                </font>
+            </Label>
+        </VBox>
+    </top>
+    <center>
+        <AnchorPane>
+            <GridPane
+                    visible="false" managed="false"
+                    fx:id="pcCenterCheck"
+                    AnchorPane.topAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0"
+                    AnchorPane.bottomAnchor="0.0"
+                    hgap="10" vgap="10">
+                <Label GridPane.columnIndex="0" GridPane.rowIndex="0"
+                       text="%label.convert.inputFile"
+                >
+                    <graphic>
+                        <FontIcon iconLiteral="bi-file-earmark" iconSize="24"/>
+                    </graphic>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label GridPane.columnIndex="1" GridPane.rowIndex="0"
+                       text="${controller.inputFileName}" GridPane.hgrow="ALWAYS"
+                />
+                <Label GridPane.columnIndex="0" GridPane.rowIndex="1"
+                       text="%label.projectpicker.project"
+                >
+                    <graphic>
+                        <FontIcon iconLiteral="bi-journal" iconSize="24"/>
+                    </graphic>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label GridPane.columnIndex="1" GridPane.rowIndex="1"
+                       text="${controller.projectName}" GridPane.hgrow="ALWAYS"
+                />
+                <Label GridPane.columnIndex="0" GridPane.rowIndex="2"
+                       text="%label.projectpicker.featureset"
+                >
+                    <graphic>
+                        <FontIcon iconLiteral="bi-archive" iconSize="24"/>
+                    </graphic>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label GridPane.columnIndex="1" GridPane.rowIndex="2"
+                       text="${controller.targetStandardName}" GridPane.hgrow="ALWAYS"
+                />
+                <Label GridPane.columnIndex="0" GridPane.rowIndex="3"
+                       text="%label.projectpicker.mappings"
+                >
+                    <graphic>
+                        <FontIcon iconLiteral="bi-arrow-left-right" iconSize="24"/>
+                    </graphic>
+                    <font>
+                        <Font size="16.0"/>
+                    </font>
+                </Label>
+                <Label GridPane.columnIndex="1" GridPane.rowIndex="3"
+                       text="${controller.mappingRuleCount}" GridPane.hgrow="ALWAYS"
+                />
+            </GridPane>
+            <BorderPane fx:id="pcCenterProgress" visible="false" managed="false"
+                        AnchorPane.topAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0"
+                        AnchorPane.bottomAnchor="0.0">
+                <top>
+                    <AnchorPane>
+                        <padding>
+                            <Insets bottom="10.0"/>
+                        </padding>
+                        <JFXProgressBar fx:id="pcCenterProgressProgressBar" prefHeight="40.0"
+                                        AnchorPane.topAnchor="0.0"
+                                        AnchorPane.rightAnchor="0.0"
+                                        AnchorPane.leftAnchor="0.0"/>
+                        <Label fx:id="pcCenterProgressProgressInfo"
+                               AnchorPane.topAnchor="50.0"
+                               AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                               AnchorPane.leftAnchor="0.0"
+                               style="-fx-text-alignment: center">
+                            <Font size="14"/>
+                        </Label>
+                    </AnchorPane>
+                </top>
+                <center>
+                    <AnchorPane>
+                        <JFXTextArea fx:id="pcCenterProgressLog"
+                                     editable="false"
+                                     AnchorPane.topAnchor="0.0"
+                                     AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                                     AnchorPane.leftAnchor="0.0"
+                                     style="-fx-background-color: black; -fx-font-family: Consolas,monaco,monospace; -fx-text-fill: greenyellow; "/>
+                    </AnchorPane>
+                </center>
+            </BorderPane>
+            <BorderPane fx:id="pcCenterResults" visible="false" managed="false"
+                        AnchorPane.topAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0"
+                        AnchorPane.bottomAnchor="0.0">
+                <center>
+                    <AnchorPane>
+                        <JFXTabPane AnchorPane.topAnchor="0.0"
+                                    AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                                    AnchorPane.leftAnchor="0.0"
+                                    style="-fx-cursor: hand;">
+                            <Tab text="%label.convert.changes">
+                                <AnchorPane>
+                                    <JFXListView fx:id="pcCenterChangesLinesList"
+                                                 items="${controller.allChangedLinesList}"
+                                                 AnchorPane.topAnchor="0.0"
+                                                 AnchorPane.rightAnchor="0.0"
+                                                 AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0"/>
+                                </AnchorPane>
+                            </Tab>
+                            <Tab text="%label.convert.inputFile">
+                                <AnchorPane>
+                                    <JFXListView fx:id="pcCenterConvertedFileContentList"
+                                                 items="${controller.fileContentList}"
+                                                 AnchorPane.topAnchor="0.0"
+                                                 AnchorPane.rightAnchor="0.0"
+                                                 AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0"/>
+                                </AnchorPane>
+                            </Tab>
+                            <Tab text="%label.extractLogOutput">
+                                <AnchorPane>
+                                    <JFXTextArea fx:id="pcCenterResultLog"
+                                                 AnchorPane.topAnchor="0.0"
+                                                 AnchorPane.rightAnchor="0.0"
+                                                 AnchorPane.bottomAnchor="0.0"
+                                                 AnchorPane.leftAnchor="0.0"
+                                                 editable="false"
+                                                 style="-fx-background-color: black; -fx-font-family: Consolas,monaco,monospace; -fx-text-fill: greenyellow;"/>
+                                </AnchorPane>
+                            </Tab>
+                        </JFXTabPane>
+                    </AnchorPane>
+                </center>
+            </BorderPane>
+        </AnchorPane>
+    </center>
+    <bottom>
+        <VBox>
+            <AnchorPane fx:id="pcBottomCheck">
+                <padding>
+                    <Insets top="10.0"/>
+                </padding>
+                <JFXButton alignment="CENTER" focusTraversable="false"
+                           graphicTextGap="15.0"
+                           onAction="#handleConvertAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                           text="%label.convert.button.perform"
+                           textFill="#c1fff9"
+                           AnchorPane.topAnchor="0.0"
+                           AnchorPane.rightAnchor="0.0"
+                           AnchorPane.bottomAnchor="0.0"
+                           AnchorPane.leftAnchor="0.0"
+                           HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;"
+                                  iconLiteral="bi-file-earmark-play"
+                                  iconSize="24"/>
+                    </graphic>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+            </AnchorPane>
+            <HBox spacing="10" visible="false" managed="false" fx:id="pcBottomResults">
+                <padding>
+                    <Insets top="10.0"/>
+                </padding>
+                <JFXButton alignment="CENTER" focusTraversable="false"
+                           graphicTextGap="15.0"
+                           onAction="#handleSaveConvertedFileAction" prefHeight="32.0"
+                           prefWidth="220.0"
+                           ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                           text="%label.convert.button.save"
+                           textFill="#c1fff9"
+                           HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-download"
+                                  iconSize="24"/>
+                    </graphic>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+                <JFXButton alignment="CENTER" focusTraversable="false"
+                           graphicTextGap="15.0"
+                           onAction="#handleSaveLogAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                           text="%label.extract.exportLog"
+                           textFill="#c1fff9"
+                           HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;"
+                                  iconLiteral="bi-file-earmark-medical" iconSize="24"/>
+                    </graphic>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+                <JFXButton alignment="CENTER" focusTraversable="false"
+                           graphicTextGap="15.0"
+                           onAction="#handleResetAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                           text="%label.extract.reset"
+                           textFill="#c1fff9"
+                           HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-arrow-90deg-left"
+                                  iconSize="24"/>
+                    </graphic>
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>

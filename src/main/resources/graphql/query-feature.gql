@@ -1,0 +1,24 @@
+query feature($featureId :ID!) {
+    feature(id: $featureId) {
+        __typename
+        id,
+        name,
+        type {
+            ... on EnumerationValue {
+                __typename
+                id
+                allowMultiple
+                options {
+                    __typename
+                    id
+                    description
+                    value {
+                        __typename
+                    }
+                }
+            }
+            __typename
+        }
+
+    }
+}

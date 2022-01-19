@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import com.jfoenix.controls.JFXComboBox?>
+<?import com.jfoenix.controls.JFXListView?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import com.jfoenix.controls.JFXButton?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import com.jfoenix.controls.JFXSpinner?>
+<BorderPane prefHeight="400.0" prefWidth="600.0"
+            xmlns="http://javafx.com/javafx/16"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard.SelectTargetStandardController"
+            fx:id="stsParentPane">
+    <BorderPane.margin>
+        <Insets bottom="10.0" left="25.0" right="10.0" top="10.0"/>
+    </BorderPane.margin>
+    <top>
+        <VBox spacing="5">
+            <padding>
+                <Insets bottom="10.0"/>
+            </padding>
+            <Label style="-fx-font-weight: bold;"
+                   text="%label.convert.chooseTarget.header">
+                <font>
+                    <Font size="18.0"/>
+                </font>
+            </Label>
+            <HBox spacing="5">
+                <VBox>
+                    <Label text="%label.projectpicker.project">
+                        <font>
+                            <Font size="16.0"/>
+                        </font>
+                        <graphic>
+                            <FontIcon iconLiteral="bi-journals" iconSize="24"/>
+                        </graphic>
+                        <padding>
+                            <Insets bottom="10.0"/>
+                        </padding>
+                    </Label>
+                    <JFXComboBox prefWidth="250" items="${controller.availableProjects}"
+                                 fx:id="projectList">
+                        <placeholder>
+                            <Label text="%label.projectpicker.chooseProject"/>
+                        </placeholder>
+                    </JFXComboBox>
+                </VBox>
+                <VBox>
+                    <Label text="%label.projectpicker.featureset">
+                        <font>
+                            <Font size="16.0"/>
+                        </font>
+                        <graphic>
+                            <FontIcon iconLiteral="bi-archive" iconSize="24"/>
+                        </graphic>
+                        <padding>
+                            <Insets bottom="10.0"/>
+                        </padding>
+                    </Label>
+                    <JFXComboBox prefWidth="250" items="${controller.availableStandards}"
+                                 fx:id="standardList">
+                        <placeholder>
+                            <Label text="%label.projectpicker.chooseFeatureSet"/>
+                        </placeholder>
+                    </JFXComboBox>
+                </VBox>
+                <VBox>
+                    <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                               fx:id="reloadButton"
+                               onAction="#handleLoadProjectsAction" prefHeight="32.0"
+                               prefWidth="220.0"
+                               ripplerFill="WHITE"
+                               style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                               text="%label.projectpicker.reload"
+                               textFill="#c1fff9" VBox.vgrow="ALWAYS">
+
+                        <graphic>
+                            <FontIcon style="-fx-icon-color: #c1fff9;"
+                                      iconLiteral="bi-arrow-clockwise"
+                                      iconSize="24"/>
+                        </graphic>
+                        <padding>
+                            <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                        </padding>
+                    </JFXButton>
+                </VBox>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <AnchorPane>
+            <BorderPane fx:id="mappingsView" visible="false" managed="false"
+                        AnchorPane.topAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0"
+                        AnchorPane.bottomAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0">
+                <top>
+                    <Label text="%label.projectpicker.mappings">
+                        <font>
+                            <Font size="16.0"/>
+                        </font>
+                        <graphic>
+                            <FontIcon iconLiteral="bi-arrow-left-right" iconSize="24"/>
+                        </graphic>
+                        <padding>
+                            <Insets top="10" bottom="10.0"/>
+                        </padding>
+                    </Label>
+                </top>
+                <center>
+                    <AnchorPane>
+                        <JFXListView items="${controller.selectedMappings}" fx:id="mappingsList"
+                                     AnchorPane.topAnchor="0.0"
+                                     AnchorPane.rightAnchor="0.0"
+                                     AnchorPane.bottomAnchor="0.0"
+                                     AnchorPane.leftAnchor="0.0"/>
+                        <VBox fx:id="loadingView" visible="false" managed="false"
+                              alignment="CENTER" AnchorPane.topAnchor="0.0"
+                              AnchorPane.rightAnchor="0.0"
+                              AnchorPane.bottomAnchor="0.0"
+                              AnchorPane.leftAnchor="0.0"
+                              style="-fx-background-color: white; -fx-border-color:#C8C8C8; -fx-border-width: 1; -fx-border-style: solid;">
+                            <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
+                                <JFXSpinner/>
+                            </HBox>
+                        </VBox>
+                        <VBox fx:id="noMappingsView" visible="false" managed="false"
+                              alignment="CENTER" AnchorPane.topAnchor="0.0"
+                              AnchorPane.rightAnchor="0.0"
+                              AnchorPane.bottomAnchor="0.0"
+                              AnchorPane.leftAnchor="0.0"
+                              style="-fx-background-color: white; -fx-border-color:#C8C8C8; -fx-border-width: 1; -fx-border-style: solid;">
+                            <HBox alignment="CENTER" VBox.vgrow="ALWAYS">
+                                <Label text="%label.convert.mappings.noresults" />
+                            </HBox>
+                        </VBox>
+                    </AnchorPane>
+                </center>
+            </BorderPane>
+        </AnchorPane>
+    </center>
+    <bottom>
+        <AnchorPane>
+            <padding>
+                <Insets top="10.0"/>
+            </padding>
+            <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                       fx:id="toPerformConversion"
+                       onAction="#handleToPerformConversion" prefHeight="32.0" prefWidth="220.0"
+                       AnchorPane.topAnchor="0.0"
+                       AnchorPane.rightAnchor="0.0"
+                       AnchorPane.bottomAnchor="0.0"
+                       AnchorPane.leftAnchor="0.0"
+                       ripplerFill="WHITE"
+                       style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                       text="%label.next"
+                       textFill="#c1fff9">
+
+                <graphic>
+                    <FontIcon style="-fx-icon-color: #c1fff9;" iconLiteral="bi-arrow-right"
+                              iconSize="24"/>
+                </graphic>
+                <padding>
+                    <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                </padding>
+            </JFXButton>
+        </AnchorPane>
+    </bottom>
+</BorderPane>

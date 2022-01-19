@@ -1,0 +1,447 @@
+query mapping($mappingId :ID!) {
+    mapping (id : $mappingId) {
+        id
+        name
+        featureSets {
+            id
+        }
+        actionGroups {
+            __typename
+            ... on DeleteActionGroup {
+                __typename
+                id
+                actions {
+                    ... on DeleteAction {
+                        __typename
+                        id
+                        feature {
+                            id
+                            name
+                            type {
+                                __typename
+                            }
+                        }
+                    }
+                }
+            }
+            ... on ConvertActionGroup {
+                __typename
+                id
+                addToPropertySet {
+                    ... on MEBooleanValue {
+                        booleanValue
+                    }
+                    ... on MEFloatValue {
+                        floatValue
+                    }
+                    ... on MEIDValue {
+                        idValue
+                    }
+                    ... on MEIntegerValue {
+                        integerValue
+                    }
+                    ... on MEStringValue {
+                        stringValue
+                    }
+                }
+                actions {
+                    ... on ConvertAction {
+                        __typename
+                        id
+                        inputFeature {
+                            id
+                            name
+                            type {
+                                __typename
+                                ... on EnumerationValue {
+                                    __typename
+                                    id
+                                    allowMultiple
+                                    options {
+                                        __typename
+                                        id
+                                        description
+                                        value {
+                                            ... on MEBooleanValue {
+                                                booleanValue
+                                            }
+                                            ... on MEFloatValue {
+                                                floatValue
+                                            }
+                                            ... on MEIDValue {
+                                                idValue
+                                            }
+                                            ... on MEIntegerValue {
+                                                integerValue
+                                            }
+                                            ... on MEStringValue {
+                                                stringValue
+                                            }
+                                        }
+                                    }
+                                }
+                                ... on NumericValue {
+                                    quantityKind {
+                                        id
+                                        label
+                                    }
+                                    unit {
+                                        id
+                                        label
+                                    }
+                                }
+                            }
+                        }
+                        outputFeature {
+                            id
+                            name
+                            type {
+                                __typename
+                                ... on EnumerationValue {
+                                    __typename
+                                    id
+                                    allowMultiple
+                                    options {
+                                        __typename
+                                        id
+                                        description
+                                        value {
+                                            ... on MEBooleanValue {
+                                                booleanValue
+                                            }
+                                            ... on MEFloatValue {
+                                                floatValue
+                                            }
+                                            ... on MEIDValue {
+                                                idValue
+                                            }
+                                            ... on MEIntegerValue {
+                                                integerValue
+                                            }
+                                            ... on MEStringValue {
+                                                stringValue
+                                            }
+                                        }
+                                    }
+                                }
+                                ... on NumericValue {
+                                    quantityKind {
+                                        id
+                                        label
+                                    }
+                                    unit {
+                                        id
+                                        label
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ... on AddActionGroup {
+                __typename
+                id
+                addToPropertySet {
+                    ... on MEBooleanValue {
+                        booleanValue
+                    }
+                    ... on MEFloatValue {
+                        floatValue
+                    }
+                    ... on MEIDValue {
+                        idValue
+                    }
+                    ... on MEIntegerValue {
+                        integerValue
+                    }
+                    ... on MEStringValue {
+                        stringValue
+                    }
+                }
+                actions {
+                    ... on AddAction {
+                        __typename
+                        id
+                        feature {
+                            id
+                            name
+                            type {
+                                __typename
+                                ... on EnumerationValue {
+                                    __typename
+                                    id
+                                    allowMultiple
+                                    options {
+                                        __typename
+                                        id
+                                        description
+                                        value {
+                                            ... on MEBooleanValue {
+                                                booleanValue
+                                            }
+                                            ... on MEFloatValue {
+                                                floatValue
+                                            }
+                                            ... on MEIDValue {
+                                                idValue
+                                            }
+                                            ... on MEIntegerValue {
+                                                integerValue
+                                            }
+                                            ... on MEStringValue {
+                                                stringValue
+                                            }
+                                        }
+                                    }
+                                }
+                                ... on NumericValue {
+                                    quantityKind {
+                                        id
+                                        label
+                                    }
+                                    unit {
+                                        id
+                                        label
+                                    }
+                                }
+                            }
+                        }
+                        value {
+                            ... on MEBooleanValue {
+                                booleanValue
+                            }
+                            ... on MEFloatValue {
+                                floatValue
+                            }
+                            ... on MEIDValue {
+                                idValue
+                            }
+                            ... on MEIntegerValue {
+                                integerValue
+                            }
+                            ... on MEStringValue {
+                                stringValue
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        condition {
+            __typename
+            ... on ConditionGroup {
+                __typename
+                id
+                connective
+                conditions {
+                    ... on ConditionGroup {
+                        __typename
+                        id
+                        connective
+                        conditions {
+                            ... on SingleCondition {
+                                __typename
+                                id
+                                feature {
+                                    id
+                                    name
+                                    type {
+                                        __typename
+                                        ... on EnumerationValue {
+                                            __typename
+                                            id
+                                            allowMultiple
+                                            options {
+                                                __typename
+                                                id
+                                                description
+                                                value {
+                                                    ... on MEBooleanValue {
+                                                        booleanValue
+                                                    }
+                                                    ... on MEFloatValue {
+                                                        floatValue
+                                                    }
+                                                    ... on MEIDValue {
+                                                        idValue
+                                                    }
+                                                    ... on MEIntegerValue {
+                                                        integerValue
+                                                    }
+                                                    ... on MEStringValue {
+                                                        stringValue
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        ... on NumericValue {
+                                            quantityKind {
+                                                id
+                                                label
+                                            }
+                                            unit {
+                                                id
+                                                label
+                                            }
+                                        }
+                                    }
+                                }
+                                predicate
+                                value {
+                                    ... on MEBooleanValue {
+                                        booleanValue
+                                    }
+                                    ... on MEFloatValue {
+                                        floatValue
+                                    }
+                                    ... on MEIDValue {
+                                        idValue
+                                    }
+                                    ... on MEIntegerValue {
+                                        integerValue
+                                    }
+                                    ... on MEStringValue {
+                                        stringValue
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    ... on SingleCondition {
+                        __typename
+                        id
+                        feature {
+                            id
+                            name
+                            type {
+                                __typename
+                                ... on EnumerationValue {
+                                    __typename
+                                    id
+                                    allowMultiple
+                                    options {
+                                        __typename
+                                        id
+                                        description
+                                        value {
+                                            ... on MEBooleanValue {
+                                                booleanValue
+                                            }
+                                            ... on MEFloatValue {
+                                                floatValue
+                                            }
+                                            ... on MEIDValue {
+                                                idValue
+                                            }
+                                            ... on MEIntegerValue {
+                                                integerValue
+                                            }
+                                            ... on MEStringValue {
+                                                stringValue
+                                            }
+                                        }
+                                    }
+                                }
+                                ... on NumericValue {
+                                    quantityKind {
+                                        id
+                                        label
+                                    }
+                                    unit {
+                                        id
+                                        label
+                                    }
+                                }
+                            }
+                        }
+                        predicate
+                        value {
+                            ... on MEBooleanValue {
+                                booleanValue
+                            }
+                            ... on MEFloatValue {
+                                floatValue
+                            }
+                            ... on MEIDValue {
+                                idValue
+                            }
+                            ... on MEIntegerValue {
+                                integerValue
+                            }
+                            ... on MEStringValue {
+                                stringValue
+                            }
+                        }
+                    }
+                }
+            }
+            ... on SingleCondition {
+                __typename
+                id
+                feature {
+                    id
+                    name
+                    type {
+                        __typename
+                        ... on EnumerationValue {
+                            __typename
+                            id
+                            allowMultiple
+                            options {
+                                __typename
+                                id
+                                description
+                                value {
+                                    ... on MEBooleanValue {
+                                        booleanValue
+                                    }
+                                    ... on MEFloatValue {
+                                        floatValue
+                                    }
+                                    ... on MEIDValue {
+                                        idValue
+                                    }
+                                    ... on MEIntegerValue {
+                                        integerValue
+                                    }
+                                    ... on MEStringValue {
+                                        stringValue
+                                    }
+                                }
+                            }
+                        }
+                        ... on NumericValue {
+                            quantityKind {
+                                id
+                                label
+                            }
+                            unit {
+                                id
+                                label
+                            }
+                        }
+                    }
+                }
+                predicate
+                value {
+                    ... on MEBooleanValue {
+                        booleanValue
+                    }
+                    ... on MEFloatValue {
+                        floatValue
+                    }
+                    ... on MEIDValue {
+                        idValue
+                    }
+                    ... on MEIntegerValue {
+                        integerValue
+                    }
+                    ... on MEStringValue {
+                        stringValue
+                    }
+                }
+            }
+        }
+    }
+}
