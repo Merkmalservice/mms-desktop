@@ -2,7 +2,6 @@ package at.researchstudio.sat.merkmalservice.ifc.convert;
 
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
-
 import java.util.Collections;
 import java.util.Set;
 
@@ -30,10 +29,10 @@ public interface ConversionRule {
 
     /**
      * Rules are only applied to IfcLine (sub)types returned by this method.
+     *
      * @return
      */
     default Set<Class<? extends IfcLine>> getIfcTypeRestrictions() {
         return Collections.emptySet();
     }
-
 }

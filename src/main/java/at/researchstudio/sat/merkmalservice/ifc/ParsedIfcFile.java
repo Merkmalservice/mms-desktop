@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -48,8 +47,8 @@ public class ParsedIfcFile {
     private final Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap;
     private final List<Feature> features;
     private final Set<FeatureSet> featureSets;
-    private final Map<Integer, List<Integer>> reverseLookupRelDefinesByProperties;
-    private final Map<Integer, List<Integer>> reverseLookupReferencingLines;
+    private final Map<Integer, Set<Integer>> reverseLookupRelDefinesByProperties;
+    private final Map<Integer, Set<Integer>> reverseLookupReferencingLines;
     private final StepPropertyValueFactory stepPropertyValueFactory;
     private final ProjectUnits projectUnits;
     private final AtomicInteger nextFreeLineId = new AtomicInteger(1);
@@ -215,7 +214,7 @@ public class ParsedIfcFile {
                                                     .map(o -> Map.entry(o, line.getId())))
                             .collect(
                                     groupingBy(
-                                            e -> e.getKey(), mapping(e -> e.getValue(), toList())));
+                                            e -> e.getKey(), mapping(e -> e.getValue(), toSet())));
             this.reverseLookupReferencingLines =
                     this.dataLines.values().parallelStream()
                             .flatMap(
@@ -224,7 +223,7 @@ public class ParsedIfcFile {
                                                     .map(ref -> Map.entry(ref, line.getId())))
                             .collect(
                                     groupingBy(
-                                            e -> e.getKey(), mapping(e -> e.getValue(), toList())));
+                                            e -> e.getKey(), mapping(e -> e.getValue(), toSet())));
             if (!dataLines.isEmpty()) {
                 this.markLineIdUsed(dataLines.keySet().stream().max(Integer::compareTo).get());
             }
@@ -242,44 +241,6 @@ public class ParsedIfcFile {
                     new StepPropertyValueFactory(this, new QudtUnitConverter(projectUnits));
             this.changes = Collections.emptyMap();
         }
-    }
-
-    public ParsedIfcFile(ParsedIfcFile toCopy) {
-        // TODO: CLONE IF NECESSARY
-        this.ifcFileWrapper = toCopy.ifcFileWrapper;
-        this.dataLines =
-                (Map<Integer, IfcLine>) SerializationUtils.clone(new HashMap<>(toCopy.dataLines));
-        this.dataLinesByClass =
-                (Map<Class<? extends IfcLine>, List<IfcLine>>)
-                        SerializationUtils.clone(new HashMap<>(toCopy.dataLinesByClass));
-        this.extractedProperties =
-                (Set<IfcProperty>)
-                        SerializationUtils.clone(new HashSet<>(toCopy.extractedProperties));
-        this.features = (List<Feature>) SerializationUtils.clone(new ArrayList<>(toCopy.features));
-        this.extractedPropertyMap =
-                (Map<IfcPropertyType, List<IfcProperty>>)
-                        SerializationUtils.clone(new HashMap<>(toCopy.extractedPropertyMap));
-        this.featureSets =
-                (Set<FeatureSet>) SerializationUtils.clone(new HashSet<>(toCopy.featureSets));
-        this.lines = (List<IfcLine>) SerializationUtils.clone(new ArrayList<>(toCopy.lines));
-        this.reverseLookupRelDefinesByProperties =
-                (Map<Integer, List<Integer>>)
-                        SerializationUtils.clone(
-                                new HashMap<>(toCopy.reverseLookupRelDefinesByProperties));
-        this.reverseLookupReferencingLines =
-                (Map<Integer, List<Integer>>)
-                        SerializationUtils.clone(
-                                new HashMap<>(toCopy.reverseLookupReferencingLines));
-        this.projectUnits =
-                (ProjectUnits) SerializationUtils.clone(new ProjectUnits(toCopy.projectUnits));
-        this.stepPropertyValueFactory =
-                (StepPropertyValueFactory)
-                        SerializationUtils.clone(
-                                new StepPropertyValueFactory(
-                                        this, new QudtUnitConverter(this.projectUnits)));
-        this.markLineIdUsed(toCopy.nextFreeLineId());
-
-        this.changes = new HashMap<>();
     }
 
     private Integer nextFreeLineId() {
@@ -631,14 +592,14 @@ public class ParsedIfcFile {
         if (newLine instanceof IfcRelDefinesByPropertiesLine) {
             for (Integer objectId :
                     ((IfcRelDefinesByPropertiesLine) newLine).getRelatedObjectIds()) {
-                List<Integer> existingRefs = this.reverseLookupRelDefinesByProperties.get(objectId);
+                Set<Integer> existingRefs = this.reverseLookupRelDefinesByProperties.get(objectId);
                 if (existingRefs != null) {
                     existingRefs.remove((Object) newLine.getId());
                 }
             }
         }
         for (Integer objectId : newLine.getReferences()) {
-            List<Integer> existingRefs = this.reverseLookupReferencingLines.get(objectId);
+            Set<Integer> existingRefs = this.reverseLookupReferencingLines.get(objectId);
             if (existingRefs != null) {
                 existingRefs.remove((Object) newLine.getId());
             }
@@ -649,24 +610,20 @@ public class ParsedIfcFile {
         if (newLine instanceof IfcRelDefinesByPropertiesLine) {
             for (Integer objectId :
                     ((IfcRelDefinesByPropertiesLine) newLine).getRelatedObjectIds()) {
-                List<Integer> existingRefs =
+                Set<Integer> existingRefs =
                         this.reverseLookupRelDefinesByProperties.putIfAbsent(
-                                objectId, List.of(newLine.getId()));
+                                objectId, new HashSet<>(Set.of(newLine.getId())));
                 if (existingRefs != null) {
-                    List<Integer> refs = new ArrayList<>(existingRefs);
-                    refs.add(newLine.getId());
-                    this.reverseLookupRelDefinesByProperties.put(objectId, refs);
+                    existingRefs.add(newLine.getId());
                 }
             }
         }
         for (Integer objectId : newLine.getReferences()) {
-            List<Integer> existingRefs =
+            Set<Integer> existingRefs =
                     this.reverseLookupReferencingLines.putIfAbsent(
-                            objectId, new ArrayList<>(List.of(newLine.getId())));
+                            objectId, new HashSet<>(Set.of(newLine.getId())));
             if (existingRefs != null) {
-                List<Integer> refs = new ArrayList<>(existingRefs);
-                refs.add(newLine.getId());
-                this.reverseLookupReferencingLines.put(objectId, refs);
+                existingRefs.add(newLine.getId());
             }
         }
     }
@@ -717,7 +674,7 @@ public class ParsedIfcFile {
 
     private void removeLine(IfcLine line) {
         List<IfcLine> cascadingDeletes = new ArrayList<>();
-        List<IfcLine> referencing = this.getReferencingLines(line);
+        Collection<IfcLine> referencing = this.getReferencingLines(line);
         for (IfcLine referencingLine : referencing) {
             if (referencingLine.removeReferenceTo(line)) {
                 cascadingDeletes.add(referencingLine);
@@ -887,15 +844,15 @@ public class ParsedIfcFile {
         return getDataLinesByClass(IfcElementQuantityLine.class);
     }
 
-    public List<IfcLine> getReferencingLines(IfcLine ifcLine) {
+    public Set<IfcLine> getReferencingLines(IfcLine ifcLine) {
         return reverseLookupReferencingLines
-                .getOrDefault(ifcLine.getId(), Collections.emptyList())
+                .getOrDefault(ifcLine.getId(), Collections.emptySet())
                 .stream()
                 .map(dataLines::get)
                 .filter(Objects::nonNull)
                 // lazy check required because we may have deleted the reference
                 .filter(ref -> ref.references(ifcLine.getId()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     public List<IfcLine> getReferencedLines(IfcLine ifcLine) {
@@ -939,16 +896,16 @@ public class ParsedIfcFile {
                 .collect(toList());
     }
 
-    public List<IfcRelDefinesByPropertiesLine> getRelDefinesByPropertiesLinesReferencing(
+    public Set<IfcRelDefinesByPropertiesLine> getRelDefinesByPropertiesLinesReferencing(
             IfcLine ifcLine) {
-        List<Integer> lookup =
+        Set<Integer> lookup =
                 this.reverseLookupRelDefinesByProperties.getOrDefault(
-                        ifcLine.getId(), Collections.emptyList());
+                        ifcLine.getId(), Collections.emptySet());
         return lookup.stream()
                 .map(dataLines::get)
                 .filter(Objects::nonNull)
                 .map(l -> (IfcRelDefinesByPropertiesLine) l)
-                .collect(toList());
+                .collect(toSet());
     }
 
     public List<IfcRelAssociatesMaterialLine> getRelAsscoiatesMaterialReferencing(
@@ -976,7 +933,7 @@ public class ParsedIfcFile {
 
     public void deleteItem(Integer itemId) {
         IfcLine item = this.dataLines.remove(itemId);
-        List<IfcLine> referencing = this.getReferencingLines(item);
+        Set<IfcLine> referencing = this.getReferencingLines(item);
         referencing.forEach(l -> l.removeReferenceTo(item));
     }
 }

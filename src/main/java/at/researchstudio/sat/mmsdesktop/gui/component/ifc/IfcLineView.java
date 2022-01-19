@@ -80,30 +80,68 @@ public class IfcLineView extends VBox {
             getChildren().add(selectedLineLabel);
             addLineToView(ifcLine);
             if (ifcLine instanceof IfcBuiltElementLine) {
-                List<IfcRelDefinesByPropertiesLine> relDefinesByPropertiesLines =
-                        this.parsedIfcFile.get().getRelDefinesByPropertiesLinesReferencing(ifcLine);
-                for (IfcRelDefinesByPropertiesLine relDefinesByPropertiesLine :
-                        relDefinesByPropertiesLines) {
-                    IfcLine propertySetLine =
-                            this.parsedIfcFile
-                                    .get()
-                                    .getDataLines()
-                                    .get(relDefinesByPropertiesLine.getRelatingPropertySetId());
-                    if (propertySetLine instanceof IfcPropertySetLine) {
-                        IfcPropertySetBox propSetsBox =
-                                new IfcPropertySetBox(
-                                        (IfcPropertySetLine) propertySetLine, parsedIfcFile.get());
-                        getChildren().add(propSetsBox);
-                    } else if (propertySetLine instanceof IfcElementQuantityLine) {
-                        IfcElementQuantityBox elementQuantityBox =
-                                new IfcElementQuantityBox(
-                                        (IfcElementQuantityLine) propertySetLine,
-                                        parsedIfcFile.get());
-                        getChildren().add(elementQuantityBox);
-                    } else {
-                        getChildren().add(new IfcLineBox(propertySetLine));
-                    }
-                }
+                this.parsedIfcFile.get().getRelDefinesByPropertiesLinesReferencing(ifcLine).stream()
+                        .sorted(
+                                (o1, o2) -> {
+                                    IfcLine relatingPropertySetLine1 =
+                                            parsedIfcFile
+                                                    .get()
+                                                    .getDataLines()
+                                                    .get(o1.getRelatingPropertySetId());
+                                    IfcLine relatingPropertySetLine2 =
+                                            parsedIfcFile
+                                                    .get()
+                                                    .getDataLines()
+                                                    .get(o2.getRelatingPropertySetId());
+
+                                    if (relatingPropertySetLine1 instanceof IfcPropertySetLine
+                                            && relatingPropertySetLine2
+                                                    instanceof IfcPropertySetLine) {
+                                        return ((IfcPropertySetLine) relatingPropertySetLine1)
+                                                .getName()
+                                                .compareTo(
+                                                        ((IfcPropertySetLine)
+                                                                        relatingPropertySetLine2)
+                                                                .getName());
+                                    } else if (relatingPropertySetLine1
+                                                    instanceof IfcElementQuantityLine
+                                            && relatingPropertySetLine2
+                                                    instanceof IfcElementQuantityLine) {
+                                        return ((IfcElementQuantityLine) relatingPropertySetLine1)
+                                                .getName()
+                                                .compareTo(
+                                                        ((IfcElementQuantityLine)
+                                                                        relatingPropertySetLine2)
+                                                                .getName());
+                                    } else {
+                                        return 0;
+                                    }
+                                })
+                        .forEach(
+                                relDefinesByPropertiesLine -> {
+                                    IfcLine propertySetLine =
+                                            this.parsedIfcFile
+                                                    .get()
+                                                    .getDataLines()
+                                                    .get(
+                                                            relDefinesByPropertiesLine
+                                                                    .getRelatingPropertySetId());
+                                    if (propertySetLine instanceof IfcPropertySetLine) {
+                                        IfcPropertySetBox propSetsBox =
+                                                new IfcPropertySetBox(
+                                                        (IfcPropertySetLine) propertySetLine,
+                                                        parsedIfcFile.get());
+                                        getChildren().add(propSetsBox);
+                                    } else if (propertySetLine instanceof IfcElementQuantityLine) {
+                                        IfcElementQuantityBox elementQuantityBox =
+                                                new IfcElementQuantityBox(
+                                                        (IfcElementQuantityLine) propertySetLine,
+                                                        parsedIfcFile.get());
+                                        getChildren().add(elementQuantityBox);
+                                    } else {
+                                        getChildren().add(new IfcLineBox(propertySetLine));
+                                    }
+                                });
             }
             if (ifcLine instanceof IfcNamedPropertyLineInterface) {
                 accordion.getPanes().add(correspondingFeaturePane);
@@ -179,7 +217,7 @@ public class IfcLineView extends VBox {
                     new Task<>() {
                         @Override
                         protected List<Node> call() {
-                            List<IfcLine> lines = parsedIfcFile.get().getReferencingLines(ifcLine);
+                            Set<IfcLine> lines = parsedIfcFile.get().getReferencingLines(ifcLine);
                             return createLineComponents(lines);
                         }
                     };
@@ -229,7 +267,7 @@ public class IfcLineView extends VBox {
         }
     }
 
-    private List<Node> createLineComponents(List<IfcLine> lines) {
+    private List<Node> createLineComponents(Collection<IfcLine> lines) {
         List<Node> elements = new ArrayList<>();
         if (!lines.isEmpty()) {
             for (IfcLine relatedLine : lines) {
