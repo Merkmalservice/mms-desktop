@@ -157,7 +157,7 @@
                         </ScrollPane>
                     </center>
                 </BorderPane>
-                <BorderPane fx:id="selectedChangedIfcLineView" managed="false" AnchorPane.topAnchor="0.0"
+                <BorderPane fx:id="selectedChangedIfcLineView" managed="false" visible="false" AnchorPane.topAnchor="0.0"
                             AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
                             AnchorPane.leftAnchor="0.0">
                     <top>
