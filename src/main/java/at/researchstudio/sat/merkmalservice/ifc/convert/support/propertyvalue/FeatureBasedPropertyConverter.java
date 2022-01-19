@@ -120,7 +120,7 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
                 return new StepValueAndTypeAndIfcUnit(
                         new StepValueAndType(
                                 converted.getValue(),
-                                QudtIfcMapper.getIfcMeasure(converted.getUnit()).toString()),
+                                QudtIfcMapper.getIfcMeasure(converted.getUnit()).getStepTypeName()),
                         convertedIfcUnit);
             };
         }
