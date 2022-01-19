@@ -4,6 +4,7 @@ import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.task.IfcFileVO;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -57,8 +58,10 @@ public class OutputFileState {
             this.allChangedLines.setAll(
                     task.getValue().getParsedIfcFile().getChanges().values().stream()
                             .flatMap(Set::stream)
+                            .distinct()
                             .map(id -> task.getValue().getParsedIfcFile().getDataLines().get(id))
-                            .collect(Collectors.toSet()));
+                            .sorted(Comparator.comparing(IfcLine::toString))
+                            .collect(Collectors.toList()));
             //            this.extractedFeatures.addAll(
             //                task.getValue().getExtractedFeatures().stream()
             //                    .sorted(Comparator.comparing(Feature::getName))
