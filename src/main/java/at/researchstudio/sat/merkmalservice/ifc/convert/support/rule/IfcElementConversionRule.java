@@ -25,4 +25,10 @@ public class IfcElementConversionRule extends DelegatingConversionRule {
     public Set<Class<? extends IfcLine>> getIfcTypeRestrictions() {
         return Set.of(IfcBuiltElementLine.class);
     }
+
+    @Override
+    public String toString() {
+        // FIXME: Simple way to get Name of Rule (for now)
+        return getDelegate().toString();
+    }
 }

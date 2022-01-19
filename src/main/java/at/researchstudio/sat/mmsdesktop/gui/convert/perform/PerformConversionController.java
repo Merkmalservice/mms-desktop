@@ -196,6 +196,11 @@ public class PerformConversionController implements Initializable {
     @FXML
     public void handleResetAction(ActionEvent actionEvent) {
         stateService.getConvertState().resetConvertResults();
+        stateService
+                .getConvertState()
+                .getPerformConversionState()
+                .stepPerformConversionStatusProperty()
+                .set(ProcessState.STEP_ACTIVE);
         stateService.getConvertState().getInputFileState().resetSelectedConvertFile();
         stateService.getViewState().switchCenterPane(SelectInputFileController.class);
 

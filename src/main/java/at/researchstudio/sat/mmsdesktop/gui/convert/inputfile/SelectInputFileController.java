@@ -88,7 +88,13 @@ public class SelectInputFileController implements Initializable {
                                 .getConvertState()
                                 .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(STEP_COMPLETE));
+                                .isEqualTo(STEP_COMPLETE)
+                                .or(
+                                        stateService
+                                                .getConvertState()
+                                                .getInputFileState()
+                                                .stepFileStatusProperty()
+                                                .isEqualTo(STEP_FAILED)));
         topInputFile
                 .managedProperty()
                 .bind(
@@ -96,7 +102,13 @@ public class SelectInputFileController implements Initializable {
                                 .getConvertState()
                                 .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(STEP_COMPLETE));
+                                .isEqualTo(STEP_COMPLETE)
+                                .or(
+                                        stateService
+                                                .getConvertState()
+                                                .getInputFileState()
+                                                .stepFileStatusProperty()
+                                                .isEqualTo(STEP_FAILED)));
         centerProgress
                 .visibleProperty()
                 .bind(
@@ -121,7 +133,13 @@ public class SelectInputFileController implements Initializable {
                                 .getConvertState()
                                 .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(STEP_COMPLETE));
+                                .isEqualTo(STEP_COMPLETE)
+                                .or(
+                                        stateService
+                                                .getConvertState()
+                                                .getInputFileState()
+                                                .stepFileStatusProperty()
+                                                .isEqualTo(STEP_FAILED)));
         centerInputFile
                 .managedProperty()
                 .bind(
@@ -129,7 +147,13 @@ public class SelectInputFileController implements Initializable {
                                 .getConvertState()
                                 .getInputFileState()
                                 .stepFileStatusProperty()
-                                .isEqualTo(STEP_COMPLETE));
+                                .isEqualTo(STEP_COMPLETE)
+                                .or(
+                                        stateService
+                                                .getConvertState()
+                                                .getInputFileState()
+                                                .stepFileStatusProperty()
+                                                .isEqualTo(STEP_FAILED)));
 
         bottomInputFile
                 .visibleProperty()
@@ -304,6 +328,7 @@ public class SelectInputFileController implements Initializable {
                     event -> {
                         // TODO: MAYBE SHOW DIALOG INSTEAD
                         stateService.getConvertState().getInputFileState().setFileStepResult(task);
+                        stateService.getConvertState().resetConvertResults();
                     });
             stateService.getConvertState().getInputFileState().showLoadProgressView();
             centerProgressProgressBar.progressProperty().bind(task.progressProperty());

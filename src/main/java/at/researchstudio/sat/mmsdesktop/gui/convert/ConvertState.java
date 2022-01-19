@@ -6,7 +6,6 @@ import at.researchstudio.sat.mmsdesktop.gui.convert.outputfile.OutputFileState;
 import at.researchstudio.sat.mmsdesktop.gui.convert.perform.PerformConversionState;
 import at.researchstudio.sat.mmsdesktop.gui.convert.targetstandard.TargetStandardState;
 import at.researchstudio.sat.mmsdesktop.model.task.IfcFileVO;
-import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import java.util.Objects;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Task;
@@ -40,9 +39,6 @@ public class ConvertState {
         // TODO: RESET NECESSARY VARS
         this.convertLogOutput.set("");
         this.outputFileState.resetConvertedFile();
-        this.performConversionState
-                .stepPerformConversionStatusProperty()
-                .set(ProcessState.STEP_ACTIVE);
     }
 
     public void setConvertResults(Task<IfcFileVO> task) {

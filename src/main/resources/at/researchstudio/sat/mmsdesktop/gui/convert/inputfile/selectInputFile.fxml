@@ -163,7 +163,6 @@
                 <Insets top="10.0"/>
             </padding>
             <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
-                       fx:id="toTargetStandardPickerButton"
                        onAction="#handleToTargetStandardPicker" prefHeight="32.0" prefWidth="220.0"
                        AnchorPane.topAnchor="0.0"
                        AnchorPane.rightAnchor="0.0"
