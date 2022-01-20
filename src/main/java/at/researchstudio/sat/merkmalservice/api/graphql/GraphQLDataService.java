@@ -8,14 +8,9 @@ import at.researchstudio.sat.merkmalservice.support.exception.NoGraphQlResponseE
 import com.netflix.graphql.dgs.client.GraphQLResponse;
 import com.netflix.graphql.dgs.client.MonoGraphQLClient;
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -30,9 +25,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
@@ -78,9 +73,9 @@ public class GraphQLDataService implements InitializingBean {
         return graphqlQueries.computeIfAbsent(
                 filename,
                 n -> {
-                    Resource jsonFile = resourceLoader.getResource(filename);
-                    try {
-                        return Files.readString(Path.of(jsonFile.getURI()), StandardCharsets.UTF_8);
+                    try (InputStream fileInputStream =
+                            resourceLoader.getResource(filename).getInputStream()) {
+                        return StreamUtils.copyToString(fileInputStream, StandardCharsets.UTF_8);
                     } catch (IOException e) {
                         logger.warn("could not read json operation from file {}", filename, e);
                     }
