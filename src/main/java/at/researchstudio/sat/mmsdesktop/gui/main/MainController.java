@@ -338,24 +338,29 @@ public class MainController implements Initializable {
     @FXML
     private void handleLogoutAction(final ActionEvent event) {
         Task<LogoutResult> logoutTask = authService.getLogoutTask();
-        logoutTask.setOnSucceeded(
-                t -> {
-                    stateService.getViewState().switchCenterPane(AboutController.class);
-                    authService.resetLogoutTask();
-                });
-        logoutTask.setOnCancelled(
-                t -> {
-                    // TODO: Cancelled views
-                    stateService.getViewState().switchCenterPane(AboutController.class);
-                    authService.resetLogoutTask();
-                });
-        logoutTask.setOnFailed(
-                t -> {
-                    // TODO: Error Handling
-                    stateService.getViewState().switchCenterPane(AboutController.class);
-                    authService.resetLogoutTask();
-                });
-        new Thread(logoutTask).start();
+        stateService.getViewState().switchCenterPane(LoginController.class);
+        if (!logoutTask.isRunning()) {
+            logoutTask.setOnSucceeded(
+                    t -> {
+                        stateService.getViewState().switchCenterPane(AboutController.class);
+                        authService.resetLogoutTask();
+                    });
+            logoutTask.setOnCancelled(
+                    t -> {
+                        // TODO: Cancelled views
+                        stateService.getViewState().switchCenterPane(AboutController.class);
+                        authService.resetLogoutTask();
+                    });
+            logoutTask.setOnFailed(
+                    t -> {
+                        // TODO: Error Handling
+                        stateService.getViewState().switchCenterPane(AboutController.class);
+                        authService.resetLogoutTask();
+                    });
+            new Thread(logoutTask).start();
+        } else {
+            logger.info("Logout process still running, action will not be called again");
+        }
     }
 
     @FXML
