@@ -7,13 +7,20 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserDataDirService implements InitializingBean {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static final String DATA_DIR_NAME = ".mms";
+    private final String userDataDir;
+
+    @Autowired
+    public UserDataDirService(@Value("${mms.desktop.userDataDir}") String userDataDir) {
+        this.userDataDir = userDataDir;
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -38,7 +45,6 @@ public class UserDataDirService implements InitializingBean {
 
     @NotNull
     public String getUserDataDir() {
-        String dataDir = System.getProperty("user.home") + File.separator + DATA_DIR_NAME;
-        return dataDir;
+        return userDataDir;
     }
 }
