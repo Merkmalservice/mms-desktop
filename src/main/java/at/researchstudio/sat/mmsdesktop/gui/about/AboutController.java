@@ -45,7 +45,7 @@ public class AboutController implements Initializable {
                         + "- Select IFC File\n"
                         + "    - Close File again\n"
                         + "    - View raw IFC lines (File)\n"
-                        + "    - Inspect Feautres (Inspect):\n"
+                        + "    - Inspect Features (Inspect):\n"
                         + "        - Show Features in IFC File (line based)\n"
                         + "- Select Target Standard\n"
                         + "- Convert\n"
