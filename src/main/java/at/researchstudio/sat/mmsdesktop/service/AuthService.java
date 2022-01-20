@@ -110,7 +110,7 @@ public class AuthService implements ApplicationListener {
     }
 
     public Task<UserSession> getLoginTask() {
-        return generateLoginTask();
+        return loginTask;
     }
 
     public Task<LogoutResult> getLogoutTask() {
