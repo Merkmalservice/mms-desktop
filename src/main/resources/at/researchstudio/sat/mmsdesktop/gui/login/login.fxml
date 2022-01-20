@@ -15,7 +15,7 @@
     </BorderPane.margin>
     <center>
         <HBox alignment="CENTER">
-            <VBox spacing="10" fx:id="loginProcessing" alignment="CENTER">
+            <VBox spacing="10" fx:id="loginProcessing" alignment="CENTER" visible="false" managed="false">
                 <padding>
                     <Insets bottom="10.0"/>
                 </padding>
@@ -30,6 +30,27 @@
                            ripplerFill="WHITE"
                            style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
                            text="%label.cancel"
+                           textFill="#c1fff9"
+                           HBox.hgrow="ALWAYS">
+                    <padding>
+                        <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                    </padding>
+                </JFXButton>
+            </VBox>
+            <VBox spacing="10" fx:id="logoutProcessing" alignment="CENTER" visible="false" managed="false">
+                <padding>
+                    <Insets bottom="10.0"/>
+                </padding>
+                <Label style="-fx-font-weight: bold;" text="%label.logout.processing">
+                    <font>
+                        <Font size="18.0"/>
+                    </font>
+                </Label>
+                <JFXButton alignment="CENTER" focusTraversable="false" graphicTextGap="15.0"
+                           onAction="#handleForceLogoutAction" prefHeight="32.0" prefWidth="220.0"
+                           ripplerFill="WHITE"
+                           style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                           text="%label.logout.force"
                            textFill="#c1fff9"
                            HBox.hgrow="ALWAYS">
                     <padding>

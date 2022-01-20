@@ -11,8 +11,10 @@ import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
 import at.researchstudio.sat.mmsdesktop.gui.convert.perform.PerformConversionController;
+import at.researchstudio.sat.mmsdesktop.gui.login.LoginController;
 import at.researchstudio.sat.mmsdesktop.gui.project.ProjectListCell;
 import at.researchstudio.sat.mmsdesktop.gui.standard.StandardListCell;
+import at.researchstudio.sat.mmsdesktop.model.auth.UserSession;
 import at.researchstudio.sat.mmsdesktop.service.AuthService;
 import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
@@ -33,6 +35,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
@@ -50,6 +53,8 @@ public class SelectTargetStandardController implements Initializable {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final ReactiveStateService stateService;
+    @FXML private HBox loginRequired;
+    @FXML private HBox pickerUi;
     @FXML private BorderPane stsParentPane;
 
     @FXML private JFXComboBox<Project> projectList;
@@ -78,6 +83,15 @@ public class SelectTargetStandardController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resourceBundle) {
         snackbar = new JFXSnackbar(stsParentPane);
+
+        this.pickerUi.visibleProperty().bind(stateService.getLoginState().loggedInProperty());
+        this.pickerUi.managedProperty().bind(stateService.getLoginState().loggedInProperty());
+        this.loginRequired
+                .visibleProperty()
+                .bind(Bindings.not(stateService.getLoginState().loggedInProperty()));
+        this.loginRequired
+                .managedProperty()
+                .bind(Bindings.not(stateService.getLoginState().loggedInProperty()));
 
         this.projectList.disableProperty().bind(targetStandardState.loadingMappingsProperty());
         this.projectList
@@ -342,6 +356,36 @@ public class SelectTargetStandardController implements Initializable {
         } else {
             targetStandardState.clearSelectedMappings();
         }
+    }
+
+    @FXML
+    private void handleLogin(final ActionEvent event) {
+        Task<UserSession> loginTask = authService.getLoginTask();
+        stateService.getViewState().switchCenterPane(LoginController.class);
+        loginTask.setOnSucceeded(
+                t -> {
+                    stateService
+                            .getViewState()
+                            .switchCenterPane(SelectTargetStandardController.class);
+                    authService.resetLoginTask();
+                });
+        loginTask.setOnCancelled(
+                t -> {
+                    // TODO: Cancelled views
+                    stateService
+                            .getViewState()
+                            .switchCenterPane(SelectTargetStandardController.class);
+                    authService.resetLoginTask();
+                });
+        loginTask.setOnFailed(
+                t -> {
+                    // TODO: Error Handling
+                    stateService
+                            .getViewState()
+                            .switchCenterPane(SelectTargetStandardController.class);
+                    authService.resetLoginTask();
+                });
+        new Thread(loginTask).start();
     }
 
     public ObservableList<Project> getAvailableProjects() {

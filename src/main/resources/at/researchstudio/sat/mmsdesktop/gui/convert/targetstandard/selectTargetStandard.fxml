@@ -27,7 +27,37 @@
                     <Font size="18.0"/>
                 </font>
             </Label>
-            <HBox spacing="5">
+            <HBox spacing="5" fx:id="loginRequired">
+                <VBox spacing="5" alignment="CENTER">
+                    <Label text="%label.projectpicker.loginRequired">
+                        <graphic>
+                            <FontIcon style="-fx-icon-color: #ff9966;"
+                                      iconLiteral="bi-exclamation-triangle-fill"
+                                      iconSize="24"/>
+                        </graphic>
+                        <font>
+                            <Font size="18.0"/>
+                        </font>
+                    </Label>
+                    <JFXButton focusTraversable="false" graphicTextGap="15.0"
+                               onAction="#handleLogin" prefHeight="32.0"
+                               prefWidth="220.0"
+                               ripplerFill="WHITE"
+                               style="-fx-background-color: #5bbad5; -fx-cursor: hand;"
+                               text="%label.login"
+                               textFill="#c1fff9" VBox.vgrow="ALWAYS">
+                        <graphic>
+                            <FontIcon style="-fx-icon-color: #c1fff9;"
+                                      iconLiteral="bi-box-arrow-in-right"
+                                      iconSize="24"/>
+                        </graphic>
+                        <padding>
+                            <Insets bottom="5.0" left="5.0" top="5.0" right="5.0"/>
+                        </padding>
+                    </JFXButton>
+                </VBox>
+            </HBox>
+            <HBox spacing="5" fx:id="pickerUi">
                 <VBox>
                     <Label text="%label.projectpicker.project">
                         <font>
