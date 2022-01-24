@@ -8,10 +8,7 @@ import at.researchstudio.sat.merkmalservice.ifc.parser.IfcLineParserImpl;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcPropertyBuilder;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.ifc.support.ProjectUnits;
-import at.researchstudio.sat.merkmalservice.model.BooleanFeature;
-import at.researchstudio.sat.merkmalservice.model.EnumFeature;
-import at.researchstudio.sat.merkmalservice.model.Feature;
-import at.researchstudio.sat.merkmalservice.model.StringFeature;
+import at.researchstudio.sat.merkmalservice.model.*;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcDerivedUnit;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcProperty;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcSIUnit;
@@ -109,9 +106,7 @@ public class IfcFileReader {
             IfcFileWrapper ifcFile, TaskProgressListener taskProgressListener) throws IOException {
         long totalLineCount = countLines(ifcFile.getFile().getAbsolutePath());
         int updateIncrement = (int) (totalLineCount / PROGRESS_UPDATES);
-
         List<IfcLine> lines = new ArrayList<>();
-
         try (LineIterator it =
                 FileUtils.lineIterator(ifcFile.getFile(), StandardCharsets.UTF_8.toString())) {
             StringBuilder sb = new StringBuilder();
@@ -187,7 +182,6 @@ public class IfcFileReader {
                                                 updateIncrement,
                                                 new StringBuilder()))
                         .collect(Collectors.toList());
-
         return processIfcLines(
                 lines,
                 new IfcFileWrapper(new File(parsedIfcFile.getIfcFileWrapper().getFile().getPath())),
@@ -366,7 +360,6 @@ public class IfcFileReader {
         }
         StringBuilder extractLog = new StringBuilder();
         ProjectUnits projectUnitsObject = new ProjectUnits(projectUnitsMap, projectUnitsById);
-
         ParsedIfcFile parsedIfcFile =
                 new ParsedIfcFile(
                         lines, extractedProperties, projectUnitsObject, ifcFile, extractLog);
@@ -378,9 +371,7 @@ public class IfcFileReader {
 
     public static ParsedIfcFile readIfcFile(
             IfcFileWrapper ifcFile, TaskProgressListener taskProgressListener) throws IOException {
-
         List<IfcLine> lines = readLinesFromIfcFile(ifcFile, taskProgressListener);
-
         return processIfcLines(lines, ifcFile, taskProgressListener);
     }
 
@@ -723,5 +714,21 @@ public class IfcFileReader {
             }
         }
         return extractedFeatures;
+    }
+
+    public static List<PropertySet> extractPropertySetsFromIFCPropertySetLines(
+            List<IfcPropertySetLine> ifcPropertySetLines, @NonNull final StringBuilder fullLog) {
+        String logString = ifcPropertySetLines.size() + " PropertySetLines";
+        fullLog.append(logString).append(System.getProperty("line.separator"));
+        List<PropertySet> propertySets = new ArrayList<>();
+        ifcPropertySetLines.forEach(
+                ifcPropertySetLine -> {
+                    propertySets.add(
+                            new PropertySet(
+                                    null,
+                                    ifcPropertySetLine.getName(),
+                                    ifcPropertySetLine.getDescription()));
+                });
+        return propertySets;
     }
 }

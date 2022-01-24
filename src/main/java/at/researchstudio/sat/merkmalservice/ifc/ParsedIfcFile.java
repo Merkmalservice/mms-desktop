@@ -18,6 +18,7 @@ import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcPropertyBuilder;
 import at.researchstudio.sat.merkmalservice.ifc.support.ProjectUnits;
 import at.researchstudio.sat.merkmalservice.model.Feature;
+import at.researchstudio.sat.merkmalservice.model.PropertySet;
 import at.researchstudio.sat.merkmalservice.model.ifc.*;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
 import at.researchstudio.sat.merkmalservice.support.exception.IfcPropertyTypeUnsupportedException;
@@ -46,18 +47,19 @@ public class ParsedIfcFile {
     private final Set<IfcProperty> extractedProperties;
     private final Map<IfcPropertyType, List<IfcProperty>> extractedPropertyMap;
     private final List<Feature> features;
+    private final List<PropertySet> propertySets;
     private final Set<FeatureSet> featureSets;
     private final Map<Integer, Set<Integer>> reverseLookupRelDefinesByProperties;
     private final Map<Integer, Set<Integer>> reverseLookupReferencingLines;
     private final StepPropertyValueFactory stepPropertyValueFactory;
     private final ProjectUnits projectUnits;
     private final AtomicInteger nextFreeLineId = new AtomicInteger(1);
-
     private final Map<ConversionRule, Set<Integer>> changes;
 
     public ParsedIfcFile(
             List<IfcLine> lines,
             @NonNull Set<IfcProperty> extractedProperties,
+            List<IfcPropertySetLine> propertySetLines,
             ProjectUnits projectUnits,
             IfcFileWrapper ifcFileWrapper,
             StringBuilder extractLog) {
@@ -82,6 +84,9 @@ public class ParsedIfcFile {
             this.features =
                     IfcFileReader.extractFeaturesFromProperties(
                             this.extractedPropertyMap, extractLog);
+            this.propertySets =
+                    IfcFileReader.extractPropertySetsFromIFCPropertySetLines(
+                            propertySetLines, extractLog);
             HashMap<String, Set<String>> featureSetFeatureNameMap = new HashMap<>();
             this.dataLinesByClass
                     .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
@@ -261,7 +266,7 @@ public class ParsedIfcFile {
         List<IfcLine> properties =
                 Stream.concat(
                                 getRelDefinesByPropertiesLinesReferencing(element).stream()
-                                        .map(this::getPropertySet)
+                                        .map(this::getPropertySetLine)
                                         .filter(Optional::isPresent)
                                         .flatMap(ps -> getPropertySetChildLines(ps.get()).stream())
                                         .filter(predicate),
@@ -281,7 +286,7 @@ public class ParsedIfcFile {
             T element, Predicate<IfcLine> predicate) {
         List<IfcLine> properties =
                 getRelDefinesByTypeReferencing(element).stream()
-                        .flatMap(rel -> getPropertySets(rel).stream())
+                        .flatMap(rel -> getPropertySetLines(rel).stream())
                         .flatMap(ps -> getPropertySetChildLines(ps).stream())
                         .filter(predicate)
                         .collect(toList());
@@ -303,7 +308,7 @@ public class ParsedIfcFile {
         List<IfcPropertySetLine> propSets =
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
                         .filter(not(IfcRelDefinesByPropertiesLine::isSharedPropertySet))
-                        .map(this::getPropertySet)
+                        .map(this::getPropertySetLine)
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .filter(pset -> propertySetName.equals(pset.getName()))
@@ -376,7 +381,7 @@ public class ParsedIfcFile {
         List<Pair<IfcPropertySetLine, IfcSinglePropertyValueLine>> toDelete =
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
                         .filter(not(IfcRelDefinesByPropertiesLine::isSharedPropertySet))
-                        .map(this::getPropertySet)
+                        .map(this::getPropertySetLine)
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .flatMap(
@@ -448,7 +453,6 @@ public class ParsedIfcFile {
             propertySetName = "CONVERTED";
         }
         IfcPropertySetLine targetPSet = getOrSplitOrCreatePropertySet(element, propertySetName);
-
         StepValueAndTypeAndIfcUnit convertedValue =
                 converter.convert(stepValueAndTypeAndIfcUnit, this);
         if (deleteInputProperty) {
@@ -463,7 +467,7 @@ public class ParsedIfcFile {
                 .filter(IfcRelDefinesByPropertiesLine::isSharedPropertySet)
                 .filter(
                         (IfcRelDefinesByPropertiesLine psRel) -> {
-                            Optional<IfcPropertySetLine> ps = getPropertySet(psRel);
+                            Optional<IfcPropertySetLine> ps = getPropertySetLine(psRel);
                             return ps.map(
                                             pset ->
                                                     getPropertySetChildLines(pset).stream()
@@ -480,7 +484,7 @@ public class ParsedIfcFile {
                 .filter(IfcRelDefinesByPropertiesLine::isSharedPropertySet)
                 .filter(
                         (IfcRelDefinesByPropertiesLine psRel) ->
-                                getPropertySet(psRel).map(predicate::test).orElse(false))
+                                getPropertySetLine(psRel).map(predicate::test).orElse(false))
                 .forEach(ps -> splitSharedPropertySet(element, ps));
     }
 
@@ -631,7 +635,7 @@ public class ParsedIfcFile {
     public <T extends IfcLine> void removePropertyViaType(T element, Predicate<IfcLine> predicate) {
         List<Pair<IfcPropertySetLine, IfcSinglePropertyValueLine>> toDelete =
                 getRelDefinesByTypeReferencing(element).stream()
-                        .flatMap(rel -> getPropertySets(rel).stream())
+                        .flatMap(rel -> getPropertySetLines(rel).stream())
                         .flatMap(
                                 ps ->
                                         getPropertySetChildLines(ps).stream()
@@ -687,7 +691,7 @@ public class ParsedIfcFile {
         cascadingDeletes.forEach(this::removeLine);
     }
 
-    public Optional<IfcPropertySetLine> getPropertySet(
+    public Optional<IfcPropertySetLine> getPropertySetLine(
             IfcRelDefinesByPropertiesLine propertySetRel) {
         IfcLine related = getDataLines().get(propertySetRel.getRelatingPropertySetId());
         return TypeConverter.castToOpt(related, IfcPropertySetLine.class);
@@ -699,7 +703,7 @@ public class ParsedIfcFile {
         return TypeConverter.castToOpt(related, IfcElementQuantityLine.class);
     }
 
-    public List<IfcPropertySetLine> getPropertySets(IfcRelDefinesByTypeLine propertySetRel) {
+    public List<IfcPropertySetLine> getPropertySetLines(IfcRelDefinesByTypeLine propertySetRel) {
         Optional<IfcTypeObjectLine> related =
                 TypeConverter.castToOptAndLogFailure(
                         getDataLines().get(propertySetRel.getRelatingTypeId()),
@@ -769,6 +773,10 @@ public class ParsedIfcFile {
 
     public List<Feature> getFeatures() {
         return features;
+    }
+
+    public List<PropertySet> getPropertySets() {
+        return propertySets;
     }
 
     public Set<FeatureSet> getFeatureSets() {

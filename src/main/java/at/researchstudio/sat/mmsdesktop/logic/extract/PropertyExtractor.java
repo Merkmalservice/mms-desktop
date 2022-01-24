@@ -146,11 +146,13 @@ public class PropertyExtractor {
                         if (extractFile instanceof IfcFileWrapper) {
                             IfcFileWrapper ifcFile = (IfcFileWrapper) extractFile;
                             List<Feature> extractedFeaturesFromIfcFile;
+                            List<PropertySet> extractedPropertySetsFromIfcFile;
                             Set<FeatureSet> extractedFeatureSetsFromIfcFile;
                             ParsedIfcFile parsedIfcFile =
                                     IfcFileReader.readIfcFile(
                                             (IfcFileWrapper) extractFile, taskProgressListener);
                             extractedFeaturesFromIfcFile = parsedIfcFile.getFeatures();
+                            extractedPropertySetsFromIfcFile = parsedIfcFile.getPropertySets();
                             extractedFeatureSetsFromIfcFile = parsedIfcFile.getFeatureSets();
                             logOutput
                                     .append("Extracted ")
