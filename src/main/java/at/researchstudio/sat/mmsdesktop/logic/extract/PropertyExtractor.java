@@ -5,6 +5,8 @@ import at.researchstudio.sat.merkmalservice.ifc.IfcFileReader;
 import at.researchstudio.sat.merkmalservice.ifc.IfcFileWrapper;
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.model.Feature;
+import at.researchstudio.sat.merkmalservice.model.JsonModel;
+import at.researchstudio.sat.merkmalservice.model.PropertySet;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import at.researchstudio.sat.mmsdesktop.model.helper.FeatureSet;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
@@ -32,6 +34,8 @@ public class PropertyExtractor {
                 final int max = fileCount * 2;
                 List<Feature> extractedFeatures = new ArrayList<>();
                 int extractedFeaturesCount = 0;
+                List<PropertySet> extractedPropertySets = new ArrayList<>();
+                int extractedPropertySetsCount = 0;
                 Set<FeatureSet> extractedFeatureSets = new HashSet<>();
                 int extractedFeatureSetsCount = 0;
                 Map<Class<? extends FileWrapper>, List<FileWrapper>> extractFilesMap =
@@ -55,9 +59,11 @@ public class PropertyExtractor {
                                     .append(" from JSON File ")
                                     .append(extractFile.getPath())
                                     .append(": ");
-                            List<Feature> extractedFeaturesFromJsonFile =
+                            JsonModel jsonModelFromFile =
                                     at.researchstudio.sat.merkmalservice.utils.Utils.readFromJson(
                                             extractFile.getFile());
+                            List<Feature> extractedFeaturesFromJsonFile =
+                                    jsonModelFromFile.getFeatures();
                             logOutput
                                     .append("Extracted ")
                                     .append(extractedFeaturesFromJsonFile.size())
@@ -65,6 +71,15 @@ public class PropertyExtractor {
                                     .append(System.lineSeparator());
                             extractedFeatures.addAll(extractedFeaturesFromJsonFile);
                             extractedFeaturesCount += extractedFeaturesFromJsonFile.size();
+                            List<PropertySet> extractedPropertySetsFromJsonFile =
+                                    jsonModelFromFile.getPropertySets();
+                            logOutput
+                                    .append("Extracted ")
+                                    .append(extractedPropertySetsFromJsonFile.size())
+                                    .append(" PropertySets")
+                                    .append(System.lineSeparator());
+                            extractedPropertySets.addAll(extractedPropertySetsFromJsonFile);
+                            extractedPropertySetsCount += extractedPropertySetsFromJsonFile.size();
                             convertedFileCount++;
                         } catch (Exception e) {
                             logOutput
@@ -197,6 +212,10 @@ public class PropertyExtractor {
                         .append(extractedFeatures.size())
                         .append(" jsonFeatures")
                         .append(System.lineSeparator())
+                        .append("Parsed ")
+                        .append(extractedPropertySets.size())
+                        .append(" jsonPropertySets")
+                        .append(System.lineSeparator())
                         .append(
                                 "-------------------------------------------------------------------------------")
                         .append(System.lineSeparator())
@@ -215,7 +234,10 @@ public class PropertyExtractor {
                     updateMessage(logOutput.toString());
                 }
                 return new ExtractResult(
-                        extractedFeatures, extractedFeatureSets, logOutput.toString());
+                        extractedFeatures,
+                        extractedFeatureSets,
+                        extractedPropertySets,
+                        logOutput.toString());
             }
         };
     }

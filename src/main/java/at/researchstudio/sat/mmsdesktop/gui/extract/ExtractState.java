@@ -5,6 +5,7 @@ import at.researchstudio.sat.merkmalservice.ifc.IfcFileWrapper;
 import at.researchstudio.sat.merkmalservice.ifc.support.FileUtils;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.model.Feature;
+import at.researchstudio.sat.merkmalservice.model.PropertySet;
 import at.researchstudio.sat.merkmalservice.utils.ExcludeDescriptionStrategy;
 import at.researchstudio.sat.mmsdesktop.gui.component.featureset.FeatureSetBox;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
@@ -29,28 +30,22 @@ public class ExtractState {
     public static final int INITIAL = 0;
     public static final int PROCESSING = 1;
     public static final int EXTRACTED = 2;
-
     private final IntegerProperty state;
-
     private final ObservableList<FileWrapper> selectedExtractFiles;
     private final BooleanProperty selectedExtractFilesPresent;
-
     private final SimpleStringProperty extractLogOutput;
     private final SimpleStringProperty extractJsonOutput;
-
     private final ObservableList<Feature> extractedFeatures;
     private final FilteredList<Feature> filteredExtractedFeatures;
     private final SortedList<Feature> sortedExtractedFeatures;
-
+    private final ObservableList<PropertySet> extractedPropertySets;
     private final BooleanProperty extractedFeatureSetsPresent;
     private final ObservableList<FeatureSetBox> extractedFeatureSets;
     private final SortedList<FeatureSetBox> sortedFeatureSets;
-
     private final BooleanProperty includeDescriptionInJsonOutput;
 
     public ExtractState() {
         this.state = new SimpleIntegerProperty(INITIAL);
-
         this.includeDescriptionInJsonOutput = new SimpleBooleanProperty(true);
         this.selectedExtractFiles = FXCollections.observableArrayList();
         this.selectedExtractFilesPresent = new SimpleBooleanProperty(false);
@@ -59,7 +54,7 @@ public class ExtractState {
         this.extractedFeatures = FXCollections.observableArrayList();
         this.filteredExtractedFeatures = new FilteredList<>(extractedFeatures);
         this.sortedExtractedFeatures = new SortedList<>(filteredExtractedFeatures);
-
+        this.extractedPropertySets = FXCollections.observableArrayList();
         this.extractedFeatureSets = FXCollections.observableArrayList();
         this.extractedFeatureSetsPresent = new SimpleBooleanProperty(false);
         this.sortedFeatureSets = new SortedList<>(extractedFeatureSets);
@@ -67,10 +62,8 @@ public class ExtractState {
                 (o1, o2) -> {
                     String featureSetName1 = o1.getFeatureSet().getName();
                     String featureSetName2 = o2.getFeatureSet().getName();
-
                     return featureSetName1.compareToIgnoreCase(featureSetName2);
                 });
-
         this.includeDescriptionInJsonOutput.addListener(
                 (observable, oldValue, newValue) -> {
                     GsonBuilder gsonBuilder = (new GsonBuilder()).setPrettyPrinting();
@@ -80,7 +73,6 @@ public class ExtractState {
                     this.extractJsonOutput.setValue(
                             gsonBuilder.create().toJson(filteredExtractedFeatures));
                 });
-
         this.filteredExtractedFeatures.addListener(
                 (ListChangeListener<? super Feature>)
                         listener -> {
@@ -149,6 +141,7 @@ public class ExtractState {
 
     public void setExtractResult(Task<ExtractResult> task) {
         this.extractedFeatures.setAll(task.getValue().getExtractedFeatures());
+        this.extractedPropertySets.setAll(task.getValue().getExtractedPropertySets());
         this.extractedFeatureSets.setAll(task.getValue().getExtractedUniqueFeatureSetControls());
         if (Objects.isNull(task.getException())) {
             this.extractLogOutput.setValue(task.getValue().getLogOutput());
@@ -170,6 +163,7 @@ public class ExtractState {
 
     public void resetExtractResults() {
         this.extractedFeatures.clear();
+        this.extractedPropertySets.clear();
         this.filteredExtractedFeatures.clear();
         this.sortedExtractedFeatures.clear();
         this.extractLogOutput.set("");
@@ -179,6 +173,10 @@ public class ExtractState {
 
     public ObservableList<Feature> getExtractedFeatures() {
         return extractedFeatures;
+    }
+
+    public ObservableList<PropertySet> getExtractedPropertySets() {
+        return extractedPropertySets;
     }
 
     public SortedList<Feature> getSortedExtractedFeatures() {
