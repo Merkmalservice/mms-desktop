@@ -59,7 +59,6 @@ public class ParsedIfcFile {
     public ParsedIfcFile(
             List<IfcLine> lines,
             @NonNull Set<IfcProperty> extractedProperties,
-            List<IfcPropertySetLine> propertySetLines,
             ProjectUnits projectUnits,
             IfcFileWrapper ifcFileWrapper,
             StringBuilder extractLog) {
@@ -83,10 +82,21 @@ public class ParsedIfcFile {
                             .collect(groupingBy(t -> t.type, mapping(t -> t.instance, toList())));
             this.features =
                     IfcFileReader.extractFeaturesFromProperties(
-                            this.extractedPropertyMap, propertySetLines, extractLog);
+                            this.extractedPropertyMap,
+                            this.dataLinesByClass
+                                    .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
+                                    .stream()
+                                    .map(l -> (IfcPropertySetLine) l)
+                                    .collect(Collectors.toList()),
+                            extractLog);
             this.propertySets =
                     IfcFileReader.extractPropertySetsFromIFCPropertySetLines(
-                            propertySetLines, extractLog);
+                            this.dataLinesByClass
+                                    .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
+                                    .stream()
+                                    .map(l -> (IfcPropertySetLine) l)
+                                    .collect(Collectors.toList()),
+                            extractLog);
             HashMap<String, Set<String>> featureSetFeatureNameMap = new HashMap<>();
             this.dataLinesByClass
                     .getOrDefault(IfcPropertySetLine.class, Collections.emptyList())
