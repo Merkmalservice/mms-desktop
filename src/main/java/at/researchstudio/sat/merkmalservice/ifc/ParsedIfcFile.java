@@ -83,7 +83,7 @@ public class ParsedIfcFile {
                             .collect(groupingBy(t -> t.type, mapping(t -> t.instance, toList())));
             this.features =
                     IfcFileReader.extractFeaturesFromProperties(
-                            this.extractedPropertyMap, extractLog);
+                            this.extractedPropertyMap, propertySetLines, extractLog);
             this.propertySets =
                     IfcFileReader.extractPropertySetsFromIFCPropertySetLines(
                             propertySetLines, extractLog);
@@ -240,6 +240,7 @@ public class ParsedIfcFile {
             this.dataLinesByClass = Collections.emptyMap();
             this.featureSets = Collections.emptySet();
             this.features = Collections.emptyList();
+            this.propertySets = Collections.emptyList();
             this.reverseLookupRelDefinesByProperties = Collections.emptyMap();
             this.reverseLookupReferencingLines = Collections.emptyMap();
             stepPropertyValueFactory =
