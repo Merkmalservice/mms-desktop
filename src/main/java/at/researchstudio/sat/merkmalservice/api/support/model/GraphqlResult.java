@@ -6,6 +6,7 @@ import java.util.List;
 
 public class GraphqlResult {
     private List<Project> projects;
+    private Project project;
     private List<Mapping> mappings;
     private Mapping mapping;
 
@@ -21,5 +22,9 @@ public class GraphqlResult {
 
     public Mapping getMapping() {
         return mapping;
+    }
+
+    public Project getProject() {
+        return project;
     }
 }

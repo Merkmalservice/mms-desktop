@@ -326,36 +326,74 @@ public class SelectTargetStandardController implements Initializable {
     public void handleLoadMappingsAction(ActionEvent actionEvent) {
         // TODO: THIS SHOULD PROBABLY BE A TASK
         if (targetStandardState.isProjectAndStandardSelected()) {
-            Task<List<Mapping>> task =
-                    new Task<List<Mapping>>() {
-                        @Override
-                        protected List<Mapping> call() throws Exception {
-                            return dataService.getMappings(
-                                    targetStandardState.getSelectedMappingIds());
-                        }
-                    };
-            task.setOnSucceeded(
-                    e -> {
-                        targetStandardState.setSelectedMappings(task.getValue());
-                    });
-            task.setOnFailed(
-                    e -> {
-                        Platform.runLater(
-                                () ->
-                                        snackbar.fireEvent(
-                                                new JFXSnackbar.SnackbarEvent(
-                                                        new JFXSnackbarLayout(
-                                                                resourceBundle.getString(
-                                                                        "label.convert.mappings.fetchfailed")),
-                                                        Duration.seconds(5),
-                                                        null)));
-                        targetStandardState.clear();
-                    });
-            targetStandardState.setLoadingMappings(true);
-            new Thread(task).start();
+            Task<List<Mapping>> loadMappingsTask = makeLoadMappingsTask();
+            Task<List<Standard>> loadStandardsWithPropertySetsTask =
+                    makeLoadStandardsWithPropertySetsTask();
+            new Thread(loadMappingsTask).start();
+            new Thread(loadStandardsWithPropertySetsTask).start();
         } else {
             targetStandardState.clearSelectedMappings();
         }
+    }
+
+    private Task<List<Mapping>> makeLoadMappingsTask() {
+        Task<List<Mapping>> task =
+                new Task<List<Mapping>>() {
+                    @Override
+                    protected List<Mapping> call() throws Exception {
+                        return dataService.getMappings(targetStandardState.getSelectedMappingIds());
+                    }
+                };
+        task.setOnSucceeded(
+                e -> {
+                    targetStandardState.setSelectedMappings(task.getValue());
+                });
+        task.setOnFailed(
+                e -> {
+                    Platform.runLater(
+                            () ->
+                                    snackbar.fireEvent(
+                                            new JFXSnackbar.SnackbarEvent(
+                                                    new JFXSnackbarLayout(
+                                                            resourceBundle.getString(
+                                                                    "label.convert.mappings.fetchfailed")),
+                                                    Duration.seconds(5),
+                                                    null)));
+                    targetStandardState.clear();
+                });
+        targetStandardState.setLoadingMappings(true);
+        return task;
+    }
+
+    private Task<List<Standard>> makeLoadStandardsWithPropertySetsTask() {
+        Task<List<Standard>> task =
+                new Task<List<Standard>>() {
+                    @Override
+                    protected List<Standard> call() throws Exception {
+                        Project project = targetStandardState.selectedProjectProperty().get();
+                        return dataService.getFeatureSetsOfProjectWithPropertySets(project.getId());
+                    }
+                };
+        task.setOnSucceeded(
+                e -> {
+                    targetStandardState
+                            .availableStandardsWithPropertySetsProperty()
+                            .setAll(task.getValue());
+                });
+        task.setOnFailed(
+                e -> {
+                    Platform.runLater(
+                            () ->
+                                    snackbar.fireEvent(
+                                            new JFXSnackbar.SnackbarEvent(
+                                                    new JFXSnackbarLayout(
+                                                            resourceBundle.getString(
+                                                                    "label.convert.propertysets.fetchfailed")),
+                                                    Duration.seconds(5),
+                                                    null)));
+                    targetStandardState.clear();
+                });
+        return task;
     }
 
     @FXML

@@ -3,6 +3,7 @@ package at.researchstudio.sat.merkmalservice.api.graphql;
 import at.researchstudio.sat.merkmalservice.api.support.model.GraphqlResult;
 import at.researchstudio.sat.merkmalservice.api.userdata.UserDataDirService;
 import at.researchstudio.sat.merkmalservice.model.Project;
+import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
 import at.researchstudio.sat.merkmalservice.support.exception.NoGraphQlResponseException;
 import com.netflix.graphql.dgs.client.GraphQLResponse;
@@ -95,6 +96,25 @@ public class GraphQLDataService implements InitializingBean {
             throw new NoGraphQlResponseException("Empty Response for project query");
         }
         return response.dataAsObject(GraphqlResult.class).getProjects();
+    }
+
+    public List<Standard> getFeatureSetsOfProjectWithPropertySets(
+            String projectId, String idTokenString) {
+        String queryString =
+                getGraphQlQuery("classpath:graphql/query-standards-with-propertysets.gql");
+        GraphQLResponse response =
+                getGraphQLClient(idTokenString)
+                        .reactiveExecuteQuery(
+                                queryString,
+                                Map.of("projectId", projectId),
+                                "projectWithStandardsWithPropertySets")
+                        .doOnError(t -> logError(t))
+                        .block();
+        logResponse(response);
+        if (response == null) {
+            throw new NoGraphQlResponseException("Empty Response for standards query");
+        }
+        return response.dataAsObject(GraphqlResult.class).getProject().getStandards();
     }
 
     public List<Mapping> getMappings(List<String> mappingIds, String idTokenString) {

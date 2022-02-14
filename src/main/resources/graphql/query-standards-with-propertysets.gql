@@ -1,0 +1,15 @@
+query projectWithStandardsWithPropertySets($projectId :ID!) {
+project (id : $projectId) {
+        id
+        name
+        standards {
+            id
+            name
+            propertySets {
+                id
+                name
+                description
+            }
+        }
+    }
+}
