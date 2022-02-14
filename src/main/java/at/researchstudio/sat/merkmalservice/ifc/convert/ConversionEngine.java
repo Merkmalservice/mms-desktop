@@ -98,8 +98,23 @@ public class ConversionEngine {
                                                                 / (float) currentRules.size());
                                             }
                                             result.addChange(rule, line.getId());
-                                            return rule.applyTo(line, result);
+                                            try {
+                                                ParsedIfcFileModification modification =
+                                                        rule.applyTo(line, result);
+                                                return modification;
+                                            } catch (Exception e) {
+                                                logger.warn(
+                                                        "Error generating modification of line "
+                                                                + line.getId()
+                                                                + " by rule "
+                                                                + rule.toString()
+                                                                + ": "
+                                                                + e.getMessage(),
+                                                        e);
+                                            }
+                                            return null;
                                         })
+                                .filter(Objects::nonNull)
                                 .forEach(modifications::add);
                     }
                 }
