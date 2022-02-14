@@ -196,7 +196,8 @@ public class ConversionEngineTests {
                                         "byPresent",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.PRESENT,
-                                        null)));
+                                        null)),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_cpiFitMatchKey", engine);
     }
@@ -210,7 +211,8 @@ public class ConversionEngineTests {
                                         "byContains",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.CONTAINS,
-                                        new MappingExecutionValue("ABC"))));
+                                        new MappingExecutionValue("ABC"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_cpiFitMatchKey_1_instance_ABC", engine);
     }
@@ -228,7 +230,8 @@ public class ConversionEngineTests {
                                         "byContains",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.CONTAINS,
-                                        new MappingExecutionValue("ABC"))));
+                                        new MappingExecutionValue("ABC"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_Typname_where_cpiFitMatchKey_ABC", engine);
     }
@@ -244,7 +247,8 @@ public class ConversionEngineTests {
                                         "byContains",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.CONTAINS,
-                                        new MappingExecutionValue("ABC"))));
+                                        new MappingExecutionValue("ABC"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_phase_erstellt_where_cpiFitMatchKey_contains_ABC", engine);
     }
@@ -266,7 +270,8 @@ public class ConversionEngineTests {
                                         "byContains",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.CONTAINS,
-                                        new MappingExecutionValue("KLM"))));
+                                        new MappingExecutionValue("KLM"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_phase_erstellt_where_cpiFitMatchKey_contains_ABC_KLM", engine);
     }
@@ -294,7 +299,8 @@ public class ConversionEngineTests {
                                         "byContains",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.CONTAINS,
-                                        new MappingExecutionValue("RST"))));
+                                        new MappingExecutionValue("RST"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut(
                 "delete_property_phase_erstellt_where_cpiFitMatchKey_contains_ABC_KLM_RST", engine);
@@ -309,7 +315,8 @@ public class ConversionEngineTests {
                                         "byContainsNot",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.CONTAINS_NOT,
-                                        new MappingExecutionValue("ABC"))));
+                                        new MappingExecutionValue("ABC"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_cpiFitMatchKey_2_instances", engine);
     }
@@ -323,7 +330,8 @@ public class ConversionEngineTests {
                                         "byContains",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.CONTAINS,
-                                        new MappingExecutionValue("DO-NOT-FIND-THIS"))));
+                                        new MappingExecutionValue("DO-NOT-FIND-THIS"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("no_change", engine);
     }
@@ -337,7 +345,8 @@ public class ConversionEngineTests {
                                         "byMatches",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.MATCHES,
-                                        new MappingExecutionValue("^AB(\\.|C)[DEFG]+$"))));
+                                        new MappingExecutionValue("^AB(\\.|C)[DEFG]+$"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_cpiFitMatchKey_1_instance_ABC", engine);
     }
@@ -351,7 +360,8 @@ public class ConversionEngineTests {
                                         "byEquals",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.EQUALS,
-                                        new MappingExecutionValue("ABCDEFG"))));
+                                        new MappingExecutionValue("ABCDEFG"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_cpiFitMatchKey_1_instance_ABC", engine);
     }
@@ -365,7 +375,8 @@ public class ConversionEngineTests {
                                         "byEqualsNot",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.NOT,
-                                        new MappingExecutionValue("ABCDEFG"))));
+                                        new MappingExecutionValue("ABCDEFG"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_cpiFitMatchKey_2_instances", engine);
     }
@@ -379,7 +390,8 @@ public class ConversionEngineTests {
                                         "byEquals",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.EQUALS,
-                                        new MappingExecutionValue("DO-NOT-FIND-THIS"))));
+                                        new MappingExecutionValue("DO-NOT-FIND-THIS"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("no_change", engine);
     }
@@ -393,7 +405,8 @@ public class ConversionEngineTests {
                                         "byMatches",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.MATCHES,
-                                        new MappingExecutionValue("^DO-NOT-FIND-THIS$"))));
+                                        new MappingExecutionValue("^DO-NOT-FIND-THIS$"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("no_change", engine);
     }
@@ -407,7 +420,8 @@ public class ConversionEngineTests {
                                         "byEquals",
                                         Inst.featureRaumbegrenzung,
                                         MappingPredicate.EQUALS,
-                                        new MappingExecutionValue(true))));
+                                        new MappingExecutionValue(true))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_raumbegrenzung", engine);
     }
@@ -421,7 +435,8 @@ public class ConversionEngineTests {
                                         "byEquals",
                                         Inst.featureRaumbegrenzung,
                                         MappingPredicate.EQUALS,
-                                        new MappingExecutionValue(false))));
+                                        new MappingExecutionValue(false))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("no_change", engine);
     }
@@ -435,7 +450,8 @@ public class ConversionEngineTests {
                                         "byEqualsNot",
                                         Inst.featureRaumbegrenzung,
                                         MappingPredicate.NOT,
-                                        new MappingExecutionValue(false))));
+                                        new MappingExecutionValue(false))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_raumbegrenzung", engine);
     }
@@ -449,7 +465,8 @@ public class ConversionEngineTests {
                                         "byEqualsNot",
                                         Inst.featureRaumbegrenzung,
                                         MappingPredicate.NOT,
-                                        new MappingExecutionValue(true))));
+                                        new MappingExecutionValue(true))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("no_change", engine);
     }
@@ -463,7 +480,8 @@ public class ConversionEngineTests {
                                         "byGreaterThan",
                                         Inst.featureRaumbegrenzung,
                                         MappingPredicate.GREATER_THAN,
-                                        new MappingExecutionValue(true))));
+                                        new MappingExecutionValue(true))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("no_change", engine);
     }
@@ -477,7 +495,8 @@ public class ConversionEngineTests {
                                         "byGreaterThan",
                                         Inst.featureVolume,
                                         MappingPredicate.GREATER_THAN,
-                                        new MappingExecutionValue(4.0))));
+                                        new MappingExecutionValue(4.0))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_volumen_greater_than_4", engine);
     }
@@ -491,7 +510,8 @@ public class ConversionEngineTests {
                                         "byLessThan",
                                         Inst.featureVolume,
                                         MappingPredicate.LESS_THAN,
-                                        new MappingExecutionValue(4.0))));
+                                        new MappingExecutionValue(4.0))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_volumen_less_than_4", engine);
     }
@@ -505,7 +525,8 @@ public class ConversionEngineTests {
                                         "byLessThanOrEquals",
                                         Inst.featureVolume,
                                         MappingPredicate.LESS_OR_EQUALS,
-                                        new MappingExecutionValue(3.5))));
+                                        new MappingExecutionValue(3.5))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_volumen_less_than_or_equal_to_3.5", engine);
     }
@@ -519,7 +540,8 @@ public class ConversionEngineTests {
                                         "byGreaterThanOrEquals",
                                         Inst.featureVolume,
                                         MappingPredicate.GREATER_OR_EQUALS,
-                                        new MappingExecutionValue(3.5))));
+                                        new MappingExecutionValue(3.5))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_volumen_greater_than_or_equal_to_3.5", engine);
     }
@@ -535,7 +557,8 @@ public class ConversionEngineTests {
                                         "byEquals",
                                         Inst.featureCpiFitMatchKey,
                                         MappingPredicate.EQUALS,
-                                        new MappingExecutionValue("ABCDEFG"))));
+                                        new MappingExecutionValue("ABCDEFG"))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_from_pset_shared_by_3_objects", engine);
     }
@@ -574,7 +597,8 @@ public class ConversionEngineTests {
                                                                 new DeleteAction(
                                                                         "del1",
                                                                         Inst
-                                                                                .featurePhaseErstellt)))))));
+                                                                                .featurePhaseErstellt)))))),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_property_from_pset_shared_by_3_objects", engine);
     }
@@ -606,7 +630,8 @@ public class ConversionEngineTests {
                                         /*----*/ .feature(Inst.featurePhaseGebaut)
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_two_different_properties_from_pset_shared_by_3_objects", engine);
     }
@@ -634,7 +659,8 @@ public class ConversionEngineTests {
                                         /*------*/ .feature(Inst.featurePhaseErstellt)
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_two_identical_properties_from_pset_shared_by_3_objects", engine);
     }
@@ -678,7 +704,8 @@ public class ConversionEngineTests {
                                         /*----*/ .feature(Inst.featurePhaseGebaut)
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("delete_two_different_properties_from_pset_shared_by_3_objects", engine);
     }
@@ -700,7 +727,8 @@ public class ConversionEngineTests {
                                         /*----*/ .value("Phase 3")
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_phase_geprüft_where_cpiFitMatchKey_ABC_donothing", engine);
     }
@@ -722,7 +750,8 @@ public class ConversionEngineTests {
                                         /*----*/ .value("Phase 3")
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCLABEL_where_cpiFitMatchKey_ABC", engine);
     }
@@ -744,7 +773,8 @@ public class ConversionEngineTests {
                                         /*----*/ .value("Phase-3")
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCIDENTIFIER_where_cpiFitMatchKey_ABC", engine);
     }
@@ -766,7 +796,8 @@ public class ConversionEngineTests {
                                         /*----*/ .value(true)
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCBOOLEAN_where_cpiFitMatchKey_ABC", engine);
     }
@@ -788,7 +819,8 @@ public class ConversionEngineTests {
                                         /*----*/ .value(Math.PI)
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCREAL_where_cpiFitMatchKey_ABC", engine);
     }
@@ -810,7 +842,8 @@ public class ConversionEngineTests {
                                         /*----*/ .value(Math.PI)
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCLENGTHMEASURE_where_cpiFitMatchKey_ABC", engine);
     }
@@ -832,7 +865,8 @@ public class ConversionEngineTests {
                                         /*----*/ .idValue("sopt2")
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCLABEL_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
@@ -854,7 +888,8 @@ public class ConversionEngineTests {
                                         /*----*/ .idValue("boolOpt1")
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCBOOLEAN_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
@@ -876,7 +911,8 @@ public class ConversionEngineTests {
                                         /*----*/ .idValue("Math.pi")
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCREAL_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
@@ -898,7 +934,8 @@ public class ConversionEngineTests {
                                         /*----*/ .idValue("id1")
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("add_property_IFCIDENTIFIER_fromEnum_where_cpiFitMatchKey_ABC", engine);
     }
@@ -923,7 +960,8 @@ public class ConversionEngineTests {
                                         /*----*/ .outputFeature(Inst.featureVersatz_Oben)
                                         /*----*/ .end()
                                         /*--*/ .end()
-                                        /**/ .build()));
+                                        /**/ .build()),
+                        List.of());
         ConversionEngine engine = new ConversionEngine(factory.getRules());
         testInOut("convert_property_IFCLENGTHMEASURE", engine);
     }

@@ -265,7 +265,11 @@ public class PerformConversionController implements Initializable {
                                                 stateService
                                                         .getConvertState()
                                                         .getTargetStandardState()
-                                                        .selectedMappingsProperty())
+                                                        .selectedMappingsProperty(),
+                                                stateService
+                                                        .getConvertState()
+                                                        .getTargetStandardState()
+                                                        .availableStandardsWithPropertySetsProperty())
                                         .getRules();
                         ConversionEngine engine = new ConversionEngine(rules);
 
