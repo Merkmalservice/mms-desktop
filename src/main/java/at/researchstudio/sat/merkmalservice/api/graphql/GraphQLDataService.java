@@ -1,10 +1,11 @@
 package at.researchstudio.sat.merkmalservice.api.graphql;
 
-import at.researchstudio.sat.merkmalservice.api.support.model.GraphqlResult;
 import at.researchstudio.sat.merkmalservice.api.userdata.UserDataDirService;
 import at.researchstudio.sat.merkmalservice.model.Project;
 import at.researchstudio.sat.merkmalservice.model.Standard;
+import at.researchstudio.sat.merkmalservice.model.graphql.GraphqlResult;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
+import at.researchstudio.sat.merkmalservice.support.exception.GraphQlErrorResponseException;
 import at.researchstudio.sat.merkmalservice.support.exception.NoGraphQlResponseException;
 import com.netflix.graphql.dgs.client.GraphQLResponse;
 import com.netflix.graphql.dgs.client.MonoGraphQLClient;
@@ -132,6 +133,10 @@ public class GraphQLDataService implements InitializingBean {
                             if (response == null) {
                                 throw new NoGraphQlResponseException(
                                         "Empty Response for mappings query");
+                            }
+                            if (!response.getErrors().isEmpty()) {
+                                throw new GraphQlErrorResponseException(
+                                        "Query execution returned an error");
                             }
                             return response.dataAsObject(GraphqlResult.class).getMapping();
                         })
