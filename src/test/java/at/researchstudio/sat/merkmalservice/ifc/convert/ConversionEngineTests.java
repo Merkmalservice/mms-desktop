@@ -78,7 +78,7 @@ public class ConversionEngineTests {
         ParsedIfcFile parsedIfcFile = loadTestFile1();
         assertEquals(421, parsedIfcFile.getLines().size());
         assertEquals(3, parsedIfcFile.getBuiltElementLines().size());
-        assertEquals(19, parsedIfcFile.getDataLinesByClass().size());
+        assertEquals(20, parsedIfcFile.getDataLinesByClass().size());
         assertEquals(81, parsedIfcFile.getExtractedProperties().size());
         assertEquals(9, parsedIfcFile.getExtractedPropertyMap().size());
     }
