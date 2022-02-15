@@ -4,6 +4,7 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.ParsedIfcFileModificatio
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
+import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ExtractionSource;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
 import java.util.List;
 import java.util.stream.Stream;
@@ -56,5 +57,11 @@ public abstract class Modification {
             Feature inputFeature, Feature outputFeature, String propertySetName, T element) {
         return new ConvertPropertyModification<T>(
                 element, inputFeature, outputFeature, propertySetName);
+    }
+
+    public static <T extends IfcLine> ParsedIfcFileModification extractValueIntoProperty(
+            ExtractionSource source, Feature outputFeature, String propertySetName, T element) {
+        return new ExtractValueIntoPropertyModification<T>(
+                element, source, outputFeature, propertySetName);
     }
 }

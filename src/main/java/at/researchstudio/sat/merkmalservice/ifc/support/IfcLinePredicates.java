@@ -2,6 +2,7 @@ package at.researchstudio.sat.merkmalservice.ifc.support;
 
 import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castToOpt;
 
+import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcPropertyEnumeratedValueLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcQuantityLine;
@@ -11,6 +12,7 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -90,6 +92,57 @@ public abstract class IfcLinePredicates {
             }
             return false;
         };
+    }
+
+    public static BiPredicate<ParsedIfcFile, IfcLine> isStringElementValueWithValuePredicate(
+            IfcElementValueExtractor extractor, Predicate<String> valueMatcher) {
+        Objects.requireNonNull(valueMatcher);
+        return (model, line) -> {
+            return extractor
+                    .apply(model, line)
+                    .map(o -> o.getStepValueAndType().getValue().toString())
+                    .map(valueMatcher::test)
+                    .orElse(false);
+        };
+    }
+
+    public static BiPredicate<ParsedIfcFile, IfcLine> isStringElementValueWithValue(
+            IfcElementValueExtractor extractor, String stringValue) {
+        Objects.requireNonNull(stringValue);
+        return isStringElementValueWithValuePredicate(extractor, stringValue::equals);
+    }
+
+    public static BiPredicate<ParsedIfcFile, IfcLine> isStringElementValueWithDifferentValue(
+            IfcElementValueExtractor extractor, String stringValue) {
+        Objects.requireNonNull(stringValue);
+        return isStringElementValueWithValuePredicate(
+                extractor, actualString -> !stringValue.equals(actualString));
+    }
+
+    public static BiPredicate<ParsedIfcFile, IfcLine> isStringElementValueWithValueContaining(
+            IfcElementValueExtractor extractor, String subString) {
+        Objects.requireNonNull(subString);
+        return isStringElementValueWithValuePredicate(
+                extractor, s -> s != null && s.contains(subString));
+    }
+
+    public static BiPredicate<ParsedIfcFile, IfcLine> isStringElementValueWithValueNotContaining(
+            IfcElementValueExtractor extractor, String subString) {
+        Objects.requireNonNull(subString);
+        return isStringElementValueWithValuePredicate(
+                extractor, s -> s != null && !s.contains(subString));
+    }
+
+    public static BiPredicate<ParsedIfcFile, IfcLine> isStringElementValueWithValueMatching(
+            IfcElementValueExtractor extractor, String regex) {
+        Objects.requireNonNull(regex);
+        return isStringElementValueWithValueMatchingPattern(extractor, Pattern.compile(regex));
+    }
+
+    public static BiPredicate<ParsedIfcFile, IfcLine> isStringElementValueWithValueMatchingPattern(
+            IfcElementValueExtractor extractor, Pattern regex) {
+        Objects.requireNonNull(regex);
+        return isStringElementValueWithValuePredicate(extractor, s -> regex.matcher(s).matches());
     }
 
     public static Predicate<IfcLine> isStringPropertyWithValuePredicate(

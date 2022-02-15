@@ -1,5 +1,6 @@
 package at.researchstudio.sat.merkmalservice.ifc.support;
 
+import static at.researchstudio.sat.merkmalservice.utils.Utils.convertIFCStringToUtf8;
 import static at.researchstudio.sat.merkmalservice.utils.Utils.convertUtf8ToIFCString;
 import static java.util.stream.Collectors.joining;
 
@@ -199,6 +200,9 @@ public class IfcUtils {
         if (stepValue == null) {
             return null;
         }
+        if (stepValue.equals("$")) {
+            return null;
+        }
         if (stepValue.matches("\\.[^.]\\.")) {
             if (stepValue.equals(".F.")) {
                 return Boolean.FALSE;
@@ -208,7 +212,7 @@ public class IfcUtils {
             return new EnumerationConstant(stepValue.replaceAll("\\.([^.]\\.)", "$1"));
         }
         if (stepValue.matches("'(.*)'")) {
-            return convertUtf8ToIFCString(stepValue.replaceAll("'(.*)'", "$1"));
+            return convertIFCStringToUtf8(stepValue.replaceAll("'(.*)'", "$1"));
         }
         try {
             return Double.parseDouble(stepValue);

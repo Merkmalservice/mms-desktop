@@ -9,6 +9,8 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.ParsedIfcFileModificatio
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.modification.Modification;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.rule.IfcElementConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
+import at.researchstudio.sat.merkmalservice.ifc.model.element.IfcElementLine;
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcElementValueExtractor;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
 import at.researchstudio.sat.merkmalservice.model.PropertySet;
 import at.researchstudio.sat.merkmalservice.model.Standard;
@@ -21,11 +23,10 @@ import at.researchstudio.sat.merkmalservice.model.mapping.action.add.AddAction;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.add.AddActionGroup;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ConvertAction;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ConvertActionGroup;
+import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ExtractAction;
+import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ExtractionSource;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.delete.DeleteAction;
-import at.researchstudio.sat.merkmalservice.model.mapping.condition.Condition;
-import at.researchstudio.sat.merkmalservice.model.mapping.condition.ConditionGroup;
-import at.researchstudio.sat.merkmalservice.model.mapping.condition.Connective;
-import at.researchstudio.sat.merkmalservice.model.mapping.condition.SingleCondition;
+import at.researchstudio.sat.merkmalservice.model.mapping.condition.*;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
 import at.researchstudio.sat.merkmalservice.support.exception.ErrorUtils;
 import java.lang.invoke.MethodHandles;
@@ -41,6 +42,7 @@ import org.slf4j.LoggerFactory;
 public class MappingConversionRuleFactory implements ConversionRuleFactory {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static final String FALLBACK_PROPERTY_SET_NAME = "NEW_PROPERTIES";
     private final Collection<Mapping> mappings;
     private final Map<String, PropertySet> propertySetById;
 
@@ -134,6 +136,16 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                     propertySetName,
                     line);
         }
+        if (action instanceof ExtractAction) {
+            ConvertActionGroup convertActionGroup = (ConvertActionGroup) actionGroup;
+            ExtractAction extractAction = (ExtractAction) action;
+            String propertySetName = getPropertySetName(convertActionGroup.getAddToPropertySet());
+            return Modification.extractValueIntoProperty(
+                    extractAction.getSource(),
+                    extractAction.getOutputFeature(),
+                    propertySetName,
+                    line);
+        }
         throw new IllegalStateException(
                 "TODO: Cannot generate modification for action of type "
                         + action.getClass().getName());
@@ -145,41 +157,63 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
     private String getPropertySetName(MappingExecutionValue propertySetNameOrId) {
         Optional<MappingExecutionValue> propertySetNameOrIdOpt =
                 Optional.ofNullable(propertySetNameOrId);
-        Optional<String> propertySetNameOpt =
-                propertySetNameOrIdOpt.flatMap(MappingExecutionValue::getStringValue);
-        if (propertySetNameOpt.isPresent()) {
-            return propertySetNameOpt.get();
-        }
-        Optional<String> propertySetId =
-                propertySetNameOrIdOpt.flatMap(MappingExecutionValue::getIdValue);
-        if (propertySetId.isPresent()) {
-            PropertySet propertySet = propertySetById.get(propertySetId.get());
-            if (propertySet == null) {
-                throw new ConversionException(
-                        "Cannot obtain property set name - no property set found for provided id "
-                                + propertySetId.get());
+        if (propertySetNameOrIdOpt.isPresent()) {
+            Optional<String> propertySetNameOpt =
+                    propertySetNameOrIdOpt.flatMap(MappingExecutionValue::getStringValue);
+            if (propertySetNameOpt.isPresent()) {
+                return propertySetNameOpt.get();
             }
-            propertySetNameOpt = Optional.ofNullable(propertySet.getName());
-            if (propertySetNameOpt.isEmpty()) {
-                throw new ConversionException(
-                        "Cannot obtain property set name - property set "
-                                + propertySetId.get()
-                                + " does not have a name");
+            Optional<String> propertySetId =
+                    propertySetNameOrIdOpt.flatMap(MappingExecutionValue::getIdValue);
+            if (propertySetId.isPresent()) {
+                PropertySet propertySet = propertySetById.get(propertySetId.get());
+                if (propertySet != null) {
+                    propertySetNameOpt = Optional.ofNullable(propertySet.getName());
+                    if (propertySetNameOpt.isPresent()) {
+                        return propertySetNameOpt.get();
+                    } else {
+                        logger.warn(
+                                "Cannot obtain property set name - property set {} does not have a name. Using default",
+                                propertySetId.get());
+                    }
+                } else {
+                    logger.warn(
+                            "Cannot obtain property set name - no property set found for provided id. Using default",
+                            propertySetId.get());
+                }
             }
-            return propertySetNameOpt.get();
         }
-        throw new UnsupportedOperationException(
-                "TODO: Cannot handle action group using property set id or without any property set information yet");
+        return getFallbackPropertySetName();
+    }
+
+    private String getFallbackPropertySetName() {
+        return FALLBACK_PROPERTY_SET_NAME;
     }
 
     private Predicate<IfcLineAndModel> buildRulePredicate(Condition condition) {
         if (condition instanceof SingleCondition) {
             return makePredicate((SingleCondition) condition);
-        } else if (condition instanceof ConditionGroup) {
+        } else if (condition instanceof ElementCondition) {
+            return makePredicate((ElementCondition) condition);
+        }
+        if (condition instanceof ConditionGroup) {
             return makePredicate((ConditionGroup) condition);
         } else
             throw new IllegalStateException(
                     "Cannot process condition of type " + condition.getClass().getName());
+    }
+
+    private Predicate<IfcLineAndModel> makePredicate(ElementCondition condition) {
+        Function<ElementCondition, Predicate<IfcLineAndModel>> fun =
+                elementConditionPredicates.get(condition.getPredicate());
+        if (fun != null) {
+            return fun.apply(condition);
+        } else {
+            logger.info(
+                    "Ignoring element condition with predicate {}: not implemented",
+                    condition.getPredicate());
+        }
+        return x -> false;
     }
 
     private Predicate<IfcLineAndModel> makePredicate(ConditionGroup condition) {
@@ -200,7 +234,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
             return fun.apply(condition);
         } else {
             logger.info(
-                    "Ignoring condition with predicate {}: not implemented",
+                    "Ignoring single condition with predicate {}: not implemented",
                     condition.getPredicate());
         }
         return x -> false;
@@ -213,6 +247,24 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                         IfcLinePredicates.isPropertyWithName(feature.getName())
                                 .or(IfcLinePredicates.isQuantityWithName(feature.getName()))
                                 .or(IfcLinePredicates.isEnumValueWithName(feature.getName())));
+    }
+
+    private static Optional<Object> getValue(IfcLineAndModel ilam, ExtractionSource source) {
+        switch (source) {
+            case ELEMENT_NAME:
+                if (ilam.getIfcLine() instanceof IfcElementLine) {
+                    return Optional.ofNullable(((IfcElementLine) ilam.getIfcLine()).getName());
+                }
+                return Optional.empty();
+            case ELEMENT_DESCRIPTION:
+                if (ilam.getIfcLine() instanceof IfcElementLine) {
+                    return Optional.ofNullable(
+                            ((IfcElementLine) ilam.getIfcLine()).getDescription());
+                }
+                return Optional.empty();
+            default:
+                return Optional.empty();
+        }
     }
 
     private static final Map<
@@ -280,6 +332,116 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                                     getConditionFactory(
                                             IfcLinePredicates
                                                     ::isNumericPropertyWithValueLessThan)));
+
+    private static final Map<
+                    MappingPredicate, Function<ElementCondition, Predicate<IfcLineAndModel>>>
+            elementConditionPredicates =
+                    Map.ofEntries(
+                            Map.entry(
+                                    MappingPredicate.PRESENT,
+                                    condition ->
+                                            ilam ->
+                                                    IfcElementValueExtractor
+                                                            .ifcElementValueExtractors
+                                                            .get(condition.getSource())
+                                                            .apply(
+                                                                    ilam.getIfcModel(),
+                                                                    ilam.getIfcLine())
+                                                            .isPresent()),
+                            Map.entry(
+                                    MappingPredicate.CONTAINS,
+                                    condition ->
+                                            ilam ->
+                                                    IfcLinePredicates
+                                                            .isStringElementValueWithValueContaining(
+                                                                    IfcElementValueExtractor
+                                                                            .ifcElementValueExtractors
+                                                                            .get(
+                                                                                    condition
+                                                                                            .getSource()),
+                                                                    condition
+                                                                            .getValue()
+                                                                            .get()
+                                                                            .getStringValue()
+                                                                            .get())
+                                                            .test(
+                                                                    ilam.getIfcModel(),
+                                                                    ilam.getIfcLine())),
+                            Map.entry(
+                                    MappingPredicate.CONTAINS_NOT,
+                                    condition ->
+                                            ilam ->
+                                                    IfcLinePredicates
+                                                            .isStringElementValueWithValueNotContaining(
+                                                                    IfcElementValueExtractor
+                                                                            .ifcElementValueExtractors
+                                                                            .get(
+                                                                                    condition
+                                                                                            .getSource()),
+                                                                    condition
+                                                                            .getValue()
+                                                                            .get()
+                                                                            .getStringValue()
+                                                                            .get())
+                                                            .test(
+                                                                    ilam.getIfcModel(),
+                                                                    ilam.getIfcLine())),
+                            Map.entry(
+                                    MappingPredicate.MATCHES,
+                                    condition ->
+                                            ilam ->
+                                                    IfcLinePredicates
+                                                            .isStringElementValueWithValueMatching(
+                                                                    IfcElementValueExtractor
+                                                                            .ifcElementValueExtractors
+                                                                            .get(
+                                                                                    condition
+                                                                                            .getSource()),
+                                                                    condition
+                                                                            .getValue()
+                                                                            .get()
+                                                                            .getStringValue()
+                                                                            .get())
+                                                            .test(
+                                                                    ilam.getIfcModel(),
+                                                                    ilam.getIfcLine())),
+                            Map.entry(
+                                    MappingPredicate.EQUALS,
+                                    condition ->
+                                            ilam ->
+                                                    IfcLinePredicates.isStringElementValueWithValue(
+                                                                    IfcElementValueExtractor
+                                                                            .ifcElementValueExtractors
+                                                                            .get(
+                                                                                    condition
+                                                                                            .getSource()),
+                                                                    condition
+                                                                            .getValue()
+                                                                            .get()
+                                                                            .getStringValue()
+                                                                            .get())
+                                                            .test(
+                                                                    ilam.getIfcModel(),
+                                                                    ilam.getIfcLine())),
+                            Map.entry(
+                                    MappingPredicate.NOT,
+                                    condition ->
+                                            ilam ->
+                                                    IfcLinePredicates
+                                                            .isStringElementValueWithDifferentValue(
+                                                                    IfcElementValueExtractor
+                                                                            .ifcElementValueExtractors
+                                                                            .get(
+                                                                                    condition
+                                                                                            .getSource()),
+                                                                    condition
+                                                                            .getValue()
+                                                                            .get()
+                                                                            .getStringValue()
+                                                                            .get())
+                                                            .test(
+                                                                    ilam.getIfcModel(),
+                                                                    ilam.getIfcLine())));
 
     @NotNull
     private static <T> Function<SingleCondition, Predicate<IfcLineAndModel>> getConditionFactory(

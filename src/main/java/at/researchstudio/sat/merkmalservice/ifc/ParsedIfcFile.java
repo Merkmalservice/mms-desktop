@@ -6,6 +6,7 @@ import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.*;
 
 import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRule;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.ConversionException;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.PropertyConverter;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.StepPropertyValueFactory;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.StepValueAndType;
@@ -14,6 +15,7 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.support.unit.QudtUnitCon
 import at.researchstudio.sat.merkmalservice.ifc.model.*;
 import at.researchstudio.sat.merkmalservice.ifc.model.element.IfcBuiltElementLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.type.IfcTypeObjectLine;
+import at.researchstudio.sat.merkmalservice.ifc.support.IfcElementValueExtractor;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcPropertyBuilder;
 import at.researchstudio.sat.merkmalservice.ifc.support.ProjectUnits;
@@ -407,6 +409,33 @@ public class ParsedIfcFile {
                                 pSetAndProp.getLeft(), pSetAndProp.getRight()));
     }
 
+    public <T extends IfcLine> void extractElementValueIntoProperty(
+            T element,
+            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature outputFeature,
+            String propertySetName,
+            IfcElementValueExtractor extractor) {
+        Optional<StepValueAndTypeAndIfcUnit> extractedValue = extractor.apply(this, element);
+
+        if (propertySetName == null) {
+            throw new ConversionException(
+                    "Cannot extract value into property "
+                            + outputFeature.getName()
+                            + ": no property set specified");
+        }
+        if (extractedValue.isEmpty()) {
+            logger.info(
+                    "Cannot extract value into property {}: no value found",
+                    outputFeature.getName());
+            return;
+        }
+        if (extractedValue.get().getStepValueAndType().getValue() == null) {
+            return;
+        }
+        IfcPropertySetLine targetPSet = getOrSplitOrCreatePropertySet(element, propertySetName);
+
+        addProperty(targetPSet, outputFeature, extractedValue.get());
+    }
+
     public <T extends IfcLine> void convertProperty(
             T element,
             at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature inputFeature,
@@ -458,10 +487,10 @@ public class ParsedIfcFile {
                             prop.getClass().getSimpleName()));
         }
         if (propertySetName == null) {
-            // TODO: we need a better solution: find out the actual property set name of the source
-            // prop
-            // and use that, or use a class-specific one.
-            propertySetName = "CONVERTED";
+            throw new ConversionException(
+                    "Cannot extract value into property "
+                            + outputFeature.getName()
+                            + ": no property set specified");
         }
         IfcPropertySetLine targetPSet = getOrSplitOrCreatePropertySet(element, propertySetName);
         StepValueAndTypeAndIfcUnit convertedValue =
