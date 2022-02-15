@@ -3,6 +3,7 @@ package at.researchstudio.sat.merkmalservice.api.graphql;
 import at.researchstudio.sat.merkmalservice.api.DataService;
 import at.researchstudio.sat.merkmalservice.api.auth.KeycloakService;
 import at.researchstudio.sat.merkmalservice.model.Project;
+import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
 import at.researchstudio.sat.merkmalservice.support.exception.NoGraphQlResponseException;
 import java.lang.invoke.MethodHandles;
@@ -44,6 +45,13 @@ public class TokenRefreshingDataService implements DataService {
     public List<Mapping> getMappings(List<String> mappingIds) {
         return refreshTokenIfNoResponse(
                 (token) -> delegate.getMappings(mappingIds, token), Collections.emptyList());
+    }
+
+    @Override
+    public List<Standard> getFeatureSetsOfProjectWithPropertySets(String propertyId) {
+        return refreshTokenIfNoResponse(
+                token -> delegate.getFeatureSetsOfProjectWithPropertySets(propertyId, token),
+                Collections.emptyList());
     }
 
     private <T> T refreshTokenIfNoResponse(Function<String, T> fetcher, T defaultResult) {

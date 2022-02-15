@@ -25,6 +25,7 @@ public class TargetStandardState {
 
     private final ObservableList<Project> availableProjects;
     private final ObservableList<Standard> availableStandards;
+    private final ObservableList<Standard> availableStandardsWithPropertySets;
 
     private final SimpleBooleanProperty loadingMappings;
 
@@ -34,6 +35,7 @@ public class TargetStandardState {
 
         this.availableProjects = FXCollections.observableArrayList();
         this.availableStandards = FXCollections.observableArrayList();
+        this.availableStandardsWithPropertySets = FXCollections.observableArrayList();
 
         this.selectedMappings = FXCollections.observableArrayList();
         this.stepTargetStandardStatus = new SimpleObjectProperty<>(STEP_ACTIVE);
@@ -53,6 +55,7 @@ public class TargetStandardState {
         // CLEAR DATA
         availableProjects.clear();
         availableStandards.clear();
+        availableStandardsWithPropertySets.clear();
 
         // CLEAR POSSIBLE SELECTION
         selectedProject.set(null);
@@ -66,6 +69,10 @@ public class TargetStandardState {
 
     public ObservableList<Standard> availableStandardsProperty() {
         return availableStandards;
+    }
+
+    public ObservableList<Standard> availableStandardsWithPropertySetsProperty() {
+        return availableStandardsWithPropertySets;
     }
 
     public SimpleObjectProperty<Project> selectedProjectProperty() {

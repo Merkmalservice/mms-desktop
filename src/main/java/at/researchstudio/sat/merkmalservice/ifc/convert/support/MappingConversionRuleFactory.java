@@ -10,6 +10,8 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.support.modification.Mod
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.rule.IfcElementConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
+import at.researchstudio.sat.merkmalservice.model.PropertySet;
+import at.researchstudio.sat.merkmalservice.model.Standard;
 import at.researchstudio.sat.merkmalservice.model.mapping.Mapping;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingPredicate;
@@ -30,6 +32,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -39,9 +42,15 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
     private static final Logger logger =
             LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private final Collection<Mapping> mappings;
+    private final Map<String, PropertySet> propertySetById;
 
-    public MappingConversionRuleFactory(Collection<Mapping> mappings) {
+    public MappingConversionRuleFactory(
+            Collection<Mapping> mappings, List<Standard> standardsWithPropertySets) {
         this.mappings = new ArrayList<>(mappings);
+        this.propertySetById =
+                standardsWithPropertySets.stream()
+                        .flatMap(s -> s.getPropertySets().stream())
+                        .collect(Collectors.toMap(p -> p.getId(), Function.identity()));
     }
 
     @Override
@@ -50,6 +59,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
     }
 
     private ConversionRule toConversionRule(Mapping mapping) {
+
         Predicate<IfcLineAndModel> ruleCondition =
                 mapping.getCondition() == null
                         ? line -> true
@@ -84,13 +94,13 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                                                 group ->
                                                         group.getActions().stream()
                                                                 .map(
-                                                                        a ->
+                                                                        action ->
                                                                                 ErrorUtils
                                                                                         .logThrowableMessage(
                                                                                                 () ->
                                                                                                         makeModification(
                                                                                                                 group,
-                                                                                                                a,
+                                                                                                                action,
                                                                                                                 line))))
                                         .filter(Objects::nonNull);
                         return Modification.multiple(modifications);
@@ -133,11 +143,30 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
     // the rule executions
     @NotNull
     private String getPropertySetName(MappingExecutionValue propertySetNameOrId) {
-        Optional<String> propertySetName =
-                Optional.ofNullable(propertySetNameOrId)
-                        .flatMap(MappingExecutionValue::getStringValue);
-        if (propertySetName.isPresent()) {
-            return propertySetName.get();
+        Optional<MappingExecutionValue> propertySetNameOrIdOpt =
+                Optional.ofNullable(propertySetNameOrId);
+        Optional<String> propertySetNameOpt =
+                propertySetNameOrIdOpt.flatMap(MappingExecutionValue::getStringValue);
+        if (propertySetNameOpt.isPresent()) {
+            return propertySetNameOpt.get();
+        }
+        Optional<String> propertySetId =
+                propertySetNameOrIdOpt.flatMap(MappingExecutionValue::getIdValue);
+        if (propertySetId.isPresent()) {
+            PropertySet propertySet = propertySetById.get(propertySetId.get());
+            if (propertySet == null) {
+                throw new ConversionException(
+                        "Cannot obtain property set name - no property set found for provided id "
+                                + propertySetId.get());
+            }
+            propertySetNameOpt = Optional.ofNullable(propertySet.getName());
+            if (propertySetNameOpt.isEmpty()) {
+                throw new ConversionException(
+                        "Cannot obtain property set name - property set "
+                                + propertySetId.get()
+                                + " does not have a name");
+            }
+            return propertySetNameOpt.get();
         }
         throw new UnsupportedOperationException(
                 "TODO: Cannot handle action group using property set id or without any property set information yet");
@@ -155,7 +184,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
 
     private Predicate<IfcLineAndModel> makePredicate(ConditionGroup condition) {
         return condition.getConditions().stream()
-                .map(this::buildRulePredicate)
+                .map(x -> buildRulePredicate(x))
                 .reduce(
                         (p1, p2) ->
                                 condition.getConnective() == Connective.AND
