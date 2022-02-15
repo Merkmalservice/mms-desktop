@@ -137,7 +137,57 @@ query mapping($mappingId :ID!) {
                             }
                         }
                     }
+                    ... on ExtractAction {
+                        __typename
+                        id
+                        source
+                        outputFeature {
+                            id
+                            name
+                            type {
+                                __typename
+                                ... on EnumerationValue {
+                                    __typename
+                                    id
+                                    allowMultiple
+                                    options {
+                                        __typename
+                                        id
+                                        description
+                                        value {
+                                            ... on MEBooleanValue {
+                                                booleanValue
+                                            }
+                                            ... on MEFloatValue {
+                                                floatValue
+                                            }
+                                            ... on MEIDValue {
+                                                idValue
+                                            }
+                                            ... on MEIntegerValue {
+                                                integerValue
+                                            }
+                                            ... on MEStringValue {
+                                                stringValue
+                                            }
+                                        }
+                                    }
+                                }
+                                ... on NumericValue {
+                                    quantityKind {
+                                        id
+                                        label
+                                    }
+                                    unit {
+                                        id
+                                        label
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
+
             }
             ... on AddActionGroup {
                 __typename
@@ -240,6 +290,29 @@ query mapping($mappingId :ID!) {
                         id
                         connective
                         conditions {
+                            ... on ElementCondition {
+                                __typename
+                                id
+                                source
+                                predicate
+                                value {
+                                    ... on MEBooleanValue {
+                                        booleanValue
+                                    }
+                                    ... on MEFloatValue {
+                                        floatValue
+                                    }
+                                    ... on MEIDValue {
+                                        idValue
+                                    }
+                                    ... on MEIntegerValue {
+                                        integerValue
+                                    }
+                                    ... on MEStringValue {
+                                        stringValue
+                                    }
+                                }
+                            }
                             ... on SingleCondition {
                                 __typename
                                 id
@@ -308,6 +381,29 @@ query mapping($mappingId :ID!) {
                             }
                         }
                     }
+                    ... on ElementCondition {
+                        __typename
+                        id
+                        source
+                        predicate
+                        value {
+                            ... on MEBooleanValue {
+                                booleanValue
+                            }
+                            ... on MEFloatValue {
+                                floatValue
+                            }
+                            ... on MEIDValue {
+                                idValue
+                            }
+                            ... on MEIntegerValue {
+                                integerValue
+                            }
+                            ... on MEStringValue {
+                                stringValue
+                            }
+                        }
+                    }
                     ... on SingleCondition {
                         __typename
                         id
@@ -373,6 +469,29 @@ query mapping($mappingId :ID!) {
                                 stringValue
                             }
                         }
+                    }
+                }
+            }
+            ... on ElementCondition {
+                __typename
+                id
+                source
+                predicate
+                value {
+                    ... on MEBooleanValue {
+                        booleanValue
+                    }
+                    ... on MEFloatValue {
+                        floatValue
+                    }
+                    ... on MEIDValue {
+                        idValue
+                    }
+                    ... on MEIntegerValue {
+                        integerValue
+                    }
+                    ... on MEStringValue {
+                        stringValue
                     }
                 }
             }

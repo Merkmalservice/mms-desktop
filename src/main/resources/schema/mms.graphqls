@@ -68,6 +68,8 @@ type Standard {
     creator: User!
     editor: User!
     scopes: [String!]!
+    copyOf: Standard
+    copyInfo: CopyInfo
 }
 
 type Unit {
@@ -99,6 +101,8 @@ type FeatureGroup {
     features: [Feature!]!
     scopes: [String!]!
     standard: Standard !
+    copyOf: FeatureGroup
+    copyInfo: CopyInfo
 }
 
 type PropertySet {
@@ -113,6 +117,15 @@ type PropertySet {
     scopes: [String!]!
     standard: Standard !
     copyOf: PropertySet
+    copyInfo: CopyInfo
+    mappings: [ Mapping !]!
+}
+
+enum CopyInfo {
+    UPTODATE,
+    OUTDATED,
+    CONFLICTED,
+    NEWER
 }
 
 type StringValue {_: Boolean }
@@ -156,6 +169,7 @@ type Feature {
     type: FeatureType!
     scopes: [String!]!
     copyOf: Feature
+    copyInfo: CopyInfo
 }
 
 type Mapping {
@@ -186,9 +200,11 @@ type AddActionGroup {
 
 type ConvertActionGroup {
     id: ID!
-    actions: [ConvertAction!]!
+    actions: [TransferAction!]!
     addToPropertySet: MappingExecutionValue
 }
+
+union TransferAction = ConvertAction | ExtractAction
 
 type DeleteAction {
     id: ID!
@@ -207,11 +223,29 @@ type ConvertAction {
     outputFeature: Feature!
 }
 
-union Condition = SingleCondition | ConditionGroup
+type ExtractAction {
+    id: ID!
+    source: Source
+    outputFeature: Feature!
+}
+
+enum Source {
+    ELEMENT_NAME,
+    ELEMENT_DESCRIPTION
+}
+
+union Condition = SingleCondition | ElementCondition | ConditionGroup
 
 type SingleCondition {
     id: ID!
     feature: Feature!
+    predicate: Predicate!
+    value: MappingExecutionValue
+}
+
+type ElementCondition {
+    id: ID!
+    source: Source!
     predicate: Predicate!
     value: MappingExecutionValue
 }
@@ -232,11 +266,11 @@ input MappingInput {
 }
 
 input ActionGroupInput {
-    #TODO: DeleteActionGroupInput will not be mandatory when multiple actionGroupTypes are possible
+    # TODO: INCLUDE OTHER TYPES
     deleteActionGroup: DeleteActionGroupInput
     addActionGroup: AddActionGroupInput
     convertActionGroup: ConvertActionGroupInput
-#    combineActionGroup: ID!
+#    combineActionGroup: CombineActionGroupInput
 }
 
 input DeleteActionGroupInput {
@@ -245,7 +279,7 @@ input DeleteActionGroupInput {
 
 input AddActionGroupInput {
     actions: [AddActionInput!]!
-    value: MappingExecutionInput
+    addToPropertySet: MappingExecutionValueInput
 }
 
 input ConvertActionGroupInput {
@@ -259,22 +293,30 @@ input DeleteActionInput {
 
 input AddActionInput {
     feature: ID!
-    value: MappingExecutionInput!
+    value: MappingExecutionValueInput!
 }
 
 input ConvertActionInput {
-    inputFeature: ID!
+    source: Source
+    inputFeature: ID
     outputFeature: ID!
     #TODO: MORE POSSIBILITIES
 }
 
 input ConditionInput {
     singleCondition: SingleConditionInput
+    elementCondition: ElementConditionInput
     groupCondition: GroupConditionInput
 }
 
 input SingleConditionInput {
     feature: ID!
+    predicate: Predicate!
+    value: MappingExecutionValueInput
+}
+
+input ElementConditionInput {
+    source: Source
     predicate: Predicate!
     value: MappingExecutionValueInput
 }
@@ -567,7 +609,7 @@ type Query {
     organizations: [Organization!]!
     organization(id: ID!): Organization
     standards(filter: StandardSearchFilter): [Standard!]!
-    standard(id: ID!): Standard
+    standard(id: ID!, filter: StandardSearchFilter): Standard
     feature(id: ID!): Feature
     featureGroups: [FeatureGroup!]!
     featureGroup(id: ID!): FeatureGroup
@@ -607,6 +649,7 @@ type Mutation {
     deleteFeatureGroups(ids: [ID!]!) : Boolean
     putPropertySets(propertySets: [PropertySetInput!]!): [ID!]!
     putFeaturesInPropertySet(featureIds: [ID!]!, propertySetId: ID!): Boolean
+    putFeaturesInFeatureGroup(featureIds: [ID!]!, featureGroupId: ID!): Boolean
     deletePropertySet(id: ID!): ID!
     deletePropertySets(ids: [ID!]!) : Boolean
     putFeature(id: ID, feature: FeatureInput!): Feature!
@@ -614,6 +657,7 @@ type Mutation {
     deleteFeature(id: ID!): ID!
     deleteFeatures(ids: [ID!]!): Boolean
     removeFeaturesFromPropertySet(featureIds: [ID!]!, propertySetId: ID!): Boolean
+    removeFeaturesFromFeatureGroup(featureIds: [ID!]!, featureGroupId: ID!): Boolean
     copyStandardsToOrganization(standardIds: [ID!]!, toOrganizationId: ID!): ID!
     copyFeaturesToStandard(featureIds: [ID!]!, toStandardId: ID!): ID!
     copyFeatureGroupsToStandard(featureGroupIds: [ID!]!, toStandardId: ID!): ID!
@@ -622,5 +666,5 @@ type Mutation {
     copyPropertySetsToStandard(propertySetIds: [ID!]!, toStandardId: ID!): ID!
     putFeatureMappings(featureMappings: [ FeatureMappingInput! ]! ): [ID!]!
     putMapping(id: ID, mapping: MappingInput!): Mapping!
-    deleteMappings(mappingIds: [ID!]!): Boolean
+    deleteMappings(ids: [ID!]!): Boolean
 }
