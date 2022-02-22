@@ -4,6 +4,7 @@ import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.model.EnumFeature;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.NumericFeature;
+import at.researchstudio.sat.merkmalservice.model.StringFeature;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import at.researchstudio.sat.mmsdesktop.support.MessageUtils;
 import com.google.gson.Gson;
@@ -29,6 +30,7 @@ public class FeatureBox extends VBox {
     private final FeatureLabel featureName;
     private final GridPane featureNumericType;
     private final TableView<EnumFeature.OptionValue> featureEnumType;
+    private final TableView<EnumFeature.OptionValue> instanceValues;
     private final MarkdownView featureDescriptionMarkdown;
     private final JFXTextArea featureJson;
 
@@ -65,6 +67,16 @@ public class FeatureBox extends VBox {
         featureNumericType.add(unitLabel, 1, 0);
         featureNumericType.add(featureUnit, 1, 1);
         getChildren().add(featureNumericType);
+
+        instanceValues = new TableView<>();
+        TableColumn<EnumFeature.OptionValue, String> instanceValuesCol =
+                new TableColumn<>(resourceBundle.getString("label.feature.instanceValues"));
+        instanceValuesCol.setEditable(false);
+        instanceValuesCol.setPrefWidth(100);
+        instanceValuesCol.setSortType(TableColumn.SortType.DESCENDING);
+        instanceValuesCol.setCellValueFactory(new PropertyValueFactory<>("value"));
+        instanceValues.getColumns().add(instanceValuesCol);
+        getChildren().add(instanceValues);
 
         featureEnumType = new TableView<>();
         TableColumn<EnumFeature.OptionValue, String> column =
@@ -114,8 +126,11 @@ public class FeatureBox extends VBox {
 
             featureNumericType.setVisible(false);
             featureNumericType.setManaged(false);
+
             featureEnumType.setVisible(false);
             featureEnumType.setManaged(false);
+            instanceValues.setVisible(false);
+            instanceValues.setManaged(false);
 
             if (feature instanceof EnumFeature) {
                 featureEnumType.setVisible(true);
@@ -133,6 +148,14 @@ public class FeatureBox extends VBox {
                 this.featureUnit.setText(
                         MessageUtils.getKeyForUnit(
                                 resourceBundle, ((NumericFeature) feature).getUnit()));
+
+                instanceValues.setVisible(true);
+                instanceValues.setManaged(true);
+                instanceValues.setItems(FXCollections.observableList(feature.getInstanceValues()));
+            } else if (feature instanceof StringFeature) {
+                instanceValues.setVisible(true);
+                instanceValues.setManaged(true);
+                instanceValues.setItems(FXCollections.observableList(feature.getInstanceValues()));
             }
         }
     }

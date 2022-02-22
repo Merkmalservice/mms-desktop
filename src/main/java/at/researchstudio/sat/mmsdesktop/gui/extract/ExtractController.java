@@ -223,7 +223,7 @@ public class ExtractController implements Initializable {
         centerResultUniqueValuesToggle
                 .selectedProperty()
                 .bindBidirectional(
-                        stateService.getExtractState().includeDescriptionInJsonOutputProperty());
+                        stateService.getExtractState().includeInstanceValuesInJsonOutputProperty());
         snackbar = new JFXSnackbar(parentPane);
     }
 

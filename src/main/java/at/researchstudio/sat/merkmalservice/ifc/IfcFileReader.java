@@ -446,10 +446,6 @@ public class IfcFileReader {
                                             ifcProperty -> {
                                                 BooleanFeature f =
                                                         new BooleanFeature(ifcProperty.getName());
-                                                f.setUniqueValues(
-                                                        ifcProperty.getExtractedUniqueValues());
-                                                f.setDescriptionFromUniqueValues(
-                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setPropertySets(
                                                         propertyPropertySetsMap.get(
                                                                 ifcProperty.getId()));
@@ -468,8 +464,6 @@ public class IfcFileReader {
                                                 StringFeature f =
                                                         new StringFeature(ifcProperty.getName());
                                                 f.setUniqueValues(
-                                                        ifcProperty.getExtractedUniqueValues());
-                                                f.setDescriptionFromUniqueValues(
                                                         ifcProperty.getExtractedUniqueValues());
                                                 f.setPropertySets(
                                                         propertyPropertySetsMap.get(
@@ -726,10 +720,6 @@ public class IfcFileReader {
                                                                                 Collectors
                                                                                         .toList()),
                                                                 false);
-                                                f.setUniqueValues(
-                                                        ifcProperty.getExtractedUniqueValues());
-                                                f.setDescriptionFromUniqueValues(
-                                                        ifcProperty.getExtractedUniqueValues());
                                                 f.setPropertySets(
                                                         propertyPropertySetsMap.get(
                                                                 ifcProperty.getId()));

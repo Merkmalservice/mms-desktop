@@ -116,7 +116,6 @@ public class IfcUtils {
             IfcProperty ifcProperty, String quantityKind, String unit) {
         NumericFeature f = new NumericFeature(ifcProperty.getName(), quantityKind, unit);
         f.setUniqueValues(ifcProperty.getExtractedUniqueValues());
-        f.setDescriptionFromUniqueValues(ifcProperty.getExtractedUniqueValues());
         return f;
     }
 
