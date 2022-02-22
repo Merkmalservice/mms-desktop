@@ -6,7 +6,7 @@ import at.researchstudio.sat.merkmalservice.ifc.support.FileUtils;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcUtils;
 import at.researchstudio.sat.merkmalservice.model.Feature;
 import at.researchstudio.sat.merkmalservice.model.PropertySet;
-import at.researchstudio.sat.merkmalservice.utils.ExcludeDescriptionStrategy;
+import at.researchstudio.sat.merkmalservice.utils.ExcludeInstanceValuesStrategy;
 import at.researchstudio.sat.mmsdesktop.gui.component.featureset.FeatureSetBox;
 import at.researchstudio.sat.mmsdesktop.model.task.ExtractResult;
 import com.google.gson.GsonBuilder;
@@ -42,11 +42,11 @@ public class ExtractState {
     private final BooleanProperty extractedFeatureSetsPresent;
     private final ObservableList<FeatureSetBox> extractedFeatureSets;
     private final SortedList<FeatureSetBox> sortedFeatureSets;
-    private final BooleanProperty includeDescriptionInJsonOutput;
+    private final BooleanProperty includeInstanceValuesInJsonOutput;
 
     public ExtractState() {
         this.state = new SimpleIntegerProperty(INITIAL);
-        this.includeDescriptionInJsonOutput = new SimpleBooleanProperty(true);
+        this.includeInstanceValuesInJsonOutput = new SimpleBooleanProperty(true);
         this.selectedExtractFiles = FXCollections.observableArrayList();
         this.selectedExtractFilesPresent = new SimpleBooleanProperty(false);
         this.extractLogOutput = new SimpleStringProperty("");
@@ -64,11 +64,11 @@ public class ExtractState {
                     String featureSetName2 = o2.getFeatureSet().getName();
                     return featureSetName1.compareToIgnoreCase(featureSetName2);
                 });
-        this.includeDescriptionInJsonOutput.addListener(
+        this.includeInstanceValuesInJsonOutput.addListener(
                 (observable, oldValue, newValue) -> {
                     GsonBuilder gsonBuilder = (new GsonBuilder()).setPrettyPrinting();
                     if (!newValue) {
-                        gsonBuilder.setExclusionStrategies(new ExcludeDescriptionStrategy());
+                        gsonBuilder.setExclusionStrategies(new ExcludeInstanceValuesStrategy());
                     }
                     this.extractJsonOutput.setValue(
                             gsonBuilder.create().toJson(filteredExtractedFeatures));
@@ -77,9 +77,9 @@ public class ExtractState {
                 (ListChangeListener<? super Feature>)
                         listener -> {
                             GsonBuilder gsonBuilder = (new GsonBuilder()).setPrettyPrinting();
-                            if (!includeDescriptionInJsonOutput.getValue()) {
+                            if (!includeInstanceValuesInJsonOutput.getValue()) {
                                 gsonBuilder.setExclusionStrategies(
-                                        new ExcludeDescriptionStrategy());
+                                        new ExcludeInstanceValuesStrategy());
                             }
                             this.extractJsonOutput.setValue(
                                     gsonBuilder.create().toJson(listener.getList()));
@@ -90,8 +90,8 @@ public class ExtractState {
         return selectedExtractFilesPresent;
     }
 
-    public BooleanProperty includeDescriptionInJsonOutputProperty() {
-        return includeDescriptionInJsonOutput;
+    public BooleanProperty includeInstanceValuesInJsonOutputProperty() {
+        return includeInstanceValuesInJsonOutput;
     }
 
     public BooleanProperty extractedFeatureSetsPresentProperty() {
@@ -191,10 +191,10 @@ public class ExtractState {
         return filteredExtractedFeatures;
     }
 
-    public void includeDescriptionInJsonOutput(Boolean newValue) {
+    public void includeInstanceValuesInJsonOutput(Boolean newValue) {
         GsonBuilder gsonBuilder = (new GsonBuilder()).setPrettyPrinting();
         if (!newValue) {
-            gsonBuilder.setExclusionStrategies(new ExcludeDescriptionStrategy());
+            gsonBuilder.setExclusionStrategies(new ExcludeInstanceValuesStrategy());
         }
         this.extractJsonOutput.setValue(gsonBuilder.create().toJson(this.extractedFeatures));
     }
