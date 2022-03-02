@@ -207,6 +207,42 @@
                     </execution>
                 </executions>
             </plugin>
+
+        <plugin>
+            <groupId>org.panteleyev</groupId>
+            <artifactId>jpackage-maven-plugin</artifactId>
+            <version>1.3.0</version>
+
+            <configuration>
+                <name>mms-desktop</name>
+                <appVersion>1.0.0</appVersion>
+                <type>MSI</type>
+                <vendor>Research Studios Austria FG</vendor>
+                <input>target/dist</input>
+                <mainClass>at.researchstudio.sat.mmsdesktop.MerkmalserviceDesktopApplication</mainClass>
+                <mainJar>mms-desktop-spring-boot.jar</mainJar>
+                <destination>target</destination>
+                <javaOptions>
+                    <option>--enable-preview</option>
+                    <option>-Dfile.encoding=UTF-8</option>
+                </javaOptions>
+                <temp>target/jpackage</temp>
+                <verbose>true</verbose>
+            </configuration>
+
+            <executions>
+                <execution>
+                    <id>win</id>
+                    <configuration>
+                        <icon>icons/icon.ico</icon>
+                        <winMenu>true</winMenu>
+                        <winPerUserInstall>true</winPerUserInstall>
+                        <winShortcut>true</winShortcut>
+                        <winMenuGroup>Merkmalservice</winMenuGroup>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
         </plugins>
     </build>
 
