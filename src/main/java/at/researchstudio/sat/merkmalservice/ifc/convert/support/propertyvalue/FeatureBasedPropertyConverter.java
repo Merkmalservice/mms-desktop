@@ -1,6 +1,7 @@
 package at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue;
 
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.HighlevelChangeBuilder;
 import at.researchstudio.sat.merkmalservice.ifc.support.ProjectUnits;
 import at.researchstudio.sat.merkmalservice.model.ifc.IfcUnit;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
@@ -15,7 +16,6 @@ import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -27,7 +27,10 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
 
     private final Feature inputFeature;
     private final Feature outputFeature;
-    private BiFunction<StepValueAndTypeAndIfcUnit, ParsedIfcFile, StepValueAndTypeAndIfcUnit>
+    private interface TriFunction<A,B,C,R> {
+        R apply(A a, B b, C c);
+    }
+    private TriFunction<StepValueAndTypeAndIfcUnit, ParsedIfcFile, HighlevelChangeBuilder, StepValueAndTypeAndIfcUnit>
             conversionFunction;
 
     public FeatureBasedPropertyConverter(Feature inputFeature, Feature outputFeature) {
@@ -36,12 +39,12 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
         this.conversionFunction = generateConversionFunction(inputFeature, outputFeature);
     }
 
-    private BiFunction<StepValueAndTypeAndIfcUnit, ParsedIfcFile, StepValueAndTypeAndIfcUnit>
+    private TriFunction<StepValueAndTypeAndIfcUnit, ParsedIfcFile, HighlevelChangeBuilder, StepValueAndTypeAndIfcUnit>
             generateConversionFunction(Feature inputFeature, Feature outputFeature) {
 
         // output type string: just do a toString
         if (outputFeature.getType() instanceof StringFeatureType) {
-            return (vat, parsedIfcFile) -> {
+            return (vat, parsedIfcFile, changeBuilder) -> {
                 String strval = vat.getStepValueAndType().getValue().toString();
                 String type =
                         strval.length() > 255
@@ -54,7 +57,7 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
         // input and output type numeric, different units/quantity kinds: convert
         if (outputFeature.getType() instanceof NumericFeatureType
                 && inputFeature.getType() instanceof NumericFeatureType) {
-            return (vat, parsedIfcFile) -> {
+            return (vat, parsedIfcFile, changeBuilder) -> {
                 double value;
                 if (!(vat.getStepValueAndType().getValue() instanceof Number)) {
                     throw new UnsupportedTypeConversionException(
@@ -116,7 +119,7 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
                                             .getId());
                 }
                 IfcUnit convertedIfcUnit = QudtIfcMapper.mapQudtUnitToIfcUnit(converted.getUnit());
-                parsedIfcFile.addIfcUnit(convertedIfcUnit);
+                parsedIfcFile.addIfcUnit(convertedIfcUnit, changeBuilder);
                 return new StepValueAndTypeAndIfcUnit(
                         new StepValueAndType(
                                 converted.getValue(),
@@ -126,7 +129,7 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
         }
         // identical in/out types
         if (inputFeature.getType().equals(outputFeature.getType())) {
-            return (vat, parsedIfcFile) ->
+            return (vat, parsedIfcFile, changeBuilder) ->
                     new StepValueAndTypeAndIfcUnit(
                             new StepValueAndType(
                                     vat.getStepValueAndType().getValue(),
@@ -149,8 +152,9 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
 
     @Override
     public StepValueAndTypeAndIfcUnit convert(
-            StepValueAndTypeAndIfcUnit stepValueAndTypeAndIfcUnit, ParsedIfcFile parsedIfcFile) {
+                    StepValueAndTypeAndIfcUnit stepValueAndTypeAndIfcUnit, ParsedIfcFile parsedIfcFile,
+                    HighlevelChangeBuilder changeBuilder) {
 
-        return conversionFunction.apply(stepValueAndTypeAndIfcUnit, parsedIfcFile);
+        return conversionFunction.apply(stepValueAndTypeAndIfcUnit, parsedIfcFile, changeBuilder);
     }
 }

@@ -118,16 +118,6 @@
                         </Label>
                     </AnchorPane>
                 </top>
-                <center>
-                    <AnchorPane>
-                        <JFXTextArea fx:id="pcCenterProgressLog"
-                                     editable="false"
-                                     AnchorPane.topAnchor="0.0"
-                                     AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                                     AnchorPane.leftAnchor="0.0"
-                                     style="-fx-background-color: black; -fx-font-family: Consolas,monaco,monospace; -fx-text-fill: greenyellow; "/>
-                    </AnchorPane>
-                </center>
             </BorderPane>
             <BorderPane fx:id="pcCenterResults" visible="false" managed="false"
                         AnchorPane.topAnchor="0.0"

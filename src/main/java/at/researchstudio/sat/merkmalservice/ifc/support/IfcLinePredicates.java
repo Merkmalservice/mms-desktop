@@ -5,8 +5,8 @@ import static at.researchstudio.sat.merkmalservice.ifc.model.TypeConverter.castT
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcPropertyEnumeratedValueLine;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcPropertySingleValueLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcQuantityLine;
-import at.researchstudio.sat.merkmalservice.ifc.model.IfcSinglePropertyValueLine;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.merkmalservice.vocab.ifc.IfcPropertyType;
 import java.lang.invoke.MethodHandles;
@@ -60,11 +60,11 @@ public abstract class IfcLinePredicates {
     }
 
     public static Predicate<IfcLine> ifcSinglePropertyValueLinePredicate(
-            Predicate<IfcSinglePropertyValueLine> predicate) {
+            Predicate<IfcPropertySingleValueLine> predicate) {
         Objects.requireNonNull(predicate);
         return line -> {
-            if (line instanceof IfcSinglePropertyValueLine) {
-                IfcSinglePropertyValueLine sp = (IfcSinglePropertyValueLine) line;
+            if (line instanceof IfcPropertySingleValueLine) {
+                IfcPropertySingleValueLine sp = (IfcPropertySingleValueLine) line;
                 return predicate.test(sp);
             }
             return false;
@@ -149,7 +149,7 @@ public abstract class IfcLinePredicates {
             Predicate<String> valueMatcher) {
         Objects.requireNonNull(valueMatcher);
         return line ->
-                castToOpt(line, IfcSinglePropertyValueLine.class)
+                castToOpt(line, IfcPropertySingleValueLine.class)
                         .map(IfcLinePredicates::getStringValue)
                         .map(valueMatcher::test)
                         .orElse(false);
@@ -184,7 +184,7 @@ public abstract class IfcLinePredicates {
             Predicate<Long> valueMatcher) {
         Objects.requireNonNull(valueMatcher);
         return line ->
-                castToOpt(line, IfcSinglePropertyValueLine.class)
+                castToOpt(line, IfcPropertySingleValueLine.class)
                         .map(IfcLinePredicates::getIntegerValue)
                         .map(valueMatcher::test)
                         .orElse(false);
@@ -206,7 +206,7 @@ public abstract class IfcLinePredicates {
             Predicate<Double> valueMatcher) {
         Objects.requireNonNull(valueMatcher);
         return line ->
-                castToOpt(line, IfcSinglePropertyValueLine.class)
+                castToOpt(line, IfcPropertySingleValueLine.class)
                         .map(IfcLinePredicates::getRealValue)
                         .map(valueMatcher::test)
                         .orElse(false);
@@ -228,7 +228,7 @@ public abstract class IfcLinePredicates {
             Predicate<Boolean> valueMatcher) {
         Objects.requireNonNull(valueMatcher);
         return line ->
-                castToOpt(line, IfcSinglePropertyValueLine.class)
+                castToOpt(line, IfcPropertySingleValueLine.class)
                         .map(IfcLinePredicates::getBooleanValue)
                         .map(valueMatcher::test)
                         .orElse(false);
@@ -322,34 +322,34 @@ public abstract class IfcLinePredicates {
 
     public static Predicate<IfcLine> isProperty() {
         return line ->
-                line instanceof IfcSinglePropertyValueLine || line instanceof IfcQuantityLine;
+                line instanceof IfcPropertySingleValueLine || line instanceof IfcQuantityLine;
     }
 
     public static Predicate<IfcLine> isRealProperty() {
         return line ->
                 castToOpt(line, IfcQuantityLine.class).isPresent()
-                        || castToOpt(line, IfcSinglePropertyValueLine.class)
+                        || castToOpt(line, IfcPropertySingleValueLine.class)
                                 .map(IfcLinePredicates::isRealValue)
                                 .orElse(false);
     }
 
     public static Predicate<IfcLine> isIntegerProperty() {
         return line ->
-                castToOpt(line, IfcSinglePropertyValueLine.class)
+                castToOpt(line, IfcPropertySingleValueLine.class)
                         .map(IfcLinePredicates::isIntegerValue)
                         .orElse(false);
     }
 
     public static Predicate<IfcLine> isStringProperty() {
         return line ->
-                castToOpt(line, IfcSinglePropertyValueLine.class)
+                castToOpt(line, IfcPropertySingleValueLine.class)
                         .map(IfcLinePredicates::isStringValue)
                         .orElse(false);
     }
 
     public static Predicate<IfcLine> isBooleanProperty() {
         return line ->
-                castToOpt(line, IfcSinglePropertyValueLine.class)
+                castToOpt(line, IfcPropertySingleValueLine.class)
                         .map(IfcLinePredicates::isBooleanValue)
                         .orElse(false);
     }
@@ -357,7 +357,7 @@ public abstract class IfcLinePredicates {
     public static Predicate<IfcLine> isNumericProperty() {
         return line ->
                 castToOpt(line, IfcQuantityLine.class).isPresent()
-                        || castToOpt(line, IfcSinglePropertyValueLine.class)
+                        || castToOpt(line, IfcPropertySingleValueLine.class)
                                 .map(l -> isRealValue(l) || isIntegerValue(l))
                                 .orElse(false);
     }
@@ -366,16 +366,16 @@ public abstract class IfcLinePredicates {
         return line -> type.isAssignableFrom(line.getClass());
     }
 
-    private static boolean isRealValue(IfcSinglePropertyValueLine p) {
+    private static boolean isRealValue(IfcPropertySingleValueLine p) {
         return IfcPropertyType.fromString(p.getType()).isMeasureType()
                 || IfcPropertyType.isOneOf(
                         p.getType(), IfcPropertyType.REAL, IfcPropertyType.EXPRESS_REAL);
     }
 
-    private static Double getRealValue(IfcSinglePropertyValueLine line) {
+    private static Double getRealValue(IfcPropertySingleValueLine line) {
         return Optional.ofNullable(line)
                 .filter(IfcLinePredicates::isRealValue)
-                .map(IfcSinglePropertyValueLine::getValue)
+                .map(IfcPropertySingleValueLine::getValue)
                 .map(Double::valueOf)
                 .orElse(null);
     }
@@ -387,7 +387,7 @@ public abstract class IfcLinePredicates {
                 .orElse(null);
     }
 
-    private static boolean isIntegerValue(IfcSinglePropertyValueLine p) {
+    private static boolean isIntegerValue(IfcPropertySingleValueLine p) {
         return IfcPropertyType.isOneOf(
                 p.getType(),
                 IfcPropertyType.INTEGER,
@@ -395,22 +395,22 @@ public abstract class IfcLinePredicates {
                 IfcPropertyType.EXPRESS_INTEGER);
     }
 
-    private static Long getIntegerValue(IfcSinglePropertyValueLine line) {
+    private static Long getIntegerValue(IfcPropertySingleValueLine line) {
         return Optional.ofNullable(line)
                 .filter(IfcLinePredicates::isIntegerValue)
-                .map(IfcSinglePropertyValueLine::getValue)
+                .map(IfcPropertySingleValueLine::getValue)
                 .map(Long::valueOf)
                 .orElse(null);
     }
 
-    private static String getStringValue(IfcSinglePropertyValueLine line) {
+    private static String getStringValue(IfcPropertySingleValueLine line) {
         return Optional.ofNullable(line)
                 .filter(IfcLinePredicates::isStringValue)
-                .map(IfcSinglePropertyValueLine::getValue)
+                .map(IfcPropertySingleValueLine::getValue)
                 .orElse(null);
     }
 
-    private static boolean isStringValue(IfcSinglePropertyValueLine p) {
+    private static boolean isStringValue(IfcPropertySingleValueLine p) {
         return IfcPropertyType.isOneOf(
                 p.getType(),
                 IfcPropertyType.TEXT,
@@ -418,7 +418,7 @@ public abstract class IfcLinePredicates {
                 IfcPropertyType.IDENTIFIER);
     }
 
-    private static boolean isBooleanValue(IfcSinglePropertyValueLine p) {
+    private static boolean isBooleanValue(IfcPropertySingleValueLine p) {
         return IfcPropertyType.isOneOf(
                 p.getType(),
                 IfcPropertyType.EXPRESS_BOOL,
@@ -426,10 +426,10 @@ public abstract class IfcLinePredicates {
                 IfcPropertyType.LOGICAL);
     }
 
-    private static Boolean getBooleanValue(IfcSinglePropertyValueLine line) {
+    private static Boolean getBooleanValue(IfcPropertySingleValueLine line) {
         return Optional.ofNullable(line)
                 .filter(p -> IfcPropertyType.is(p.getType(), IfcPropertyType.BOOL))
-                .map(IfcSinglePropertyValueLine::getValue)
+                .map(IfcPropertySingleValueLine::getValue)
                 .map(".T."::equals)
                 .or(
                         () ->
@@ -440,7 +440,7 @@ public abstract class IfcLinePredicates {
                                                                 p.getType(),
                                                                 IfcPropertyType.EXPRESS_BOOL,
                                                                 IfcPropertyType.LOGICAL))
-                                        .map(IfcSinglePropertyValueLine::getValue)
+                                        .map(IfcPropertySingleValueLine::getValue)
                                         .map(Boolean::valueOf))
                 .orElse(null);
     }

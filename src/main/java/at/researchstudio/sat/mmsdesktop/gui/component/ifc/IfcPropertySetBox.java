@@ -3,7 +3,7 @@ package at.researchstudio.sat.mmsdesktop.gui.component.ifc;
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcPropertySetLine;
-import at.researchstudio.sat.merkmalservice.ifc.model.IfcSinglePropertyValueLine;
+import at.researchstudio.sat.merkmalservice.ifc.model.IfcPropertySingleValueLine;
 import at.researchstudio.sat.merkmalservice.utils.Utils;
 import at.researchstudio.sat.mmsdesktop.constants.ViewConstants;
 import com.jfoenix.controls.JFXSpinner;
@@ -61,7 +61,7 @@ public class IfcPropertySetBox extends VBox {
                         titleLabel.setTooltip(new Tooltip(propertySet.getLine()));
                         propSetNodes.add(titleLabel);
 
-                        List<IfcSinglePropertyValueLine> propertySetChildLines =
+                        List<IfcPropertySingleValueLine> propertySetChildLines =
                                 parsedIfcFile.getPropertySetChildLines(propertySet);
 
                         if (!propertySetChildLines.isEmpty()) {

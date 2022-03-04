@@ -1,12 +1,12 @@
 package at.researchstudio.sat.mmsdesktop.gui.convert.outputfile;
 
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.HighlevelChange;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.mmsdesktop.model.task.IfcFileVO;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -56,10 +56,13 @@ public class OutputFileState {
             this.outputFileContent.setAll(task.getValue().getLines());
 
             this.allChangedLines.setAll(
-                    task.getValue().getParsedIfcFile().getChanges().values().stream()
-                            .flatMap(Set::stream)
-                            .distinct()
+                    task.getValue()
+                            .getParsedIfcFile()
+                            .getChanges()
+                            .stream()
+                            .map(HighlevelChange::getEntityId)
                             .map(id -> task.getValue().getParsedIfcFile().getDataLines().get(id))
+                            .filter(Objects::nonNull)
                             .sorted(Comparator.comparing(IfcLine::toString))
                             .collect(Collectors.toList()));
             //            this.extractedFeatures.addAll(

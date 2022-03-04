@@ -72,7 +72,7 @@ public class IfcPropertyBuilder {
     }
 
     public IfcPropertyBuilder(
-            IfcSinglePropertyValueLine line, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
+            IfcPropertySingleValueLine line, Map<IfcUnitType, List<IfcUnit>> projectUnits) {
         this.id = line.getId();
         this.name = Utils.convertIFCStringToUtf8(line.getName());
         this.type =

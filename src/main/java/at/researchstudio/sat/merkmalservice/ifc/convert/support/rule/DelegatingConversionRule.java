@@ -4,6 +4,7 @@ import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRule;
 import at.researchstudio.sat.merkmalservice.ifc.convert.ParsedIfcFileModification;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
+import java.util.List;
 import java.util.Set;
 
 public class DelegatingConversionRule implements ConversionRule {
@@ -24,7 +25,7 @@ public class DelegatingConversionRule implements ConversionRule {
     }
 
     @Override
-    public ParsedIfcFileModification applyTo(IfcLine line, ParsedIfcFile ifcModel) {
+    public List<ParsedIfcFileModification> applyTo(IfcLine line, ParsedIfcFile ifcModel) {
         return delegate.applyTo(line, ifcModel);
     }
 

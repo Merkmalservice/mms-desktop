@@ -86,7 +86,8 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                     }
 
                     @Override
-                    public ParsedIfcFileModification applyTo(IfcLine line, ParsedIfcFile ifcModel) {
+                    public List<ParsedIfcFileModification> applyTo(
+                            IfcLine line, ParsedIfcFile ifcModel) {
                         List<ActionGroup<? extends Action>> actionGroups =
                                 Optional.ofNullable(mapping.getActionGroups())
                                         .orElse(Collections.emptyList());
@@ -101,26 +102,31 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
                                                                                         .logThrowableMessage(
                                                                                                 () ->
                                                                                                         makeModification(
+                                                                                                                this,
                                                                                                                 group,
                                                                                                                 action,
                                                                                                                 line))))
                                         .filter(Objects::nonNull);
-                        return Modification.multiple(modifications);
+                        return modifications.collect(Collectors.toList());
                     }
                 };
         return new IfcElementConversionRule(rule);
     }
 
     private ParsedIfcFileModification makeModification(
-            ActionGroup<? extends Action> actionGroup, Action action, IfcLine line) {
+            Object modificationSource,
+            ActionGroup<? extends Action> actionGroup,
+            Action action,
+            IfcLine line) {
         if (action instanceof DeleteAction) {
             return Modification.removePropertyWithName(
-                    ((DeleteAction) action).getFeature().getName(), line);
+                    modificationSource, ((DeleteAction) action).getFeature().getName(), line);
         }
         if (action instanceof AddAction) {
             AddActionGroup addActionGroup = (AddActionGroup) actionGroup;
             String propertySetName = getPropertySetName(addActionGroup.getAddToPropertySet());
             return Modification.addProperty(
+                    modificationSource,
                     ((AddAction) action).getFeature(),
                     ((AddAction) action).getValue(),
                     propertySetName,
@@ -131,6 +137,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
             ConvertAction convertAction = (ConvertAction) action;
             String propertySetName = getPropertySetName(convertActionGroup.getAddToPropertySet());
             return Modification.convertProperty(
+                    modificationSource,
                     convertAction.getInputFeature(),
                     convertAction.getOutputFeature(),
                     propertySetName,
@@ -141,6 +148,7 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
             ExtractAction extractAction = (ExtractAction) action;
             String propertySetName = getPropertySetName(convertActionGroup.getAddToPropertySet());
             return Modification.extractValueIntoProperty(
+                    modificationSource,
                     extractAction.getSource(),
                     extractAction.getOutputFeature(),
                     propertySetName,

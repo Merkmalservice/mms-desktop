@@ -10,29 +10,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public abstract class Modification {
-    private static final ParsedIfcFileModification NOP = new NoModification();
 
-    public static ParsedIfcFileModification nop() {
-        return NOP;
-    }
-
-    public static ParsedIfcFileModification multiple(ParsedIfcFileModification... modifications) {
-        return new ParsedIfcFileModificationGroup(modifications);
-    }
-
-    public static ParsedIfcFileModification multiple(
-            List<ParsedIfcFileModification> modifications) {
-        return new ParsedIfcFileModificationGroup(modifications);
-    }
-
-    public static ParsedIfcFileModification multiple(
-            Stream<ParsedIfcFileModification> modifications) {
-        return new ParsedIfcFileModificationGroup(modifications);
-    }
 
     public static <T extends IfcLine> ParsedIfcFileModification removePropertyWithName(
-            String propertyName, T fromElement) {
+            Object modificationSource, String propertyName, T fromElement) {
         return new RemovePropertyOrQuantityModification<>(
+                modificationSource,
                 IfcLinePredicates.isPropertyWithName(propertyName)
                         .or(IfcLinePredicates.isQuantityWithName(propertyName))
                         .or(IfcLinePredicates.isEnumValueWithName(propertyName)),
@@ -40,8 +23,9 @@ public abstract class Modification {
     }
 
     public static <T extends IfcLine> ParsedIfcFileModification removePropertyWithMatchingName(
-            String regex, T fromElement) {
+            Object modificationSource, String regex, T fromElement) {
         return new RemovePropertyOrQuantityModification<>(
+                modificationSource,
                 IfcLinePredicates.isPropertyWithNameMatching(regex)
                         .or((IfcLinePredicates.isQuantityWithNameMatching(regex)))
                         .or(IfcLinePredicates.isEnumValueWithNameMatching(regex)),
@@ -49,19 +33,32 @@ public abstract class Modification {
     }
 
     public static <T extends IfcLine> ParsedIfcFileModification addProperty(
-            Feature feature, MappingExecutionValue value, String propertySetName, T toElement) {
-        return new AddPropertyModification<>(toElement, feature, value, propertySetName);
+            Object modificationSource,
+            Feature feature,
+            MappingExecutionValue value,
+            String propertySetName,
+            T toElement) {
+        return new AddPropertyModification<>(
+                modificationSource, toElement, feature, value, propertySetName);
     }
 
     public static <T extends IfcLine> ParsedIfcFileModification convertProperty(
-            Feature inputFeature, Feature outputFeature, String propertySetName, T element) {
+            Object modificationSource,
+            Feature inputFeature,
+            Feature outputFeature,
+            String propertySetName,
+            T element) {
         return new ConvertPropertyModification<T>(
-                element, inputFeature, outputFeature, propertySetName);
+                modificationSource, element, inputFeature, outputFeature, propertySetName);
     }
 
     public static <T extends IfcLine> ParsedIfcFileModification extractValueIntoProperty(
-            ExtractionSource source, Feature outputFeature, String propertySetName, T element) {
+            Object modificationSource,
+            ExtractionSource source,
+            Feature outputFeature,
+            String propertySetName,
+            T element) {
         return new ExtractValueIntoPropertyModification<T>(
-                element, source, outputFeature, propertySetName);
+                modificationSource, element, source, outputFeature, propertySetName);
     }
 }
