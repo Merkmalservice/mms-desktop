@@ -16,8 +16,8 @@ import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.support.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import com.jfoenix.controls.*;
-import java.io.File;
-import java.io.IOException;
+
+import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -58,7 +58,6 @@ public class PerformConversionController implements Initializable {
     private final InputFileState inputFileState;
     @FXML BorderPane pcParentPane;
     @FXML private JFXProgressBar pcCenterProgressProgressBar;
-    @FXML private JFXTextArea pcCenterProgressLog;
     @FXML private BorderPane pcCenterProgress;
 
     @FXML private BorderPane pcCenterResults;
@@ -167,11 +166,13 @@ public class PerformConversionController implements Initializable {
     public void handleSaveLogAction(ActionEvent actionEvent) {
         File file = saveLogFileChooser.showSaveDialog(pcParentPane.getScene().getWindow());
         if (Objects.nonNull(file)) {
-            try {
-                Files.writeString(
-                        file.toPath(),
-                        stateService.getConvertState().convertLogOutputProperty().get(),
-                        StandardCharsets.UTF_8);
+            try (
+                BufferedWriter writer = new BufferedWriter(new FileWriter(file))){
+                IfcFileWriter.writeChangeLog(stateService
+                                .getConvertState()
+                                .getOutputFileState()
+                                .convertedIfcFileProperty()
+                                .get().getChanges(), writer);
                 final String message =
                         MessageUtils.getKeyWithParameters(
                                 resourceBundle,
@@ -206,7 +207,6 @@ public class PerformConversionController implements Initializable {
 
         pcCenterProgressProgressBar.progressProperty().unbind();
         pcCenterProgressProgressInfo.textProperty().unbind();
-        pcCenterProgressLog.textProperty().unbind();
     }
 
     @FXML
@@ -229,34 +229,21 @@ public class PerformConversionController implements Initializable {
                                     public void notifyProgress(
                                             String title, String message, float level) {
                                         updateProgress(level, 1);
-
                                         if (Objects.nonNull(title) && !lastTitle.equals(title)) {
-                                            logOutput
-                                                    .append(System.lineSeparator())
-                                                    .append(System.lineSeparator());
                                             updateTitle(title);
-                                            logOutput.append(title).append(System.lineSeparator());
                                             lastTitle = title;
                                         }
-                                        logOutput.append(message).append(System.lineSeparator());
-                                        updateMessage(logOutput.toString());
                                     }
 
                                     @Override
                                     public void notifyFinished(String title) {
                                         updateProgress(1, 1);
                                         updateTitle(title + ": FINISHED");
-                                        logOutput
-                                                .append(title)
-                                                .append(": FINISHED")
-                                                .append(System.lineSeparator());
-                                        updateMessage(logOutput.toString());
                                     }
 
                                     @Override
                                     public void notifyFailed(String s) {
-                                        logOutput.append("FAILED").append(System.lineSeparator());
-                                        updateMessage(logOutput.toString());
+                                        updateTitle("FAILED");
                                     }
                                 };
                         // TODO: ERROR HANDLING FOR BETTER USABILITY
@@ -296,7 +283,6 @@ public class PerformConversionController implements Initializable {
                 });
         pcCenterProgressProgressBar.progressProperty().bind(task.progressProperty());
         pcCenterProgressProgressInfo.textProperty().bind(task.titleProperty());
-        pcCenterProgressLog.textProperty().bind(task.messageProperty());
         processState.set(STEP_PROCESSING);
         new Thread(task).start();
     }

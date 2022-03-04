@@ -7,11 +7,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
-public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPropertyLineInterface {
+public class IfcPropertySingleValueLine extends IfcLine implements IfcNamedPropertyLineInterface {
     public static final String IDENTIFIER = "IFCPROPERTYSINGLEVALUE";
     private static final Pattern extractPattern =
             Pattern.compile(
-                    "(?>#[0-9]*= IFCPROPERTYSINGLEVALUE\\(')(?<name>.*)',((?<description>[^$]*)|\\$),(((?<type>[A-Z]*)\\(('?)(?<value>[^']*)('?)(\\))|\\$),(.(?<unitId>.*)|\\$)\\))");
+                    "#[0-9]+= IFCPROPERTYSINGLEVALUE\\('(?<name>.*)',((?<description>[^$]*)|\\$),(((?<type>[A-Z]*)\\(('(?<stringValue>.+)'|(?<otherValue>.+))\\))|\\$),(.(?<unitId>.*)|\\$)\\)");
     // <- warning might contain a . or ' at the end of the value
     private String name;
     private String description;
@@ -19,7 +19,7 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
     private String value;
     private Integer unitId;
 
-    public IfcSinglePropertyValueLine(
+    public IfcPropertySingleValueLine(
             Integer id,
             String name,
             String description,
@@ -60,7 +60,7 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
                 .toString();
     }
 
-    public IfcSinglePropertyValueLine(String line) {
+    public IfcPropertySingleValueLine(String line) {
         super(line);
 
         Matcher matcher = extractPattern.matcher(line);
@@ -68,7 +68,9 @@ public class IfcSinglePropertyValueLine extends IfcLine implements IfcNamedPrope
             name = StringUtils.trim(matcher.group("name"));
             type = StringUtils.trimToNull(matcher.group("type"));
             description = StringUtils.trimToNull(matcher.group("description"));
-            value = StringUtils.trimToNull(matcher.group("value"));
+            String othervalue = StringUtils.trimToNull(matcher.group("otherValue"));
+            String stringValue = StringUtils.trimToNull(matcher.group("stringValue"));
+            value = stringValue != null ? stringValue : othervalue;
             String unitIdString = StringUtils.trimToNull(matcher.group("unitId"));
             if (Objects.nonNull(unitIdString)) {
                 unitId = Integer.parseInt(unitIdString);

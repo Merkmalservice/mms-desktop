@@ -57,8 +57,8 @@ public class IfcLineBox extends HBox {
             propertyName.setTooltip(new Tooltip(ifcLine.toString()));
             getChildren().add(propertyName);
 
-            if (ifcLine instanceof IfcSinglePropertyValueLine) {
-                String value = ((IfcSinglePropertyValueLine) ifcLine).getValue();
+            if (ifcLine instanceof IfcPropertySingleValueLine) {
+                String value = ((IfcPropertySingleValueLine) ifcLine).getValue();
                 if (Objects.nonNull(value)) {
                     propertyValue.setText(Utils.convertIFCStringToUtf8(value));
                 } else {

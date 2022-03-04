@@ -100,9 +100,11 @@ public class ConversionEngineTests {
                                     }
 
                                     @Override
-                                    public ParsedIfcFileModification applyTo(
+                                    public List<ParsedIfcFileModification> applyTo(
                                             IfcLine line, ParsedIfcFile ifcModel) {
-                                        return removePropertyWithName("Versatz unten", line);
+                                        return List.of(
+                                                removePropertyWithName(
+                                                        this, "Versatz unten", line));
                                     }
                                 });
         ConversionEngine engine = new ConversionEngine(factory.getRules());
@@ -126,9 +128,11 @@ public class ConversionEngineTests {
                                     }
 
                                     @Override
-                                    public ParsedIfcFileModification applyTo(
+                                    public List<ParsedIfcFileModification> applyTo(
                                             IfcLine line, ParsedIfcFile ifcModel) {
-                                        return removePropertyWithName("cpiFitMatchKey", line);
+                                        return List.of(
+                                                removePropertyWithName(
+                                                        this, "cpiFitMatchKey", line));
                                     }
                                 });
         ConversionEngine engine = new ConversionEngine(factory.getRules());
@@ -152,9 +156,10 @@ public class ConversionEngineTests {
                                     }
 
                                     @Override
-                                    public ParsedIfcFileModification applyTo(
+                                    public List<ParsedIfcFileModification> applyTo(
                                             IfcLine line, ParsedIfcFile ifcModel) {
-                                        return multiple(removePropertyWithMatchingName(".*", line));
+                                        return List.of(
+                                                removePropertyWithMatchingName(this, ".*", line));
                                     }
                                 });
         ConversionEngine engine = new ConversionEngine(factory.getRules());
@@ -178,9 +183,10 @@ public class ConversionEngineTests {
                                     }
 
                                     @Override
-                                    public ParsedIfcFileModification applyTo(
+                                    public List<ParsedIfcFileModification> applyTo(
                                             IfcLine line, ParsedIfcFile ifcModel) {
-                                        return multiple(removePropertyWithMatchingName(".*", line));
+                                        return List.of(
+                                                removePropertyWithMatchingName(this, ".*", line));
                                     }
                                 });
         ConversionEngine engine = new ConversionEngine(factory.getRules());

@@ -158,7 +158,7 @@ public class IfcFileReader {
             } else {
                 try {
                     return parser.parse(lineString);
-                } catch (IllegalArgumentException e) {
+                } catch (Exception e) {
                     return handleUnparseableLine(taskProgressListener, progress, lineString);
                 }
             }
@@ -287,8 +287,8 @@ public class IfcFileReader {
         Set<IfcProperty> extractedProperties = new HashSet<>();
         for (IfcLine line :
                 ifcLinesGrouped.getOrDefault(
-                        IfcSinglePropertyValueLine.class, Collections.emptyList())) {
-            IfcSinglePropertyValueLine propertyLine = (IfcSinglePropertyValueLine) line;
+                        IfcPropertySingleValueLine.class, Collections.emptyList())) {
+            IfcPropertySingleValueLine propertyLine = (IfcPropertySingleValueLine) line;
             IfcProperty tempProp = new IfcPropertyBuilder(propertyLine, projectUnitsMap).build();
             IfcProperty prop =
                     extractedProperties.stream()

@@ -4,6 +4,8 @@ import static java.util.stream.Collectors.groupingBy;
 
 import at.researchstudio.sat.merkmalservice.ifc.IfcFileReader;
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.HighlevelChange;
+import at.researchstudio.sat.merkmalservice.ifc.convert.support.modification.ElementModification;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import java.lang.invoke.MethodHandles;
@@ -30,6 +32,9 @@ public class ConversionEngine {
     public ParsedIfcFile convert(
             ParsedIfcFile parsedIfcFile, TaskProgressListener taskProgressListener) {
         Objects.requireNonNull(parsedIfcFile);
+        if (taskProgressListener != null) {
+            taskProgressListener.notifyProgress("Cloning IFC Model...", "", 0);
+        }
         final ParsedIfcFile result =
                 IfcFileReader.cloneIfcFile(parsedIfcFile, taskProgressListener);
 
@@ -42,13 +47,22 @@ public class ConversionEngine {
                 level++;
                 Set<ConversionRule> currentRules = ruleSet.get(orderEntry);
                 List<ParsedIfcFileModification> modifications = new ArrayList<>();
-                int i = 0;
+                int ruleIndex = 0;
                 int lineCount = result.getLines().size();
 
                 for (ConversionRule rule : currentRules) {
+                    ruleIndex++;
                     Set<Class<? extends IfcLine>> typeRestrictions = rule.getIfcTypeRestrictions();
                     Set<Class<? extends IfcLine>> applicableToClasses =
                             result.getDataLinesByClass().keySet();
+                    if (taskProgressListener != null) {
+                        taskProgressListener.notifyProgress(
+                                String.format(
+                                        "Checking Rule: %s - identifying elements that match the condition",
+                                        rule.toString()),
+                                "",
+                                (float) ruleIndex / (float) currentRules.size());
+                    }
                     if (!typeRestrictions.isEmpty()) {
                         applicableToClasses =
                                 applicableToClasses.stream()
@@ -71,70 +85,70 @@ public class ConversionEngine {
                     if (taskProgressListener != null) {
                         taskProgressListener.notifyProgress(
                                 String.format(
-                                        "Checking Rule: %s, rule appliesTo %d of %d Lines",
+                                        "Checking Rule: %s, rule applies to nor more than %d of %d Lines",
                                         rule.toString(),
                                         appliedToLines.size(),
                                         result.getLines().size()),
                                 "",
-                                (float) i++ / (float) currentRules.size());
+                                (float) ruleIndex / (float) currentRules.size());
                     }
 
                     if (!appliedToLines.isEmpty()) {
-                        final int ruleNumber = i;
-                        appliedToLines.stream()
-                                .map(
-                                        line -> {
-                                            if (taskProgressListener != null) {
-                                                taskProgressListener.notifyProgress(
-                                                        String.format(
-                                                                "Checking Rule: %s, rule appliesTo %d of %d Lines",
-                                                                rule.toString(),
-                                                                appliedToLines.size(),
-                                                                lineCount),
-                                                        String.format(
-                                                                "applying Rule to line: %s",
-                                                                line.toString()),
-                                                        (float) ruleNumber
-                                                                / (float) currentRules.size());
-                                            }
-                                            result.addChange(rule, line.getId());
-                                            try {
-                                                ParsedIfcFileModification modification =
-                                                        rule.applyTo(line, result);
-                                                return modification;
-                                            } catch (Exception e) {
-                                                logger.warn(
-                                                        "Error generating modification of line "
-                                                                + line.getId()
-                                                                + " by rule "
-                                                                + rule.toString()
-                                                                + ": "
-                                                                + e.getMessage(),
-                                                        e);
-                                            }
-                                            return null;
-                                        })
-                                .filter(Objects::nonNull)
-                                .forEach(modifications::add);
+                        final int finalRuleIndex = ruleIndex;
+                        int lineIndex = 0;
+                        int reportSize = 100;
+                        int modSizeAtStart = modifications.size();
+                        for (IfcLine line: appliedToLines) {
+                            lineIndex++;
+                            if (taskProgressListener != null) {
+                                if (lineIndex % reportSize == 0) {
+                                    taskProgressListener.notifyProgress(
+                                                    String.format(
+                                                                    "Checking Rule: %s, processed %d of %d (collected %d modifications so far)",
+                                                                    rule.toString(),
+                                                                    lineIndex,
+                                                                    appliedToLines.size(),
+                                                                    modifications.size() - modSizeAtStart),
+                                                    "",
+                                                    (float) appliedToLines.size()
+                                                                    / (float) lineIndex);
+                                }
+                            }
+                            try {
+                                modifications.addAll(rule.applyTo(line, result));
+                            } catch (Exception e) {
+                                logger.warn(
+                                        "Error generating modification of line "
+                                                + line.getId()
+                                                + " by rule "
+                                                + rule.toString()
+                                                + ": "
+                                                + e.getMessage(),
+                                        e);
+                            }
+                        }
                     }
                 }
 
-                i = 0;
-                int modCount = modifications.size();
-                int reportSize = 10;
+                int modificationIndex = 0;
+                int totalModificationCount = modifications.size();
+                int reportSize = 100;
+                int changeCount = 0;
                 for (ParsedIfcFileModification modification : modifications) {
                     try {
-                        modification.accept(result);
-
-                        if (taskProgressListener != null && i % reportSize == 0) {
+                        List<HighlevelChange> highlevelChanges = modification.accept(result);
+                        if (!highlevelChanges.isEmpty()) {
+                            changeCount += highlevelChanges.stream().map(HighlevelChange::getLowlevelChanges).flatMap(Collection::stream).count();
+                            result.addChanges(highlevelChanges);
+                        }
+                        if (taskProgressListener != null && modificationIndex % reportSize == 0) {
                             taskProgressListener.notifyProgress(
                                     String.format(
-                                            "Applying modifications at level %d of %d ",
-                                            level, levels),
-                                    String.format("Applied %d of %d", i, modCount),
-                                    (float) i / (float) modCount);
+                                            "Level %d of %d: Processed %d of %d modifications, made %d actual changes so far",  level, levels, modificationIndex, totalModificationCount, changeCount),
+                                    "",
+                                    (float) modificationIndex / (float) totalModificationCount);
                         }
-                        i++;
+                        modificationIndex++;
                     } catch (Exception e) {
                         logger.info("Error during conversion: {}", e.getMessage(), e);
                     }

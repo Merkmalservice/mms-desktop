@@ -3,6 +3,7 @@ package at.researchstudio.sat.merkmalservice.ifc.convert;
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public interface ConversionRule {
@@ -25,7 +26,7 @@ public interface ConversionRule {
      * returning a {@link ParsedIfcFileModification}, which contains the code of the actual
      * modification.
      */
-    ParsedIfcFileModification applyTo(IfcLine line, ParsedIfcFile ifcModel);
+    List<ParsedIfcFileModification> applyTo(IfcLine line, ParsedIfcFile ifcModel);
 
     /**
      * Rules are only applied to IfcLine (sub)types returned by this method.
