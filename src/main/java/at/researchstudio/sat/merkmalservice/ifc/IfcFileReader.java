@@ -711,11 +711,9 @@ public class IfcFileReader {
                                                                         .getEnumOptionValues()
                                                                         .stream()
                                                                         .map(
-                                                                                option ->
-                                                                                        new EnumFeature
-                                                                                                .MEStringValue(
-                                                                                                option,
-                                                                                                null))
+                                                                                EnumFeature
+                                                                                                .MEStringValue
+                                                                                        ::new)
                                                                         .collect(
                                                                                 Collectors
                                                                                         .toList()),
