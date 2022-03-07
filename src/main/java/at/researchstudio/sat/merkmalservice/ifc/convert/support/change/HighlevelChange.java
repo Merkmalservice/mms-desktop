@@ -1,6 +1,5 @@
 package at.researchstudio.sat.merkmalservice.ifc.convert.support.change;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,10 +24,13 @@ public class HighlevelChange {
         this.lowlevelChanges = List.of();
     }
 
-    public HighlevelChange(HighlevelChangeType type, Integer entityId, String description,
-                    List<LowlevelChange> lowlevelChanges,
-                    List<Error> errors,
-                    Object originator) {
+    public HighlevelChange(
+            HighlevelChangeType type,
+            Integer entityId,
+            String description,
+            List<LowlevelChange> lowlevelChanges,
+            List<Error> errors,
+            Object originator) {
         Objects.requireNonNull(originator);
         Objects.requireNonNull(entityId);
         Objects.requireNonNull(type);
@@ -46,7 +48,7 @@ public class HighlevelChange {
         return originator;
     }
 
-    public Integer getEntityId(){
+    public Integer getEntityId() {
         return entityId;
     }
 
@@ -66,7 +68,7 @@ public class HighlevelChange {
         this.description = description;
     }
 
-    void setErrors(List<Error> errors){
+    void setErrors(List<Error> errors) {
         this.errors = errors.stream().collect(Collectors.toUnmodifiableList());
     }
 

@@ -2,7 +2,6 @@ package at.researchstudio.sat.merkmalservice.ifc;
 
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.HighlevelChange;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.HighlevelChangeFormatter;
-
 import java.io.*;
 import java.util.List;
 
@@ -34,9 +33,10 @@ public abstract class IfcFileWriter {
         parsedIfcFile.getLines().forEach(line -> printWriter.println(line.getModifiedLine()));
     }
 
-    public static void writeChangeLog(List<HighlevelChange> changes, BufferedWriter writer) throws IOException {
+    public static void writeChangeLog(List<HighlevelChange> changes, BufferedWriter writer)
+            throws IOException {
         HighlevelChangeFormatter changeFormatter = new HighlevelChangeFormatter();
-        for(HighlevelChange change: changes) {
+        for (HighlevelChange change : changes) {
             writer.write(changeFormatter.format(change));
         }
     }

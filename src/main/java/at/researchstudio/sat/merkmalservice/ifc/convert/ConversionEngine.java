@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.groupingBy;
 import at.researchstudio.sat.merkmalservice.ifc.IfcFileReader;
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.HighlevelChange;
-import at.researchstudio.sat.merkmalservice.ifc.convert.support.modification.ElementModification;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.support.progress.TaskProgressListener;
 import java.lang.invoke.MethodHandles;
@@ -98,20 +97,19 @@ public class ConversionEngine {
                         int lineIndex = 0;
                         int reportSize = 100;
                         int modSizeAtStart = modifications.size();
-                        for (IfcLine line: appliedToLines) {
+                        for (IfcLine line : appliedToLines) {
                             lineIndex++;
                             if (taskProgressListener != null) {
                                 if (lineIndex % reportSize == 0) {
                                     taskProgressListener.notifyProgress(
-                                                    String.format(
-                                                                    "Checking Rule: %s, processed %d of %d (collected %d modifications so far)",
-                                                                    rule.toString(),
-                                                                    lineIndex,
-                                                                    appliedToLines.size(),
-                                                                    modifications.size() - modSizeAtStart),
-                                                    "",
-                                                    (float) appliedToLines.size()
-                                                                    / (float) lineIndex);
+                                            String.format(
+                                                    "Checking Rule: %s, processed %d of %d (collected %d modifications so far)",
+                                                    rule.toString(),
+                                                    lineIndex,
+                                                    appliedToLines.size(),
+                                                    modifications.size() - modSizeAtStart),
+                                            "",
+                                            (float) appliedToLines.size() / (float) lineIndex);
                                 }
                             }
                             try {
@@ -138,13 +136,22 @@ public class ConversionEngine {
                     try {
                         List<HighlevelChange> highlevelChanges = modification.accept(result);
                         if (!highlevelChanges.isEmpty()) {
-                            changeCount += highlevelChanges.stream().map(HighlevelChange::getLowlevelChanges).flatMap(Collection::stream).count();
+                            changeCount +=
+                                    highlevelChanges.stream()
+                                            .map(HighlevelChange::getLowlevelChanges)
+                                            .flatMap(Collection::stream)
+                                            .count();
                             result.addChanges(highlevelChanges);
                         }
                         if (taskProgressListener != null && modificationIndex % reportSize == 0) {
                             taskProgressListener.notifyProgress(
                                     String.format(
-                                            "Level %d of %d: Processed %d of %d modifications, made %d actual changes so far",  level, levels, modificationIndex, totalModificationCount, changeCount),
+                                            "Level %d of %d: Processed %d of %d modifications, made %d actual changes so far",
+                                            level,
+                                            levels,
+                                            modificationIndex,
+                                            totalModificationCount,
+                                            changeCount),
                                     "",
                                     (float) modificationIndex / (float) totalModificationCount);
                         }

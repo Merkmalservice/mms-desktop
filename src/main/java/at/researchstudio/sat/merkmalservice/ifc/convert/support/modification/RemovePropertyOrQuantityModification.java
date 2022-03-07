@@ -5,7 +5,6 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.Highlevel
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.HighlevelChangeBuilder;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.HighlevelChangeType;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
-
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -19,13 +18,16 @@ public class RemovePropertyOrQuantityModification<T extends IfcLine>
         this.predicate = predicate;
     }
 
-    @Override protected HighlevelChangeType getHighlevelChangeType() {
+    @Override
+    protected HighlevelChangeType getHighlevelChangeType() {
         return HighlevelChangeType.DELETE_PROPERTY;
     }
 
     @Override
     protected List<HighlevelChange> modify(T element, ParsedIfcFile ifcModel) {
-        HighlevelChangeBuilder changeBuilder = new HighlevelChangeBuilder(getModificationSource(), getHighlevelChangeType(), element.getId());
+        HighlevelChangeBuilder changeBuilder =
+                new HighlevelChangeBuilder(
+                        getModificationSource(), getHighlevelChangeType(), element.getId());
         ifcModel.removeProperty(element, predicate, changeBuilder);
         return List.of(changeBuilder.build());
     }

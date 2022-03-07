@@ -8,7 +8,6 @@ import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.ifc.support.IfcElementValueExtractor;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ExtractionSource;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
-
 import java.util.List;
 
 public class ExtractValueIntoPropertyModification<T extends IfcLine>
@@ -37,13 +36,16 @@ public class ExtractValueIntoPropertyModification<T extends IfcLine>
         }
     }
 
-    @Override protected HighlevelChangeType getHighlevelChangeType() {
+    @Override
+    protected HighlevelChangeType getHighlevelChangeType() {
         return HighlevelChangeType.ADD_PROPERTY;
     }
 
     @Override
     protected List<HighlevelChange> modify(T element, ParsedIfcFile ifcModel) {
-        HighlevelChangeBuilder changeBuilder = new HighlevelChangeBuilder(getModificationSource(), getHighlevelChangeType(), element.getId());
+        HighlevelChangeBuilder changeBuilder =
+                new HighlevelChangeBuilder(
+                        getModificationSource(), getHighlevelChangeType(), element.getId());
         ifcModel.extractElementValueIntoProperty(
                 element, outputFeature, propertySetName, extractor, changeBuilder);
         return List.of(changeBuilder.build());

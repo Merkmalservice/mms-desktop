@@ -16,12 +16,9 @@ import at.researchstudio.sat.mmsdesktop.service.ReactiveStateService;
 import at.researchstudio.sat.mmsdesktop.support.MessageUtils;
 import at.researchstudio.sat.mmsdesktop.view.components.ProcessState;
 import com.jfoenix.controls.*;
-
 import java.io.*;
 import java.lang.invoke.MethodHandles;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -166,13 +163,15 @@ public class PerformConversionController implements Initializable {
     public void handleSaveLogAction(ActionEvent actionEvent) {
         File file = saveLogFileChooser.showSaveDialog(pcParentPane.getScene().getWindow());
         if (Objects.nonNull(file)) {
-            try (
-                BufferedWriter writer = new BufferedWriter(new FileWriter(file))){
-                IfcFileWriter.writeChangeLog(stateService
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                IfcFileWriter.writeChangeLog(
+                        stateService
                                 .getConvertState()
                                 .getOutputFileState()
                                 .convertedIfcFileProperty()
-                                .get().getChanges(), writer);
+                                .get()
+                                .getChanges(),
+                        writer);
                 final String message =
                         MessageUtils.getKeyWithParameters(
                                 resourceBundle,
