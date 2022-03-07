@@ -17,8 +17,14 @@ public abstract class EntityChange implements LowlevelChange {
         return entityType;
     }
 
-    @Override public String toString() {
-        return getClass().getSimpleName() +
-                        "{ " + entityType.getSimpleName() + '(' + entityId + ')' + " }";
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()
+                + "{ "
+                + entityType.getSimpleName()
+                + '('
+                + entityId
+                + ')'
+                + " }";
     }
 }

@@ -4,29 +4,29 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.ConversionRule;
 
 public class HighlevelChangeFormatter {
 
-    public HighlevelChangeFormatter() {
-    }
+    public HighlevelChangeFormatter() {}
 
     public String format(HighlevelChange change) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Entity ").append(change.getEntityId())
-                        .append(": ")
-                        .append(change.getType())
-                        .append(" caused by ")
-                        .append(formatOriginator(change.getOriginator()))
-                        .append("\n");
-        if (change.getDescription().isPresent()){
+        sb.append("Entity ")
+                .append(change.getEntityId())
+                .append(": ")
+                .append(change.getType())
+                .append(" caused by ")
+                .append(formatOriginator(change.getOriginator()))
+                .append("\n");
+        if (change.getDescription().isPresent()) {
             sb.append("\t").append(change.getDescription().get()).append("\n");
         }
         if (!change.getErrors().isEmpty()) {
             sb.append("\t").append("Errors:\n");
-            for (Error error: change.getErrors()){
+            for (Error error : change.getErrors()) {
                 sb.append("\t\t").append(format(error)).append("\n");
             }
         }
-        if (!change.getLowlevelChanges().isEmpty()){
+        if (!change.getLowlevelChanges().isEmpty()) {
             sb.append("\t").append("Low-level changes:\n");
-            for(LowlevelChange subChange: change.getLowlevelChanges()) {
+            for (LowlevelChange subChange : change.getLowlevelChanges()) {
                 sb.append("\t\t").append(format(subChange)).append("\n");
             }
         }
@@ -47,7 +47,15 @@ public class HighlevelChangeFormatter {
 
     private String format(Error error) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Error[message='").append(error.getMessage().orElse("")).append("', throwable=").append(error.getException().stream().map(t -> t.toString()).findFirst().orElse("(none)")).append("]");
+        sb.append("Error[message='")
+                .append(error.getMessage().orElse(""))
+                .append("', throwable=")
+                .append(
+                        error.getException().stream()
+                                .map(t -> t.toString())
+                                .findFirst()
+                                .orElse("(none)"))
+                .append("]");
         return sb.toString();
     }
 }

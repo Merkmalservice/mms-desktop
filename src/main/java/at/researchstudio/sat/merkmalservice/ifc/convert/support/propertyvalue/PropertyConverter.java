@@ -5,6 +5,7 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.Highlevel
 
 public interface PropertyConverter {
     StepValueAndTypeAndIfcUnit convert(
-                    StepValueAndTypeAndIfcUnit stepValueAndTypeAndIfcUnit, ParsedIfcFile parsedIfcFile,
-                    HighlevelChangeBuilder changeBuilder);
+            StepValueAndTypeAndIfcUnit stepValueAndTypeAndIfcUnit,
+            ParsedIfcFile parsedIfcFile,
+            HighlevelChangeBuilder changeBuilder);
 }

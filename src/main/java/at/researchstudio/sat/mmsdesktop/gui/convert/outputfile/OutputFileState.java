@@ -56,10 +56,7 @@ public class OutputFileState {
             this.outputFileContent.setAll(task.getValue().getLines());
 
             this.allChangedLines.setAll(
-                    task.getValue()
-                            .getParsedIfcFile()
-                            .getChanges()
-                            .stream()
+                    task.getValue().getParsedIfcFile().getChanges().stream()
                             .map(HighlevelChange::getEntityId)
                             .map(id -> task.getValue().getParsedIfcFile().getDataLines().get(id))
                             .filter(Objects::nonNull)

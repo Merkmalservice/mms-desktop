@@ -9,7 +9,6 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.Highlevel
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
-
 import java.util.List;
 
 public class AddPropertyModification<T extends IfcLine> extends ElementModification<T> {
@@ -32,13 +31,16 @@ public class AddPropertyModification<T extends IfcLine> extends ElementModificat
         this.effectiveValue = getEffectiveActionValue(feature, value);
     }
 
-    @Override protected HighlevelChangeType getHighlevelChangeType() {
+    @Override
+    protected HighlevelChangeType getHighlevelChangeType() {
         return HighlevelChangeType.ADD_PROPERTY;
     }
 
     @Override
     protected List<HighlevelChange> modify(T element, ParsedIfcFile ifcModel) {
-        HighlevelChangeBuilder changeBuilder = new HighlevelChangeBuilder(this.getModificationSource(), getHighlevelChangeType(), element.getId());
+        HighlevelChangeBuilder changeBuilder =
+                new HighlevelChangeBuilder(
+                        this.getModificationSource(), getHighlevelChangeType(), element.getId());
         ifcModel.addProperty(element, feature, effectiveValue, propertySetName, changeBuilder);
         return List.of(changeBuilder.build());
     }

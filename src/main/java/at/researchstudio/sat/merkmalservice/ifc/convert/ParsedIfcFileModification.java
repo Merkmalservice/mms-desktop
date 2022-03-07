@@ -2,7 +2,6 @@ package at.researchstudio.sat.merkmalservice.ifc.convert;
 
 import at.researchstudio.sat.merkmalservice.ifc.ParsedIfcFile;
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.HighlevelChange;
-
 import java.util.List;
 
 public interface ParsedIfcFileModification<S> {

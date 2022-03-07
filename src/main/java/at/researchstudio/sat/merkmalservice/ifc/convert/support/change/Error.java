@@ -27,10 +27,8 @@ public class Error {
         return Optional.ofNullable(exception);
     }
 
-    @Override public String toString() {
-        return "Error{" +
-                        "message='" + message + '\'' +
-                        ", exception=" + exception +
-                        '}';
+    @Override
+    public String toString() {
+        return "Error{" + "message='" + message + '\'' + ", exception=" + exception + '}';
     }
 }

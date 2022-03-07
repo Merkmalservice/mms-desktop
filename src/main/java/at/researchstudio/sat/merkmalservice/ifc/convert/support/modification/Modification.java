@@ -6,11 +6,8 @@ import at.researchstudio.sat.merkmalservice.ifc.support.IfcLinePredicates;
 import at.researchstudio.sat.merkmalservice.model.mapping.MappingExecutionValue;
 import at.researchstudio.sat.merkmalservice.model.mapping.action.convert.ExtractionSource;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
-import java.util.List;
-import java.util.stream.Stream;
 
 public abstract class Modification {
-
 
     public static <T extends IfcLine> ParsedIfcFileModification removePropertyWithName(
             Object modificationSource, String propertyName, T fromElement) {

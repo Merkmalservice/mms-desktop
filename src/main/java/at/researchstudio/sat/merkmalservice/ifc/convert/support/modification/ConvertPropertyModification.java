@@ -7,7 +7,6 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.Highlevel
 import at.researchstudio.sat.merkmalservice.ifc.convert.support.propertyvalue.FeatureBasedPropertyConverter;
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature;
-
 import java.util.List;
 
 public class ConvertPropertyModification<T extends IfcLine> extends ElementModification<T> {
@@ -29,7 +28,8 @@ public class ConvertPropertyModification<T extends IfcLine> extends ElementModif
         this.outputFeature = outputFeature;
     }
 
-    @Override protected HighlevelChangeType getHighlevelChangeType() {
+    @Override
+    protected HighlevelChangeType getHighlevelChangeType() {
         return HighlevelChangeType.CONVERT_PROPERTY;
     }
 
@@ -37,7 +37,9 @@ public class ConvertPropertyModification<T extends IfcLine> extends ElementModif
     protected List<HighlevelChange> modify(T element, ParsedIfcFile ifcModel) {
         FeatureBasedPropertyConverter converter =
                 new FeatureBasedPropertyConverter(inputFeature, outputFeature);
-        HighlevelChangeBuilder changeBuilder = new HighlevelChangeBuilder(getModificationSource(), getHighlevelChangeType(), element.getId());
+        HighlevelChangeBuilder changeBuilder =
+                new HighlevelChangeBuilder(
+                        getModificationSource(), getHighlevelChangeType(), element.getId());
         ifcModel.convertProperty(
                 element,
                 inputFeature,
@@ -45,7 +47,7 @@ public class ConvertPropertyModification<T extends IfcLine> extends ElementModif
                 propertySetName,
                 converter,
                 deleteInputProperty,
-                        changeBuilder);
+                changeBuilder);
         return List.of(changeBuilder.build());
     }
 }

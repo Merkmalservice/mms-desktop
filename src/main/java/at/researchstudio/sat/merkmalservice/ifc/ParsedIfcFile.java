@@ -57,7 +57,6 @@ public class ParsedIfcFile {
     private final AtomicInteger nextFreeLineId = new AtomicInteger(1);
     private final List<HighlevelChange> changes = new ArrayList<>();
 
-
     public ParsedIfcFile(
             List<IfcLine> lines,
             @NonNull Set<IfcProperty> extractedProperties,
@@ -305,19 +304,20 @@ public class ParsedIfcFile {
     }
 
     public <T extends IfcLine> void addProperty(
-                    T element,
-                    at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
-                    MappingExecutionValue value,
-                    String propertySetName,
-                    HighlevelChangeBuilder changeBuilder) {
-        IfcPropertySetLine pSet = getOrSplitOrCreatePropertySet(element, propertySetName, changeBuilder);
+            T element,
+            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
+            MappingExecutionValue value,
+            String propertySetName,
+            HighlevelChangeBuilder changeBuilder) {
+        IfcPropertySetLine pSet =
+                getOrSplitOrCreatePropertySet(element, propertySetName, changeBuilder);
         addProperty(pSet, feature, value, changeBuilder);
     }
 
     private <T extends IfcLine> IfcPropertySetLine getOrSplitOrCreatePropertySet(
-                    T element, String propertySetName,
-                    HighlevelChangeBuilder changeBuilder) {
-        splitSharedPropertySetsMatching(element, pset -> propertySetName.equals(pset.getName()), changeBuilder);
+            T element, String propertySetName, HighlevelChangeBuilder changeBuilder) {
+        splitSharedPropertySetsMatching(
+                element, pset -> propertySetName.equals(pset.getName()), changeBuilder);
         List<IfcPropertySetLine> propSets =
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
                         .filter(not(IfcRelDefinesByPropertiesLine::isSharedPropertySet))
@@ -336,19 +336,19 @@ public class ParsedIfcFile {
     }
 
     private void addProperty(
-                    IfcPropertySetLine pSet,
-                    at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
-                    MappingExecutionValue value,
-                    HighlevelChangeBuilder changeBuilder) {
+            IfcPropertySetLine pSet,
+            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
+            MappingExecutionValue value,
+            HighlevelChangeBuilder changeBuilder) {
         StepValueAndType vat = stepPropertyValueFactory.toStepPropertyValue(feature, value);
         addProperty(pSet, feature, vat, changeBuilder);
     }
 
     private void addProperty(
-                    IfcPropertySetLine pSet,
-                    at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
-                    StepValueAndType vat,
-                    HighlevelChangeBuilder changeBuilder) {
+            IfcPropertySetLine pSet,
+            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
+            StepValueAndType vat,
+            HighlevelChangeBuilder changeBuilder) {
 
         IfcPropertySingleValueLine prop =
                 new IfcPropertySingleValueLine(
@@ -367,10 +367,10 @@ public class ParsedIfcFile {
     }
 
     private void addProperty(
-                    IfcPropertySetLine pSet,
-                    at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
-                    StepValueAndTypeAndIfcUnit valueAndTypeAndIfcUnit,
-                    HighlevelChangeBuilder changeBuilder) {
+            IfcPropertySetLine pSet,
+            at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature feature,
+            StepValueAndTypeAndIfcUnit valueAndTypeAndIfcUnit,
+            HighlevelChangeBuilder changeBuilder) {
         IfcPropertySingleValueLine prop =
                 new IfcPropertySingleValueLine(
                         nextFreeLineId(),
@@ -395,7 +395,8 @@ public class ParsedIfcFile {
         return null;
     }
 
-    public <T extends IfcLine> void removeProperty(T element, Predicate<IfcLine> predicate, HighlevelChangeBuilder changeBuilder) {
+    public <T extends IfcLine> void removeProperty(
+            T element, Predicate<IfcLine> predicate, HighlevelChangeBuilder changeBuilder) {
         splitSharedPropertySetsWithPropertyMatching(element, predicate, changeBuilder);
         List<Pair<IfcPropertySetLine, IfcPropertySingleValueLine>> toDelete =
                 getRelDefinesByPropertiesLinesReferencing(element).stream()
@@ -413,19 +414,20 @@ public class ParsedIfcFile {
                 pSetAndProp ->
                         removeSinglePropertyFromPropertySet(
                                 pSetAndProp.getLeft(), pSetAndProp.getRight(), changeBuilder));
-
     }
 
     public <T extends IfcLine> void extractElementValueIntoProperty(
             T element,
             at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature outputFeature,
             String propertySetName,
-            IfcElementValueExtractor extractor, HighlevelChangeBuilder changeBuilder) {
+            IfcElementValueExtractor extractor,
+            HighlevelChangeBuilder changeBuilder) {
         Optional<StepValueAndTypeAndIfcUnit> extractedValue = extractor.apply(this, element);
 
         if (propertySetName == null) {
             changeBuilder.errorFmt(
-                    "Cannot extract value into property %s : no property set specified", outputFeature.getName());
+                    "Cannot extract value into property %s : no property set specified",
+                    outputFeature.getName());
             return;
         }
         if (extractedValue.isEmpty()) {
@@ -436,10 +438,12 @@ public class ParsedIfcFile {
         }
         if (extractedValue.get().getStepValueAndType().getValue() == null) {
             changeBuilder.errorFmt(
-                            "Cannot extract value into property %s : value is missing in extraction result", outputFeature.getName());
+                    "Cannot extract value into property %s : value is missing in extraction result",
+                    outputFeature.getName());
             return;
         }
-        IfcPropertySetLine targetPSet = getOrSplitOrCreatePropertySet(element, propertySetName, changeBuilder);
+        IfcPropertySetLine targetPSet =
+                getOrSplitOrCreatePropertySet(element, propertySetName, changeBuilder);
         addProperty(targetPSet, outputFeature, extractedValue.get(), changeBuilder);
     }
 
@@ -449,7 +453,8 @@ public class ParsedIfcFile {
             at.researchstudio.sat.merkmalservice.model.mapping.feature.Feature outputFeature,
             String propertySetName,
             PropertyConverter converter,
-            boolean deleteInputProperty, HighlevelChangeBuilder changeBuilder) {
+            boolean deleteInputProperty,
+            HighlevelChangeBuilder changeBuilder) {
         List<? extends IfcLine> props =
                 getProperties(
                         element,
@@ -458,8 +463,7 @@ public class ParsedIfcFile {
         if (props.size() > 1 || props.isEmpty()) {
             changeBuilder.errorFmt(
                     "Expected to find one property named %s as the input feature of a convert action, but found %d",
-                    inputFeature.getName(),
-                    props.size());
+                    inputFeature.getName(), props.size());
             return;
         }
         IfcLine prop = props.get(0);
@@ -489,28 +493,31 @@ public class ParsedIfcFile {
         } else {
             // TODO: obtain value and type from enums, lists, tables, etc.
             changeBuilder.errorFmt(
-                            "Cannot handle property of type %s in convert action",
-                            prop.getClass().getSimpleName());
+                    "Cannot handle property of type %s in convert action",
+                    prop.getClass().getSimpleName());
             return;
         }
         if (propertySetName == null) {
             changeBuilder.errorFmt(
                     "Cannot extract value into property %s: no property set specified",
-                            outputFeature.getName());
+                    outputFeature.getName());
             return;
         }
-        IfcPropertySetLine targetPSet = getOrSplitOrCreatePropertySet(element, propertySetName, changeBuilder);
+        IfcPropertySetLine targetPSet =
+                getOrSplitOrCreatePropertySet(element, propertySetName, changeBuilder);
         StepValueAndTypeAndIfcUnit convertedValue =
                 converter.convert(stepValueAndTypeAndIfcUnit, this, changeBuilder);
         if (deleteInputProperty) {
-            removeProperty(element, IfcLinePredicates.isPropertyWithName(inputFeature.getName()) ,changeBuilder);
+            removeProperty(
+                    element,
+                    IfcLinePredicates.isPropertyWithName(inputFeature.getName()),
+                    changeBuilder);
         }
         addProperty(targetPSet, outputFeature, convertedValue, changeBuilder);
     }
 
     private <T extends IfcLine> void splitSharedPropertySetsWithPropertyMatching(
-                    T element, Predicate<IfcLine> predicate,
-                    HighlevelChangeBuilder changeBuilder) {
+            T element, Predicate<IfcLine> predicate, HighlevelChangeBuilder changeBuilder) {
         getRelDefinesByPropertiesLinesReferencing(element).stream()
                 .filter(IfcRelDefinesByPropertiesLine::isSharedPropertySet)
                 .filter(
@@ -527,7 +534,9 @@ public class ParsedIfcFile {
     }
 
     private <T extends IfcLine> void splitSharedPropertySetsMatching(
-            T element, Predicate<IfcPropertySetLine> predicate, HighlevelChangeBuilder changeBuilder) {
+            T element,
+            Predicate<IfcPropertySetLine> predicate,
+            HighlevelChangeBuilder changeBuilder) {
         getRelDefinesByPropertiesLinesReferencing(element).stream()
                 .filter(IfcRelDefinesByPropertiesLine::isSharedPropertySet)
                 .filter(
@@ -536,8 +545,8 @@ public class ParsedIfcFile {
                 .forEach(ps -> splitSharedPropertySet(element, ps, changeBuilder));
     }
 
-    private <T extends IfcLine> IfcPropertySetLine addPropertySet(String name, T toElement,
-                    HighlevelChangeBuilder changeBuilder) {
+    private <T extends IfcLine> IfcPropertySetLine addPropertySet(
+            String name, T toElement, HighlevelChangeBuilder changeBuilder) {
         Integer id = nextFreeLineId();
         IfcPropertySetLine pSet =
                 new IfcPropertySetLine(id, name, UUID.randomUUID().toString(), 10101, null, null);
@@ -553,8 +562,9 @@ public class ParsedIfcFile {
     }
 
     private <T extends IfcLine> void splitSharedPropertySet(
-                    T element, IfcRelDefinesByPropertiesLine relDefByProps,
-                    HighlevelChangeBuilder changeBuilder) {
+            T element,
+            IfcRelDefinesByPropertiesLine relDefByProps,
+            HighlevelChangeBuilder changeBuilder) {
         IfcPropertySetLine pSet =
                 castTo(
                         dataLines.get(relDefByProps.getRelatingPropertySetId()),
@@ -625,7 +635,8 @@ public class ParsedIfcFile {
         return registerNewIfcLine(newLine, true, changeBuilder);
     }
 
-    private Integer registerNewIfcLine(IfcLine newLine, boolean changeIdToNextFreeId, HighlevelChangeBuilder changeBuilder) {
+    private Integer registerNewIfcLine(
+            IfcLine newLine, boolean changeIdToNextFreeId, HighlevelChangeBuilder changeBuilder) {
         if (changeIdToNextFreeId) {
             newLine.changeIdTo(nextFreeLineId());
         }
@@ -697,8 +708,9 @@ public class ParsedIfcFile {
     }
 
     private void removeSinglePropertyFromPropertySet(
-                    IfcPropertySetLine propertySetLine, IfcPropertySingleValueLine propertyValueLine,
-                    HighlevelChangeBuilder changeBuilder) {
+            IfcPropertySetLine propertySetLine,
+            IfcPropertySingleValueLine propertyValueLine,
+            HighlevelChangeBuilder changeBuilder) {
         removeFromLookupTables(propertySetLine);
         removeFromLookupTables(propertyValueLine);
         propertySetLine.removeReferenceTo(propertyValueLine);
@@ -761,7 +773,6 @@ public class ParsedIfcFile {
                 .map(Optional::get)
                 .collect(toList());
     }
-
 
     private static class TypeInstancePair {
         final Class<? extends IfcLine> type;

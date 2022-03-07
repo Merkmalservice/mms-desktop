@@ -7,7 +7,6 @@ import at.researchstudio.sat.merkmalservice.ifc.convert.support.change.Highlevel
 import at.researchstudio.sat.merkmalservice.ifc.model.IfcLine;
 import java.lang.invoke.MethodHandles;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,10 +27,10 @@ public abstract class ElementModification<T extends IfcLine> extends BaseModific
         try {
             return modify(element, parsedIfcFile);
         } catch (Exception e) {
-            HighlevelChangeBuilder changeBuilder = new HighlevelChangeBuilder(getModificationSource(),getHighlevelChangeType(), element.getId());
-            changeBuilder.errorFmt(e,
-                    "Error applying modification to element %d",
-                    element.getId());
+            HighlevelChangeBuilder changeBuilder =
+                    new HighlevelChangeBuilder(
+                            getModificationSource(), getHighlevelChangeType(), element.getId());
+            changeBuilder.errorFmt(e, "Error applying modification to element %d", element.getId());
             return List.of(changeBuilder.build());
         }
     }

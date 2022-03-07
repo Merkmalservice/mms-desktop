@@ -27,10 +27,16 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
 
     private final Feature inputFeature;
     private final Feature outputFeature;
-    private interface TriFunction<A,B,C,R> {
+
+    private interface TriFunction<A, B, C, R> {
         R apply(A a, B b, C c);
     }
-    private TriFunction<StepValueAndTypeAndIfcUnit, ParsedIfcFile, HighlevelChangeBuilder, StepValueAndTypeAndIfcUnit>
+
+    private TriFunction<
+                    StepValueAndTypeAndIfcUnit,
+                    ParsedIfcFile,
+                    HighlevelChangeBuilder,
+                    StepValueAndTypeAndIfcUnit>
             conversionFunction;
 
     public FeatureBasedPropertyConverter(Feature inputFeature, Feature outputFeature) {
@@ -39,7 +45,11 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
         this.conversionFunction = generateConversionFunction(inputFeature, outputFeature);
     }
 
-    private TriFunction<StepValueAndTypeAndIfcUnit, ParsedIfcFile, HighlevelChangeBuilder, StepValueAndTypeAndIfcUnit>
+    private TriFunction<
+                    StepValueAndTypeAndIfcUnit,
+                    ParsedIfcFile,
+                    HighlevelChangeBuilder,
+                    StepValueAndTypeAndIfcUnit>
             generateConversionFunction(Feature inputFeature, Feature outputFeature) {
 
         // output type string: just do a toString
@@ -152,8 +162,9 @@ public class FeatureBasedPropertyConverter implements PropertyConverter {
 
     @Override
     public StepValueAndTypeAndIfcUnit convert(
-                    StepValueAndTypeAndIfcUnit stepValueAndTypeAndIfcUnit, ParsedIfcFile parsedIfcFile,
-                    HighlevelChangeBuilder changeBuilder) {
+            StepValueAndTypeAndIfcUnit stepValueAndTypeAndIfcUnit,
+            ParsedIfcFile parsedIfcFile,
+            HighlevelChangeBuilder changeBuilder) {
 
         return conversionFunction.apply(stepValueAndTypeAndIfcUnit, parsedIfcFile, changeBuilder);
     }
