@@ -51,6 +51,7 @@ public class ParsedIfcFile {
     private final List<PropertySet> propertySets;
     private final Set<FeatureSet> featureSets;
     private final Map<Integer, Set<Integer>> reverseLookupRelDefinesByProperties;
+    private final Map<Integer, Set<Integer>> reverseLookupRelDefinesByType;
     private final Map<Integer, Set<Integer>> reverseLookupReferencingLines;
     private final StepPropertyValueFactory stepPropertyValueFactory;
     private final ProjectUnits projectUnits;
@@ -231,6 +232,16 @@ public class ParsedIfcFile {
                             .collect(
                                     groupingBy(
                                             e -> e.getKey(), mapping(e -> e.getValue(), toSet())));
+            this.reverseLookupRelDefinesByType =
+                    this.dataLinesByClass.get(IfcRelDefinesByTypeLine.class).parallelStream()
+                            .map(line -> (IfcRelDefinesByTypeLine) line)
+                            .flatMap(
+                                    line ->
+                                            line.getRelatedObjectIds().stream()
+                                                    .map(o -> Map.entry(o, line.getId())))
+                            .collect(
+                                    groupingBy(
+                                            e -> e.getKey(), mapping(e -> e.getValue(), toSet())));
             this.reverseLookupReferencingLines =
                     this.dataLines.values().parallelStream()
                             .flatMap(
@@ -252,6 +263,7 @@ public class ParsedIfcFile {
             this.features = Collections.emptyList();
             this.propertySets = Collections.emptyList();
             this.reverseLookupRelDefinesByProperties = Collections.emptyMap();
+            this.reverseLookupRelDefinesByType = Collections.emptyMap();
             this.reverseLookupReferencingLines = Collections.emptyMap();
             stepPropertyValueFactory =
                     new StepPropertyValueFactory(this, new QudtUnitConverter(projectUnits));
@@ -455,11 +467,13 @@ public class ParsedIfcFile {
             PropertyConverter converter,
             boolean deleteInputProperty,
             HighlevelChangeBuilder changeBuilder) {
-        List<? extends IfcLine> props =
-                getProperties(
-                        element,
-                        IfcLinePredicates.isPropertyWithName(inputFeature.getName())
-                                .or(IfcLinePredicates.isQuantityWithName(inputFeature.getName())));
+        List<IfcLine> props = new ArrayList<>();
+        Predicate<IfcLine> predicate =
+                IfcLinePredicates.isPropertyWithName(inputFeature.getName())
+                        .or(IfcLinePredicates.isQuantityWithName(inputFeature.getName()));
+        props.addAll(getProperties(element, predicate));
+        props.addAll(getPropertiesViaType(element, predicate));
+
         if (props.size() > 1 || props.isEmpty()) {
             changeBuilder.errorFmt(
                     "Expected to find one property named %s as the input feature of a convert action, but found %d",

@@ -249,12 +249,14 @@ public class MappingConversionRuleFactory implements ConversionRuleFactory {
     }
 
     private static List<? extends IfcLine> getProperties(IfcLineAndModel ilam, Feature feature) {
-        return ilam.getIfcModel()
-                .getProperties(
-                        ilam.ifcLine,
-                        IfcLinePredicates.isPropertyWithName(feature.getName())
-                                .or(IfcLinePredicates.isQuantityWithName(feature.getName()))
-                                .or(IfcLinePredicates.isEnumValueWithName(feature.getName())));
+        List<IfcLine> matchingProperties = new ArrayList<>();
+        Predicate<IfcLine> predicate =
+                IfcLinePredicates.isPropertyWithName(feature.getName())
+                        .or(IfcLinePredicates.isQuantityWithName(feature.getName()))
+                        .or(IfcLinePredicates.isEnumValueWithName(feature.getName()));
+        matchingProperties.addAll(ilam.getIfcModel().getProperties(ilam.ifcLine, predicate));
+        matchingProperties.addAll(ilam.getIfcModel().getPropertiesViaType(ilam.ifcLine, predicate));
+        return matchingProperties;
     }
 
     private static Optional<Object> getValue(IfcLineAndModel ilam, ExtractionSource source) {
