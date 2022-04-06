@@ -28,19 +28,19 @@ query mapping($mappingId :ID!) {
                 __typename
                 id
                 addToPropertySet {
-                    ... on MEBooleanValue {
+                    ... on BooleanValue {
                         booleanValue
                     }
-                    ... on MEFloatValue {
+                    ... on FloatValue {
                         floatValue
                     }
-                    ... on MEIDValue {
+                    ... on IDValue {
                         idValue
                     }
-                    ... on MEIntegerValue {
+                    ... on IntegerValue {
                         integerValue
                     }
-                    ... on MEStringValue {
+                    ... on StringValue {
                         stringValue
                     }
                 }
@@ -53,7 +53,7 @@ query mapping($mappingId :ID!) {
                             name
                             type {
                                 __typename
-                                ... on EnumerationValue {
+                                ... on EnumerationType {
                                     __typename
                                     id
                                     allowMultiple
@@ -62,25 +62,25 @@ query mapping($mappingId :ID!) {
                                         id
                                         description
                                         value {
-                                            ... on MEBooleanValue {
+                                            ... on BooleanValue {
                                                 booleanValue
                                             }
-                                            ... on MEFloatValue {
+                                            ... on FloatValue {
                                                 floatValue
                                             }
-                                            ... on MEIDValue {
+                                            ... on IDValue {
                                                 idValue
                                             }
-                                            ... on MEIntegerValue {
+                                            ... on IntegerValue {
                                                 integerValue
                                             }
-                                            ... on MEStringValue {
+                                            ... on StringValue {
                                                 stringValue
                                             }
                                         }
                                     }
                                 }
-                                ... on NumericValue {
+                                ... on NumericType {
                                     quantityKind {
                                         id
                                         label
@@ -97,7 +97,7 @@ query mapping($mappingId :ID!) {
                             name
                             type {
                                 __typename
-                                ... on EnumerationValue {
+                                ... on EnumerationType {
                                     __typename
                                     id
                                     allowMultiple
@@ -106,25 +106,25 @@ query mapping($mappingId :ID!) {
                                         id
                                         description
                                         value {
-                                            ... on MEBooleanValue {
+                                            ... on BooleanValue {
                                                 booleanValue
                                             }
-                                            ... on MEFloatValue {
+                                            ... on FloatValue {
                                                 floatValue
                                             }
-                                            ... on MEIDValue {
+                                            ... on IDValue {
                                                 idValue
                                             }
-                                            ... on MEIntegerValue {
+                                            ... on IntegerValue {
                                                 integerValue
                                             }
-                                            ... on MEStringValue {
+                                            ... on StringValue {
                                                 stringValue
                                             }
                                         }
                                     }
                                 }
-                                ... on NumericValue {
+                                ... on NumericType {
                                     quantityKind {
                                         id
                                         label
@@ -146,7 +146,7 @@ query mapping($mappingId :ID!) {
                             name
                             type {
                                 __typename
-                                ... on EnumerationValue {
+                                ... on EnumerationType {
                                     __typename
                                     id
                                     allowMultiple
@@ -155,25 +155,25 @@ query mapping($mappingId :ID!) {
                                         id
                                         description
                                         value {
-                                            ... on MEBooleanValue {
+                                            ... on BooleanValue {
                                                 booleanValue
                                             }
-                                            ... on MEFloatValue {
+                                            ... on FloatValue {
                                                 floatValue
                                             }
-                                            ... on MEIDValue {
+                                            ... on IDValue {
                                                 idValue
                                             }
-                                            ... on MEIntegerValue {
+                                            ... on IntegerValue {
                                                 integerValue
                                             }
-                                            ... on MEStringValue {
+                                            ... on StringValue {
                                                 stringValue
                                             }
                                         }
                                     }
                                 }
-                                ... on NumericValue {
+                                ... on NumericType {
                                     quantityKind {
                                         id
                                         label
@@ -193,19 +193,19 @@ query mapping($mappingId :ID!) {
                 __typename
                 id
                 addToPropertySet {
-                    ... on MEBooleanValue {
+                    ... on BooleanValue {
                         booleanValue
                     }
-                    ... on MEFloatValue {
+                    ... on FloatValue {
                         floatValue
                     }
-                    ... on MEIDValue {
+                    ... on IDValue {
                         idValue
                     }
-                    ... on MEIntegerValue {
+                    ... on IntegerValue {
                         integerValue
                     }
-                    ... on MEStringValue {
+                    ... on StringValue {
                         stringValue
                     }
                 }
@@ -218,7 +218,7 @@ query mapping($mappingId :ID!) {
                             name
                             type {
                                 __typename
-                                ... on EnumerationValue {
+                                ... on EnumerationType {
                                     __typename
                                     id
                                     allowMultiple
@@ -227,25 +227,25 @@ query mapping($mappingId :ID!) {
                                         id
                                         description
                                         value {
-                                            ... on MEBooleanValue {
+                                            ... on BooleanValue {
                                                 booleanValue
                                             }
-                                            ... on MEFloatValue {
+                                            ... on FloatValue {
                                                 floatValue
                                             }
-                                            ... on MEIDValue {
+                                            ... on IDValue {
                                                 idValue
                                             }
-                                            ... on MEIntegerValue {
+                                            ... on IntegerValue {
                                                 integerValue
                                             }
-                                            ... on MEStringValue {
+                                            ... on StringValue {
                                                 stringValue
                                             }
                                         }
                                     }
                                 }
-                                ... on NumericValue {
+                                ... on NumericType {
                                     quantityKind {
                                         id
                                         label
@@ -258,19 +258,19 @@ query mapping($mappingId :ID!) {
                             }
                         }
                         value {
-                            ... on MEBooleanValue {
+                            ... on BooleanValue {
                                 booleanValue
                             }
-                            ... on MEFloatValue {
+                            ... on FloatValue {
                                 floatValue
                             }
-                            ... on MEIDValue {
+                            ... on IDValue {
                                 idValue
                             }
-                            ... on MEIntegerValue {
+                            ... on IntegerValue {
                                 integerValue
                             }
-                            ... on MEStringValue {
+                            ... on StringValue {
                                 stringValue
                             }
                         }
@@ -296,19 +296,19 @@ query mapping($mappingId :ID!) {
                                 source
                                 predicate
                                 value {
-                                    ... on MEBooleanValue {
+                                    ... on BooleanValue {
                                         booleanValue
                                     }
-                                    ... on MEFloatValue {
+                                    ... on FloatValue {
                                         floatValue
                                     }
-                                    ... on MEIDValue {
+                                    ... on IDValue {
                                         idValue
                                     }
-                                    ... on MEIntegerValue {
+                                    ... on IntegerValue {
                                         integerValue
                                     }
-                                    ... on MEStringValue {
+                                    ... on StringValue {
                                         stringValue
                                     }
                                 }
@@ -321,7 +321,7 @@ query mapping($mappingId :ID!) {
                                     name
                                     type {
                                         __typename
-                                        ... on EnumerationValue {
+                                        ... on EnumerationType {
                                             __typename
                                             id
                                             allowMultiple
@@ -330,25 +330,25 @@ query mapping($mappingId :ID!) {
                                                 id
                                                 description
                                                 value {
-                                                    ... on MEBooleanValue {
+                                                    ... on BooleanValue {
                                                         booleanValue
                                                     }
-                                                    ... on MEFloatValue {
+                                                    ... on FloatValue {
                                                         floatValue
                                                     }
-                                                    ... on MEIDValue {
+                                                    ... on IDValue {
                                                         idValue
                                                     }
-                                                    ... on MEIntegerValue {
+                                                    ... on IntegerValue {
                                                         integerValue
                                                     }
-                                                    ... on MEStringValue {
+                                                    ... on StringValue {
                                                         stringValue
                                                     }
                                                 }
                                             }
                                         }
-                                        ... on NumericValue {
+                                        ... on NumericType {
                                             quantityKind {
                                                 id
                                                 label
@@ -362,19 +362,19 @@ query mapping($mappingId :ID!) {
                                 }
                                 predicate
                                 value {
-                                    ... on MEBooleanValue {
+                                    ... on BooleanValue {
                                         booleanValue
                                     }
-                                    ... on MEFloatValue {
+                                    ... on FloatValue {
                                         floatValue
                                     }
-                                    ... on MEIDValue {
+                                    ... on IDValue {
                                         idValue
                                     }
-                                    ... on MEIntegerValue {
+                                    ... on IntegerValue {
                                         integerValue
                                     }
-                                    ... on MEStringValue {
+                                    ... on StringValue {
                                         stringValue
                                     }
                                 }
@@ -387,19 +387,19 @@ query mapping($mappingId :ID!) {
                         source
                         predicate
                         value {
-                            ... on MEBooleanValue {
+                            ... on BooleanValue {
                                 booleanValue
                             }
-                            ... on MEFloatValue {
+                            ... on FloatValue {
                                 floatValue
                             }
-                            ... on MEIDValue {
+                            ... on IDValue {
                                 idValue
                             }
-                            ... on MEIntegerValue {
+                            ... on IntegerValue {
                                 integerValue
                             }
-                            ... on MEStringValue {
+                            ... on StringValue {
                                 stringValue
                             }
                         }
@@ -412,7 +412,7 @@ query mapping($mappingId :ID!) {
                             name
                             type {
                                 __typename
-                                ... on EnumerationValue {
+                                ... on EnumerationType {
                                     __typename
                                     id
                                     allowMultiple
@@ -421,25 +421,25 @@ query mapping($mappingId :ID!) {
                                         id
                                         description
                                         value {
-                                            ... on MEBooleanValue {
+                                            ... on BooleanValue {
                                                 booleanValue
                                             }
-                                            ... on MEFloatValue {
+                                            ... on FloatValue {
                                                 floatValue
                                             }
-                                            ... on MEIDValue {
+                                            ... on IDValue {
                                                 idValue
                                             }
-                                            ... on MEIntegerValue {
+                                            ... on IntegerValue {
                                                 integerValue
                                             }
-                                            ... on MEStringValue {
+                                            ... on StringValue {
                                                 stringValue
                                             }
                                         }
                                     }
                                 }
-                                ... on NumericValue {
+                                ... on NumericType {
                                     quantityKind {
                                         id
                                         label
@@ -453,19 +453,19 @@ query mapping($mappingId :ID!) {
                         }
                         predicate
                         value {
-                            ... on MEBooleanValue {
+                            ... on BooleanValue {
                                 booleanValue
                             }
-                            ... on MEFloatValue {
+                            ... on FloatValue {
                                 floatValue
                             }
-                            ... on MEIDValue {
+                            ... on IDValue {
                                 idValue
                             }
-                            ... on MEIntegerValue {
+                            ... on IntegerValue {
                                 integerValue
                             }
-                            ... on MEStringValue {
+                            ... on StringValue {
                                 stringValue
                             }
                         }
@@ -478,19 +478,19 @@ query mapping($mappingId :ID!) {
                 source
                 predicate
                 value {
-                    ... on MEBooleanValue {
+                    ... on BooleanValue {
                         booleanValue
                     }
-                    ... on MEFloatValue {
+                    ... on FloatValue {
                         floatValue
                     }
-                    ... on MEIDValue {
+                    ... on IDValue {
                         idValue
                     }
-                    ... on MEIntegerValue {
+                    ... on IntegerValue {
                         integerValue
                     }
-                    ... on MEStringValue {
+                    ... on StringValue {
                         stringValue
                     }
                 }
@@ -503,7 +503,7 @@ query mapping($mappingId :ID!) {
                     name
                     type {
                         __typename
-                        ... on EnumerationValue {
+                        ... on EnumerationType {
                             __typename
                             id
                             allowMultiple
@@ -512,25 +512,25 @@ query mapping($mappingId :ID!) {
                                 id
                                 description
                                 value {
-                                    ... on MEBooleanValue {
+                                    ... on BooleanValue {
                                         booleanValue
                                     }
-                                    ... on MEFloatValue {
+                                    ... on FloatValue {
                                         floatValue
                                     }
-                                    ... on MEIDValue {
+                                    ... on IDValue {
                                         idValue
                                     }
-                                    ... on MEIntegerValue {
+                                    ... on IntegerValue {
                                         integerValue
                                     }
-                                    ... on MEStringValue {
+                                    ... on StringValue {
                                         stringValue
                                     }
                                 }
                             }
                         }
-                        ... on NumericValue {
+                        ... on NumericType {
                             quantityKind {
                                 id
                                 label
@@ -544,19 +544,19 @@ query mapping($mappingId :ID!) {
                 }
                 predicate
                 value {
-                    ... on MEBooleanValue {
+                    ... on BooleanValue {
                         booleanValue
                     }
-                    ... on MEFloatValue {
+                    ... on FloatValue {
                         floatValue
                     }
-                    ... on MEIDValue {
+                    ... on IDValue {
                         idValue
                     }
-                    ... on MEIntegerValue {
+                    ... on IntegerValue {
                         integerValue
                     }
-                    ... on MEStringValue {
+                    ... on StringValue {
                         stringValue
                     }
                 }
