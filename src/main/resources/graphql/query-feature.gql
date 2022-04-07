@@ -4,7 +4,7 @@ query feature($featureId :ID!) {
         id,
         name,
         type {
-            ... on EnumerationValue {
+            ... on EnumerationType {
                 __typename
                 id
                 allowMultiple

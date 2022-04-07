@@ -29,15 +29,15 @@ public class StepPropertyValueFactory implements Serializable {
         String featureType = feature.getType().getType();
         FeatureType.Types type = FeatureType.Types.valueOf(featureType);
         switch (type) {
-            case StringValue:
+            case StringType:
                 return getStringValue(feature, value);
-            case BooleanValue:
+            case BooleanType:
                 return getBooleanValue(feature, value);
-            case ReferenceValue:
+            case ReferenceType:
                 return getReferenceValue(feature, value);
-            case EnumerationValue:
+            case EnumerationType:
                 return getEnumerationValue(feature, value);
-            case NumericValue:
+            case NumericType:
                 return getNumericValue(feature, value);
         }
         throw new IllegalArgumentException(

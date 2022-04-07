@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
@@ -87,61 +88,73 @@ public class GraphQLDataService implements InitializingBean {
 
     public List<Project> getProjectsWithFeatureSets(String idTokenString) {
         String queryString = getGraphQlQuery("classpath:graphql/query-projects.gql");
-        GraphQLResponse response =
-                getGraphQLClient(idTokenString)
-                        .reactiveExecuteQuery(queryString)
-                        .doOnError(t -> logError(t))
-                        .block();
-        logResponse(response);
-        if (response == null) {
-            throw new NoGraphQlResponseException("Empty Response for project query");
-        }
-        return response.dataAsObject(GraphqlResult.class).getProjects();
+        return logAndRethrowException(
+                () -> {
+                    GraphQLResponse response =
+                            getGraphQLClient(idTokenString)
+                                    .reactiveExecuteQuery(queryString)
+                                    .doOnError(t -> logError(t))
+                                    .block();
+                    logResponse(response);
+                    if (response == null) {
+                        throw new NoGraphQlResponseException("Empty Response for project query");
+                    }
+                    return response.dataAsObject(GraphqlResult.class).getProjects();
+                });
     }
 
     public List<Standard> getFeatureSetsOfProjectWithPropertySets(
             String projectId, String idTokenString) {
-        String queryString =
-                getGraphQlQuery("classpath:graphql/query-standards-with-propertysets.gql");
-        GraphQLResponse response =
-                getGraphQLClient(idTokenString)
-                        .reactiveExecuteQuery(
-                                queryString,
-                                Map.of("projectId", projectId),
-                                "projectWithStandardsWithPropertySets")
-                        .doOnError(t -> logError(t))
-                        .block();
-        logResponse(response);
-        if (response == null) {
-            throw new NoGraphQlResponseException("Empty Response for standards query");
-        }
-        return response.dataAsObject(GraphqlResult.class).getProject().getStandards();
+        return logAndRethrowException(
+                () -> {
+                    String queryString =
+                            getGraphQlQuery(
+                                    "classpath:graphql/query-standards-with-propertysets.gql");
+                    GraphQLResponse response =
+                            getGraphQLClient(idTokenString)
+                                    .reactiveExecuteQuery(
+                                            queryString,
+                                            Map.of("projectId", projectId),
+                                            "projectWithStandardsWithPropertySets")
+                                    .doOnError(t -> logError(t))
+                                    .block();
+                    logResponse(response);
+                    if (response == null) {
+                        throw new NoGraphQlResponseException("Empty Response for standards query");
+                    }
+                    return response.dataAsObject(GraphqlResult.class).getProject().getStandards();
+                });
     }
 
     public List<Mapping> getMappings(List<String> mappingIds, String idTokenString) {
         String queryString = getGraphQlQuery("classpath:graphql/query-mappings.gql");
-        return mappingIds.stream()
-                .map(
-                        id -> {
-                            GraphQLResponse response =
-                                    getGraphQLClient(idTokenString)
-                                            .reactiveExecuteQuery(
-                                                    queryString, Map.of("mappingId", id), "mapping")
-                                            .doOnError(t -> logError(t))
-                                            .block();
-                            logResponse(response);
-                            if (response == null) {
-                                throw new NoGraphQlResponseException(
-                                        "Empty Response for mappings query");
-                            }
-                            if (!response.getErrors().isEmpty()) {
-                                throw new GraphQlErrorResponseException(
-                                        "Query execution returned an error");
-                            }
-                            return response.dataAsObject(GraphqlResult.class).getMapping();
-                        })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        return logAndRethrowException(
+                () ->
+                        mappingIds.stream()
+                                .map(
+                                        id -> {
+                                            GraphQLResponse response =
+                                                    getGraphQLClient(idTokenString)
+                                                            .reactiveExecuteQuery(
+                                                                    queryString,
+                                                                    Map.of("mappingId", id),
+                                                                    "mapping")
+                                                            .doOnError(t -> logError(t))
+                                                            .block();
+                                            logResponse(response);
+                                            if (response == null) {
+                                                throw new NoGraphQlResponseException(
+                                                        "Empty Response for mappings query");
+                                            }
+                                            if (!response.getErrors().isEmpty()) {
+                                                throw new GraphQlErrorResponseException(
+                                                        "Query execution returned an error");
+                                            }
+                                            return response.dataAsObject(GraphqlResult.class)
+                                                    .getMapping();
+                                        })
+                                .filter(Objects::nonNull)
+                                .collect(Collectors.toList()));
     }
 
     private void logResponse(GraphQLResponse response) {
@@ -176,16 +189,28 @@ public class GraphQLDataService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.logFile =
-                new File(
-                        userDataDirService.getUserDataDir(),
-                        GRAPHQL_LOGFILE
-                                + new SimpleDateFormat("yyyyMMdd_HHmmssZ").format(new Date())
-                                + GRAPHQL_LOGFILE_EXTENSION);
-        if (!logFile.canWrite()) {
-            logger.warn("Cannot write graphql session log file {}", logFile);
-        }
+        String suffix = "";
+        int counter = 2;
+        do {
+            this.logFile =
+                    new File(
+                            userDataDirService.getUserDataDir(),
+                            GRAPHQL_LOGFILE
+                                    + new SimpleDateFormat("yyyyMMdd_HHmmssZ").format(new Date())
+                                    + suffix
+                                    + GRAPHQL_LOGFILE_EXTENSION);
+            suffix = "_" + (counter++);
+        } while (logFile.exists());
         FileOutputStream out = new FileOutputStream(logFile);
         this.logWriter = new PrintWriter(out);
+    }
+
+    private <T> T logAndRethrowException(Supplier<T> fun) {
+        try {
+            return fun.get();
+        } catch (Exception e) {
+            logger.warn("error during graphql API call", e);
+            throw e;
+        }
     }
 }

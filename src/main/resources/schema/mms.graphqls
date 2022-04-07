@@ -7,6 +7,18 @@ type User {
     groups: [Group!]!
 }
 
+type Job {
+    id: ID!
+    userId: ID!
+    status: String!
+    count: Int!
+    target: Int!
+    progress: Float!
+    message: String!
+    messageBundleKey: String!
+    etag: String!
+}
+
 type Group {
     id: ID!
     name: String!
@@ -72,6 +84,10 @@ type Standard {
     copyInfo: CopyInfo
 }
 
+type IfcBuiltElement {
+    id: ID!
+}
+
 type Unit {
     id: ID!
     label: String!
@@ -128,30 +144,30 @@ enum CopyInfo {
     NEWER
 }
 
-type StringValue {_: Boolean }
+type StringType {_: Boolean }
 
-type BooleanValue {_: Boolean }
+type BooleanType {_: Boolean }
 
-type NumericValue {
+type NumericType {
     quantityKind: QuantityKind!
     unit: Unit!
 }
 
-type ReferenceValue {_: Boolean }
+type ReferenceType {_: Boolean }
 
 type OptionValue {
     id: ID!
-    value: MappingExecutionValue!
+    value: TypedValue!
     description: String
 }
 
-type EnumerationValue {
+type EnumerationType {
     id: ID!
     options: [OptionValue!]!
     allowMultiple: Boolean!
 }
 
-union FeatureType = StringValue | BooleanValue | NumericValue | ReferenceValue | EnumerationValue
+union FeatureType = StringType | BooleanType | NumericType | ReferenceType | EnumerationType
 
 type Feature {
     id: ID!
@@ -170,6 +186,7 @@ type Feature {
     scopes: [String!]!
     copyOf: Feature
     copyInfo: CopyInfo
+    instanceValues: [OptionValue!]!
 }
 
 type Mapping {
@@ -195,13 +212,13 @@ type DeleteActionGroup {
 type AddActionGroup {
     id: ID!
     actions: [AddAction!]!
-    addToPropertySet: MappingExecutionValue
+    addToPropertySet: TypedValue
 }
 
 type ConvertActionGroup {
     id: ID!
     actions: [TransferAction!]!
-    addToPropertySet: MappingExecutionValue
+    addToPropertySet: TypedValue
 }
 
 union TransferAction = ConvertAction | ExtractAction
@@ -214,7 +231,7 @@ type DeleteAction {
 type AddAction {
     id: ID!
     feature: Feature!
-    value: MappingExecutionValue!
+    value: TypedValue!
 }
 
 type ConvertAction {
@@ -231,7 +248,8 @@ type ExtractAction {
 
 enum Source {
     ELEMENT_NAME,
-    ELEMENT_DESCRIPTION
+    ELEMENT_DESCRIPTION,
+    ELEMENT_CLASS
 }
 
 union Condition = SingleCondition | ElementCondition | ConditionGroup
@@ -240,14 +258,14 @@ type SingleCondition {
     id: ID!
     feature: Feature!
     predicate: Predicate!
-    value: MappingExecutionValue
+    value: TypedValue
 }
 
 type ElementCondition {
     id: ID!
     source: Source!
     predicate: Predicate!
-    value: MappingExecutionValue
+    value: TypedValue
 }
 
 type ConditionGroup {
@@ -279,12 +297,12 @@ input DeleteActionGroupInput {
 
 input AddActionGroupInput {
     actions: [AddActionInput!]!
-    addToPropertySet: MappingExecutionValueInput
+    addToPropertySet: TypedValueInput
 }
 
 input ConvertActionGroupInput {
     actions: [ConvertActionInput!]!
-    addToPropertySet: MappingExecutionValueInput
+    addToPropertySet: TypedValueInput
 }
 
 input DeleteActionInput {
@@ -293,7 +311,7 @@ input DeleteActionInput {
 
 input AddActionInput {
     feature: ID!
-    value: MappingExecutionValueInput!
+    value: TypedValueInput!
 }
 
 input ConvertActionInput {
@@ -312,13 +330,13 @@ input ConditionInput {
 input SingleConditionInput {
     feature: ID!
     predicate: Predicate!
-    value: MappingExecutionValueInput
+    value: TypedValueInput
 }
 
 input ElementConditionInput {
     source: Source
     predicate: Predicate!
-    value: MappingExecutionValueInput
+    value: TypedValueInput
 }
 
 enum Predicate {
@@ -347,149 +365,36 @@ enum Connective {
     OR
 }
 
-type FeatureMapping {
-    id: ID!
-    dateCreated: String!
-    dateModified: String!
-    creator: User!
-    editor: User!
-    inputFeature: Feature!
-    outputFeature: Feature!
-    mappingExecutions: [ MappingExecution! ]!
-}#done
-
-type MappingFunction {
-    id:ID!
-    name: String!
-    description: String
-    expects: [ FunctionParameter! ]!
-    returns: [ FunctionOutput! ]!
-}#done
-
-type FunctionParameter {
-    id: ID!
-    valueKind: MappingFunctionValueKind!
-    featureKind: ID
-    required: Boolean
-    name: String
-    description: String
-}#done
-
-type FunctionOutput {
-    id: ID!
-    valueKind: MappingFunctionValueKind!
-    required: Boolean
-    name: String
-    description: String
-}#done
-
-union MappingFunctionValueKind = ResourceValueKind | LiteralValueKind | AnyValueKind
+union TypedValue =
+    IDValue | StringValue | IntegerValue |
+    BooleanValue | FloatValue
 #done
 
-type ResourceValueKind {
-    rdfType: ID!
-}#done
-
-type LiteralValueKind {
-    dataType: ID!
-}#done
-
-type AnyValueKind {value: String }
-
-input FeatureMappingInput {
-    id: ID
-    inputFeature: ID!
-    outputFeature: ID!
-    mappingExecutions: [ MappingExecutionInput! ]
-}
-
-type MappingExecution {
-    id: ID!
-    function: ID!
-    parameters: [ ExecutionParameter! ]!
-    outputs: [ ExecutionOutput ]!
-}#done
-
-interface ExecutionOutput {
-    functionOutput: ID!
-}#done
-
-type ExecutionOutputValue implements ExecutionOutput {
-    functionOutput: ID!
-    value : MappingExecutionValue!
-}#done
-
-type ExecutionValuePipeAsSource implements ExecutionParameter {
-    id: ID!
-    functionParameter: ID!
-    name: String
-}#done
-
-type ExecutionValuePipeAsSink implements ExecutionOutput {
-    id: ID!
-    functionOutput: ID!
-    name: String
-}#done
-
-interface ExecutionParameter {
-    functionParameter: ID!
-}#done
-
-type ExecutionParameterValue implements ExecutionParameter {
-    functionParameter: ID!
-    value: MappingExecutionValue!
-}#done
-
-type ExecutionParameterMapValue implements ExecutionParameter {
-    id : ID!
-    functionParameter: ID!
-    entries: [ ExecutionParameterMapValueEntry! ]!
-}#done
-
-type ExecutionParameterMapValueEntry {
-    key: MappingExecutionValue !
-    value: MappingExecutionValue !
-}#done
-
-union MappingExecutionValue =
-    MEIDValue | MEStringValue | MEIntegerValue |
-    MEBooleanValue | MEFloatValue
-#done
-
-type MEIDValue {
+type IDValue {
     idValue: ID!
     graphQLType : String #if the IRI references an object within the application, this is the graphql type of the object
 }#done
 
-type MEStringValue {
+type StringValue {
     stringValue : String!
 }#done
 
-type MEIntegerValue {
+type IntegerValue {
     integerValue : Int
 }#done
 
-type MEBooleanValue {
+type BooleanValue {
     booleanValue : Boolean
 }#done
 
-type MEFloatValue {
+type FloatValue {
     floatValue : Float
 }#done
 
 
 
-input MappingExecutionInput {
-    id: ID
-    function: ID!
-    parameters: [ ExecutionParameterValueInput! ]
-    mapParameters: [ ExecutionParameterMapValueInput ! ]
-    pipeParameters: [ ExecutionValuePipeAsSourceInput ! ]
-    outputPipes: [ ExecutionValuePipeAsSinkInput ! ]
-}
-
 #only one can be set! (exception: idValue+GraphQLType)
-input MappingExecutionValueInput {
+input TypedValueInput {
     stringValue : String
     integerValue : Int
     booleanValue : Boolean
@@ -497,39 +402,6 @@ input MappingExecutionValueInput {
     idValue : ID
     graphQLType: String
 }
-
-input ExecutionParameterValueInput {
-    functionParameter : ID!
-    value: MappingExecutionValueInput
-}
-
-input ExecutionParameterMapValueInput {
-    id: ID
-    functionParameter : ID!
-    entries : [ ExecutionParameterMapValueEntryInput! ]
-}
-
-input ExecutionParameterMapValueEntryInput {
-    key: MappingExecutionValueInput !
-    value: MappingExecutionValueInput !
-}
-
-input ExecutionValuePipeAsSourceInput {
-    # when creating a new object, set the ID to `local:${localPipeId}` (replace ${localPipeId} with an ID unique for the featureMapping
-    # the prefix `local:` will be replaced by the id of the featureMapping, yielding `${featureMappingId}#{localPipeId}`
-    id: ID
-    functionParameter: ID!
-    name: String
-}
-
-input ExecutionValuePipeAsSinkInput {
-    # when creating a new object, set the ID to `local:${localPipeId}` (replace ${localPipeId} with an ID unique for the featureMapping
-    # the prefix `local:` will be replaced by the id of the featureMapping, yielding `${featureMappingId}#{localPipeId}`
-    id: ID
-    functionOutput: ID!
-    name: String
-}
-
 
 input StandardInput {
     id: ID
@@ -578,7 +450,7 @@ enum FeatureKindType {
 
 input OptionValueInput {
     id: ID
-    value: MappingExecutionValueInput!
+    value: TypedValueInput!
     description: String
 }
 
@@ -599,6 +471,7 @@ input FeatureInput {
     standard: ID!
     propertySets: [ID!]
     featureGroups: [ID!]
+    instanceValues: [OptionValueInput!]
     type: FeatureTypeInput!
 }
 
@@ -611,10 +484,13 @@ type Query {
     standards(filter: StandardSearchFilter): [Standard!]!
     standard(id: ID!, filter: StandardSearchFilter): Standard
     feature(id: ID!): Feature
+    features(ids: [ID!]!): [Feature!]!
     featureGroups: [FeatureGroup!]!
     featureGroup(id: ID!): FeatureGroup
     propertySets: [PropertySet!]!
     propertySet(id: ID!): PropertySet
+    ifcBuiltElement(id: ID!): IfcBuiltElement
+    ifcBuiltElements: [IfcBuiltElement!]!
     unit(id: ID!): Unit
     units: [Unit!]!
     quantityKind(id: ID!): QuantityKind
@@ -622,8 +498,8 @@ type Query {
     projects: [Project!]!
     project(id: ID!): Project
     mapping(id: ID!): Mapping
-    mappingFunctions: [MappingFunction!]!
-    mappingExecutions: [MappingExecution!]!
+    job(id: ID!, etag: String): Job
+    jobs: [Job!]!
 }
 
 type Mutation {
@@ -658,13 +534,13 @@ type Mutation {
     deleteFeatures(ids: [ID!]!): Boolean
     removeFeaturesFromPropertySet(featureIds: [ID!]!, propertySetId: ID!): Boolean
     removeFeaturesFromFeatureGroup(featureIds: [ID!]!, featureGroupId: ID!): Boolean
-    copyStandardsToOrganization(standardIds: [ID!]!, toOrganizationId: ID!): ID!
-    copyFeaturesToStandard(featureIds: [ID!]!, toStandardId: ID!): ID!
-    copyFeatureGroupsToStandard(featureGroupIds: [ID!]!, toStandardId: ID!): ID!
-    copyFeaturesToProject(featureIds: [ID!]!, toProjectId: ID!): Boolean
-    copyStandardsToProject(standardIds: [ID!]!, toProjectId: ID!): Boolean
-    copyPropertySetsToStandard(propertySetIds: [ID!]!, toStandardId: ID!): ID!
-    putFeatureMappings(featureMappings: [ FeatureMappingInput! ]! ): [ID!]!
+    copyStandardsToOrganization(standardIds: [ID!]!, toOrganizationId: ID!): Job!
+    copyFeaturesToStandard(featureIds: [ID!]!, toStandardId: ID!): Job!
+    copyFeatureGroupsToStandard(featureGroupIds: [ID!]!, toStandardId: ID!): Job!
+    copyStandardsToProject(standardIds: [ID!]!, toProjectId: ID!): Job!
+    copyPropertySetsToStandard(propertySetIds: [ID!]!, toStandardId: ID!): Job!
     putMapping(id: ID, mapping: MappingInput!): Mapping!
     deleteMappings(ids: [ID!]!): Boolean
+    removeJob(id: ID!, cancelIfNotFinished: Boolean!): Boolean
+    cancelJob(id: ID!): Job!
 }
