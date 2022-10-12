@@ -1,5 +1,7 @@
 # Merkmalservice Desktop App
 
+*No longer maintained: The Desktop App is functionally included in the [Merkmalservice](https://www.merkmalservice.at/)*
+
 ## Requirements
 - Java 11 or higher
 
